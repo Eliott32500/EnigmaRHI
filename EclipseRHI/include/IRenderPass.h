@@ -7,7 +7,7 @@
 
 class VulkanRenderPass;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class IRenderPass
 	{

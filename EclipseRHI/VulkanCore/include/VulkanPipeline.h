@@ -7,14 +7,14 @@
 #include "../include/VulkanVertex.h"
 
 
-class VulkanPipeline : public EclipseRHI::IPipeline
+class VulkanPipeline : public EnigmaRHI::IPipeline
 {
 public:
 
 	VulkanPipeline() = default;
 
-	void Create(EclipseRHI::IShaderModule* vertShader, EclipseRHI::IShaderModule* fragShader, EclipseRHI::IDevice* device, EclipseRHI::ISwapChain* swapchain, EclipseRHI::IRenderPass* renderPass, EclipseRHI::IDescriptor* descriptor) override;
-	void Destroy(EclipseRHI::IDevice* device) override;
+	void Create(EnigmaRHI::IShaderModule* vertShader, EnigmaRHI::IShaderModule* fragShader, EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapchain, EnigmaRHI::IRenderPass* renderPass, EnigmaRHI::IDescriptor* descriptor) override;
+	void Destroy(EnigmaRHI::IDevice* device) override;
 
 	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline; }
 	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout; }

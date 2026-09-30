@@ -1,15 +1,15 @@
 #pragma once
 #include "VulkanDevice.h"
-#include "../../../EclipseRHI/include/IShaderModule.h"
+#include "IShaderModule.h"
 #include <fstream>
 
-class VulkanShaderModule : public EclipseRHI::IShaderModule
+class VulkanShaderModule : public EnigmaRHI::IShaderModule
 {
 public:
 
 	VulkanShaderModule() = default;
 
-	void Create(EclipseRHI::IDevice* device, const std::string& filename) override;
+	void Create(EnigmaRHI::IDevice* device, const std::string& filename) override;
 
 	VkShaderModule GetModule() const { return module; }
 

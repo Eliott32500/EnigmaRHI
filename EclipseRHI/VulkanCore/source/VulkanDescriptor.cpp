@@ -13,7 +13,7 @@ void VulkanDescriptor::AddImageBinding(uint32_t binding)
 	bindings.push_back(descriptorBinding);
 }
 
-void VulkanDescriptor::AddBufferBinding(uint32_t binding, EclipseRHI::ShaderStage stageFlags)
+void VulkanDescriptor::AddBufferBinding(uint32_t binding, EnigmaRHI::ShaderStage stageFlags)
 {
 	VkDescriptorSetLayoutBinding descriptorBinding
 	{
@@ -26,7 +26,7 @@ void VulkanDescriptor::AddBufferBinding(uint32_t binding, EclipseRHI::ShaderStag
 	bindings.push_back(descriptorBinding);
 }
 
-void VulkanDescriptor::AddImageInfo(EclipseRHI::IImage* image)
+void VulkanDescriptor::AddImageInfo(EnigmaRHI::IImage* image)
 {
 	VkDescriptorImageInfo info
 	{
@@ -38,7 +38,7 @@ void VulkanDescriptor::AddImageInfo(EclipseRHI::IImage* image)
 	imageInfos.push_back(info);
 }
 
-void VulkanDescriptor::Create(EclipseRHI::IDevice* device)
+void VulkanDescriptor::Create(EnigmaRHI::IDevice* device)
 {
 	VkDescriptorSetLayoutCreateInfo layoutInfo
 	{
@@ -53,7 +53,7 @@ void VulkanDescriptor::Create(EclipseRHI::IDevice* device)
 	CreateDescriptorPool(&device->API_Vulkan());
 }
 
-void VulkanDescriptor::Destroy(EclipseRHI::IDevice* device)
+void VulkanDescriptor::Destroy(EnigmaRHI::IDevice* device)
 {
 	vkDestroyDescriptorPool(device->API_Vulkan().GetDevice(), descriptorPool, nullptr);
 	vkDestroyDescriptorSetLayout(device->API_Vulkan().GetDevice(), descriptorSetLayout, nullptr);
@@ -82,7 +82,7 @@ void VulkanDescriptor::CreateDescriptorPool(VulkanDevice* device)
 		throw std::runtime_error("failed to create descriptor pool!");
 }
 
-void VulkanDescriptor::CreateDescriptorSets(EclipseRHI::IDevice* device, std::vector<EclipseRHI::IDescriptor::FrameDescriptorInfo> bufferInfos)
+void VulkanDescriptor::CreateDescriptorSets(EnigmaRHI::IDevice* device, std::vector<EnigmaRHI::IDescriptor::FrameDescriptorInfo> bufferInfos)
 {
 	std::vector<VkDescriptorSetLayout> layouts(device->MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
 	 

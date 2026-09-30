@@ -3,7 +3,7 @@
 
 #include "../include/Model.h"
 
-void Model::Create(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool)
+void Model::Create(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool)
 {
 	size_t bufferSize = sizeof(ModelData);
 
@@ -29,7 +29,7 @@ void Model::UpdateDataBuffer(uint32_t currentImage, glm::mat4 translate, glm::ma
 	modelBuffers[currentImage]->CopyData(&ubo, sizeof(ubo));
 }
 
-void Model::Destroy(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device)
+void Model::Destroy(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device)
 {
 	for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -42,18 +42,18 @@ void Model::Destroy(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* devi
 	rhi->DeleteBuffer(indexBuffer);
 }
 
-void Model::Render(EclipseRHI::ICommandBuffer* cmd)
+void Model::Render(EnigmaRHI::ICommandBuffer* cmd)
 {
 	cmd->BindVertexBuffer(vertexBuffer);
 	cmd->BindIndexBuffer(indexBuffer);
 	cmd->DrawIndexed(static_cast<uint32_t>(indices.size()));
 }
 
-void Model::CreateVertexBuffer(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool, std::vector<Vertex> vertices)
+void Model::CreateVertexBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<Vertex> vertices)
 {
 	size_t bufferSize = sizeof(vertices[0]) * vertices.size();
 
-	EclipseRHI::IBuffer* stagingBuffer = rhi->InstantiateBuffer();
+	EnigmaRHI::IBuffer* stagingBuffer = rhi->InstantiateBuffer();
 	vertexBuffer = rhi->InstantiateBuffer();
 
 	stagingBuffer->Create(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -68,11 +68,11 @@ void Model::CreateVertexBuffer(EclipseRHI::IRenderInterface* rhi, EclipseRHI::ID
 	rhi->DeleteBuffer(stagingBuffer);
 }
 
-void Model::CreateIndexBuffer(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool, std::vector<uint32_t> indices)
+void Model::CreateIndexBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<uint32_t> indices)
 {
 	size_t bufferSize = sizeof(indices[0]) * indices.size();
 
-	EclipseRHI::IBuffer* stagingBuffer = rhi->InstantiateBuffer();
+	EnigmaRHI::IBuffer* stagingBuffer = rhi->InstantiateBuffer();
 	indexBuffer = rhi->InstantiateBuffer();
 
 	stagingBuffer->Create(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -94,7 +94,7 @@ void Model::LoadModel(const char* filePath)
 	std::vector<tinyobj::material_t> materials;
 	std::string err, warn;
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath))
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filePath))
 		throw std::runtime_error(err);
 
 	std::unordered_map<Vertex, uint32_t> uniqueVertices{};

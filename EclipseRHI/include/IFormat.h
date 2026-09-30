@@ -1,6 +1,6 @@
 #pragma once
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	enum class ImageFormat
 	{

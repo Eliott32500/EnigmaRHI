@@ -6,7 +6,7 @@
 
 class VulkanSync;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class ISync
 	{

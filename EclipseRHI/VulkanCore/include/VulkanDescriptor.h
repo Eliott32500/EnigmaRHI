@@ -4,22 +4,22 @@
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
 
-class VulkanDescriptor : public EclipseRHI::IDescriptor
+class VulkanDescriptor : public EnigmaRHI::IDescriptor
 {
 public:
 
 	void AddImageBinding(uint32_t binding) override;
-	void AddBufferBinding(uint32_t binding, EclipseRHI::ShaderStage stageFlags) override;
+	void AddBufferBinding(uint32_t binding, EnigmaRHI::ShaderStage stageFlags) override;
 
-	void AddImageInfo(EclipseRHI::IImage* imageInfo) override;
+	void AddImageInfo(EnigmaRHI::IImage* imageInfo) override;
 	void AddBufferInfo(std::vector<VkDescriptorBufferInfo> bufferInfo) { bufferInfos.push_back(bufferInfo); }
 
-	void Create(EclipseRHI::IDevice* device) override;
-	void Destroy(EclipseRHI::IDevice* device) override;
+	void Create(EnigmaRHI::IDevice* device) override;
+	void Destroy(EnigmaRHI::IDevice* device) override;
 
 	void CreateDescriptorPool(VulkanDevice* device);
 
-	void CreateDescriptorSets(EclipseRHI::IDevice* device, std::vector<EclipseRHI::IDescriptor::FrameDescriptorInfo> bufferInfos) override;
+	void CreateDescriptorSets(EnigmaRHI::IDevice* device, std::vector<EnigmaRHI::IDescriptor::FrameDescriptorInfo> bufferInfos) override;
 
 	std::vector<VkDescriptorSet> GetDescriptorSets() { return descriptorSets; }
 	VkDescriptorSetLayout GetDescriptorSetLayout() const { return descriptorSetLayout; }

@@ -1,6 +1,6 @@
 #include "../include/VulkanDevice.h"
 
-void VulkanDevice::Create(EclipseRHI::IInstance* instance, EclipseRHI::ISurface* surface)
+void VulkanDevice::Create(EnigmaRHI::IInstance* instance, EnigmaRHI::ISurface* surface)
 {
 	PickPhysicalDevice(&instance->API_Vulkan(), &surface->API_Vulkan());
 	CreateLogicalDevice(&surface->API_Vulkan());
@@ -198,18 +198,18 @@ uint32_t VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
 	throw std::runtime_error("failed to find suitable memory type!");
 }
 
-EclipseRHI::ImageFormat VulkanDevice::FindDepthFormat()
+EnigmaRHI::ImageFormat VulkanDevice::FindDepthFormat()
 {
 	return FindSupportedFormat(
-		{ EclipseRHI::ImageFormat::D32_SFLOAT, EclipseRHI::ImageFormat::D32_SFLOAT_S8_UINT, EclipseRHI::ImageFormat::D24_UNORM_S8_UINT },
+		{ EnigmaRHI::ImageFormat::D32_SFLOAT, EnigmaRHI::ImageFormat::D32_SFLOAT_S8_UINT, EnigmaRHI::ImageFormat::D24_UNORM_S8_UINT },
 		VK_IMAGE_TILING_OPTIMAL,
 		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 	);
 }
 
-EclipseRHI::ImageFormat VulkanDevice::FindSupportedFormat(const std::vector<EclipseRHI::ImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+EnigmaRHI::ImageFormat VulkanDevice::FindSupportedFormat(const std::vector<EnigmaRHI::ImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
-	for (EclipseRHI::ImageFormat format : candidates)
+	for (EnigmaRHI::ImageFormat format : candidates)
 	{
 		VkFormatProperties props;
 		vkGetPhysicalDeviceFormatProperties(physicalDevice, UtilitiesVulkan::FormatToVulkan(format), &props);

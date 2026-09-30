@@ -4,7 +4,7 @@
 
 class VulkanCommandBuffer;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
     class IDevice;
 	class ICommandPool;
@@ -25,7 +25,7 @@ namespace EclipseRHI
         virtual void BeginDraw(IRenderPass* renderPass, ISwapChain* swapChain, IPipeline* pipeline, uint32_t imageIndex) = 0;
         virtual void EndDraw() = 0;
 
-        virtual void BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, EclipseRHI::ISync* sync) = 0;
+        virtual void BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, EnigmaRHI::ISync* sync) = 0;
         virtual void BindVertexBuffer(IBuffer *buffer) = 0;
         virtual void BindIndexBuffer(IBuffer *buffer) = 0;
 

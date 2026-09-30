@@ -57,7 +57,7 @@ VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap
 	}
 }
 
-void VulkanSwapChain::Create(EclipseRHI::IDevice* device, EclipseRHI::ISurface* surface, EclipseRHI::ICommandPool* commandPool, GLFWwindow* window)
+void VulkanSwapChain::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISurface* surface, EnigmaRHI::ICommandPool* commandPool, GLFWwindow* window)
 {
 	SwapChainSupportDetails swapChainSupport = device->API_Vulkan().QuerySwapChainSupport(device->API_Vulkan().GetPhysicalDevice(), surface->API_Vulkan().GetSurface());
 
@@ -121,7 +121,7 @@ void VulkanSwapChain::Create(EclipseRHI::IDevice* device, EclipseRHI::ISurface* 
 	CreateSwapChainDepthResources(&device->API_Vulkan(), &commandPool->API_Vulkan());
 }
 
-void VulkanSwapChain::Destroy(EclipseRHI::IDevice* device)
+void VulkanSwapChain::Destroy(EnigmaRHI::IDevice* device)
 {
 	vkDestroyImageView(device->API_Vulkan().GetDevice(), depthImageView, nullptr);
 	vkDestroyImage(device->API_Vulkan().GetDevice(), depthImage, nullptr);

@@ -1,7 +1,7 @@
 #include "../include/VulkanImage.h"
 #include "../include/VulkanUtilities.h"
 
-void VulkanImage::Create(EclipseRHI::IDevice* device, uint32_t width, uint32_t height, EclipseRHI::ImageFormat format, bool isTexture)
+void VulkanImage::Create(EnigmaRHI::IDevice* device, uint32_t width, uint32_t height, EnigmaRHI::ImageFormat format, bool isTexture)
 {
 	VkImageUsageFlags usage = 0;
 
@@ -47,7 +47,7 @@ void VulkanImage::Create(EclipseRHI::IDevice* device, uint32_t width, uint32_t h
 	vkBindImageMemory(device->API_Vulkan().GetDevice(), image, memory, 0);
 }
 
-void VulkanImage::CreateTextureImage(const void* textureData, EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool, uint32_t width, uint32_t height, EclipseRHI::ImageFormat format)
+void VulkanImage::CreateTextureImage(const void* textureData, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, uint32_t width, uint32_t height, EnigmaRHI::ImageFormat format)
 {
 	VkDeviceSize imageSize = width * height * 4;
 	VulkanBuffer stagingBuffer;
@@ -247,7 +247,7 @@ void VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* comman
 	commandPool->EndSingleTimeCommands(device, commandBuffer);
 }
 
-void VulkanImage::Destroy(EclipseRHI::IDevice* device)
+void VulkanImage::Destroy(EnigmaRHI::IDevice* device)
 {
 	if (sampler != VK_NULL_HANDLE)
 		vkDestroySampler(device->API_Vulkan().GetDevice(), sampler, nullptr);

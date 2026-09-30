@@ -6,7 +6,7 @@
 
 class VulkanCommandPool;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class ICommandPool
 	{

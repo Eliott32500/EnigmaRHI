@@ -1,6 +1,6 @@
 #include "../include/VulkanSync.h"
 
-void VulkanSync::Create(EclipseRHI::IDevice* device)
+void VulkanSync::Create(EnigmaRHI::IDevice* device)
 {
 	imageAvailableSemaphores.resize(device->MAX_FRAMES_IN_FLIGHT);
 	renderFinishedSemaphores.resize(device->MAX_FRAMES_IN_FLIGHT);
@@ -28,7 +28,7 @@ void VulkanSync::Create(EclipseRHI::IDevice* device)
 	}
 }
 
-void VulkanSync::Destroy(EclipseRHI::IDevice* device)
+void VulkanSync::Destroy(EnigmaRHI::IDevice* device)
 {
 	for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -38,7 +38,7 @@ void VulkanSync::Destroy(EclipseRHI::IDevice* device)
 	}
 }
 
-void VulkanSync::AquireNextImage(EclipseRHI::IDevice* device, EclipseRHI::ISwapChain* swapChain, EclipseRHI::ICommandPool* commandPool, EclipseRHI::ISurface* surface, EclipseRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
+void VulkanSync::AquireNextImage(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ICommandPool* commandPool, EnigmaRHI::ISurface* surface, EnigmaRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
 {
 	vkWaitForFences(device->API_Vulkan().GetDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -59,7 +59,7 @@ void VulkanSync::AquireNextImage(EclipseRHI::IDevice* device, EclipseRHI::ISwapC
 	vkResetFences(device->API_Vulkan().GetDevice(), 1, &inFlightFences[currentFrame]);
 }
 
-void VulkanSync::PresentFrame(EclipseRHI::IDevice* device, EclipseRHI::ISwapChain* swapChain, EclipseRHI::ICommandPool* commandPool, EclipseRHI::ISurface* surface, EclipseRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
+void VulkanSync::PresentFrame(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ICommandPool* commandPool, EnigmaRHI::ISurface* surface, EnigmaRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
 {
 	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };

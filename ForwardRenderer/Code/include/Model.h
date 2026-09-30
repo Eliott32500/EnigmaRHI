@@ -7,9 +7,9 @@
 #include <chrono>
 #include <memory>
 
-#include "../../../EclipseRHI/include/Vertex.h"
-#include "../../../EclipseRHI/include/IBuffer.h"
-#include "../../../EclipseRHI/include/IRenderInterface.h"
+#include "Vertex.h"
+#include "IBuffer.h"
+#include "IRenderInterface.h"
 
 struct ModelData
 {
@@ -23,25 +23,25 @@ public:
 	Model() = default;
 
 	void LoadModel(const char* filePath);
-	void Create(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool);
+	void Create(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool);
 	void UpdateDataBuffer(uint32_t currentImage, glm::mat4 translate, glm::mat4 rotate, glm::mat4 scale);
-	void Destroy(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device);
-	void Render(EclipseRHI::ICommandBuffer* cmd);
+	void Destroy(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device);
+	void Render(EnigmaRHI::ICommandBuffer* cmd);
 
-	std::vector<EclipseRHI::IBuffer*> GetModelBuffers() {return modelBuffers; }
-	EclipseRHI::IBuffer* GetVertexBuffer() const { return vertexBuffer; };
-	EclipseRHI::IBuffer* GetIndexBuffer() const { return indexBuffer; };
+	std::vector<EnigmaRHI::IBuffer*> GetModelBuffers() {return modelBuffers; }
+	EnigmaRHI::IBuffer* GetVertexBuffer() const { return vertexBuffer; };
+	EnigmaRHI::IBuffer* GetIndexBuffer() const { return indexBuffer; };
 
 private:
 
-	void CreateVertexBuffer(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool, std::vector<Vertex> vertices);
-	void CreateIndexBuffer(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool, std::vector<uint32_t> indices);
+	void CreateVertexBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<Vertex> vertices);
+	void CreateIndexBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<uint32_t> indices);
 
-	EclipseRHI::IBuffer* vertexBuffer = nullptr;
-	EclipseRHI::IBuffer* indexBuffer = nullptr;
+	EnigmaRHI::IBuffer* vertexBuffer = nullptr;
+	EnigmaRHI::IBuffer* indexBuffer = nullptr;
 
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
 
-	std::vector<EclipseRHI::IBuffer*> modelBuffers;
+	std::vector<EnigmaRHI::IBuffer*> modelBuffers;
 };

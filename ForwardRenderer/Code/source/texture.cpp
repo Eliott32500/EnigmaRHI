@@ -9,7 +9,7 @@ void Texture::LoadTexture(const char* filePath)
 
 	switch (channels)
 	{
-	case 3: imageFormat = EclipseRHI::ImageFormat::sRGBA8;
+	case 3: imageFormat = EnigmaRHI::ImageFormat::sRGBA8;
 		break;
 	}
 

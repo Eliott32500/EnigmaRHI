@@ -1,6 +1,6 @@
 #include "../include/VulkanCommandPool.h"
 
-void VulkanCommandPool::Create(EclipseRHI::IDevice* device, EclipseRHI::ISurface* surface)
+void VulkanCommandPool::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISurface* surface)
 {
 	CreateCommandPool(&device->API_Vulkan(), surface->API_Vulkan().GetSurface());
 	commandBuffers = CreateCommandBuffer(&device->API_Vulkan(), device->MAX_FRAMES_IN_FLIGHT);
@@ -74,7 +74,7 @@ void VulkanCommandPool::EndSingleTimeCommands(VulkanDevice* device, VkCommandBuf
 	vkFreeCommandBuffers(device->GetDevice(), commandPool, 1, &commandBuffer);
 }
 
-void VulkanCommandPool::Destroy(EclipseRHI::IDevice* device)
+void VulkanCommandPool::Destroy(EnigmaRHI::IDevice* device)
 {
 	vkDestroyCommandPool(device->API_Vulkan().GetDevice(), commandPool, nullptr);
 }

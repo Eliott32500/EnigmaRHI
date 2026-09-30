@@ -10,7 +10,7 @@
 
 class VulkanSurface;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class ISurface
 	{

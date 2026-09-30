@@ -4,11 +4,11 @@
 #include "VulkanInstance.h"
 #include "../../include/ISurface.h"
 
-class VulkanSurface : public EclipseRHI::ISurface
+class VulkanSurface : public EnigmaRHI::ISurface
 {
 public:
-	void Create(EclipseRHI::IInstance* instance, GLFWwindow* mainWindow) override;
-	void Destroy(EclipseRHI::IInstance* instance) override;
+	void Create(EnigmaRHI::IInstance* instance, GLFWwindow* mainWindow) override;
+	void Destroy(EnigmaRHI::IInstance* instance) override;
 
 	VkSurfaceKHR GetSurface() const { return surface; }
 

@@ -9,7 +9,7 @@
 
 class VulkanSwapChain;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class ISwapChain
 	{

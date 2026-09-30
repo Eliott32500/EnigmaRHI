@@ -3,19 +3,19 @@
 #include "VulkanBuffer.h"
 #include "../../include/IImage.h"
 
-class VulkanImage : public EclipseRHI::IImage
+class VulkanImage : public EnigmaRHI::IImage
 {
 public:
 
-    void Create(EclipseRHI::IDevice* device, 
+    void Create(EnigmaRHI::IDevice* device, 
         uint32_t width, uint32_t height,
-        EclipseRHI::ImageFormat format,
+        EnigmaRHI::ImageFormat format,
 		bool isTexture = false
     ) override;
 
-    void CreateTextureImage(const void* data, EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool, 
+    void CreateTextureImage(const void* data, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, 
         uint32_t width, uint32_t height, 
-        EclipseRHI::ImageFormat format
+        EnigmaRHI::ImageFormat format
 	) override;
 
     void CreateView(VulkanDevice* device, VkImage image, VkFormat format, VkImageAspectFlags aspect);
@@ -35,7 +35,7 @@ public:
 
     void SetImage(VkImage img) { image = img; }
 
-    void Destroy(EclipseRHI::IDevice* device) override;
+    void Destroy(EnigmaRHI::IDevice* device) override;
 
 	VulkanImage& API_Vulkan() override { return (*this); }
 

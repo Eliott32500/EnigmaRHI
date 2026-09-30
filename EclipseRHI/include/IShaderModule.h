@@ -6,7 +6,7 @@
 
 class VulkanShaderModule;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class IShaderModule
 	{

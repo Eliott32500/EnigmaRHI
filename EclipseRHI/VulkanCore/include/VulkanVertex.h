@@ -1,4 +1,4 @@
-#include "../../../EclipseRHI/include/Vertex.h"
+#include "Vertex.h"
 #include <array>
 #include "vulkan/vulkan.h"
 

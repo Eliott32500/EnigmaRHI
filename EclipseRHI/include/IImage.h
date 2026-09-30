@@ -7,7 +7,7 @@
 
 class VulkanImage;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class IImage
 	{

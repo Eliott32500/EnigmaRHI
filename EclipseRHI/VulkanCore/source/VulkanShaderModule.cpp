@@ -1,6 +1,6 @@
 #include "../include/VulkanShaderModule.h"
 
-void VulkanShaderModule::Create(EclipseRHI::IDevice* device, const std::string& filename)
+void VulkanShaderModule::Create(EnigmaRHI::IDevice* device, const std::string& filename)
 {
 	code = ReadShader(filename);
 	module = CreateShaderModule(device->API_Vulkan().GetDevice());

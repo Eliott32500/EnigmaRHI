@@ -6,7 +6,7 @@
 
 class VulkanDevice;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class IDevice
 	{

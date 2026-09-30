@@ -1,16 +1,16 @@
-# 🖼️ EclipseRHI
+# 🖼️ EnigmaRHI
 
 ## 📍Description
 
-**EclipseRHI** is a rendering hardware abstraction layer designed to simplify the usage of low-level graphics APIs such as Vulkan.
+**EnigmaRHI** is a rendering hardware abstraction layer designed to simplify the usage of low-level graphics APIs such as Vulkan.
 
 ## 🎯 Goals 
 
 - **Abstraction of low-level graphics APIs**  
-  Applications interact with EclipseRHI instead of Vulkan or another rendering API.
+  Applications interact with EnigmaRHI instead of Vulkan or another rendering API.
 
 - **Reduce Vulkan boilerplate**  
-  EclipseRHI simplifies most object creations into compact calls.
+  EnigmaRHI simplifies most object creations into compact calls.
 
 - **Extensibility**  
   Additional backends (e.g., DirectX12, Metal, WebGPU) can be added without changing client code.
@@ -27,7 +27,7 @@
 
 ## 🧩 Entities
 
-| EclipseRHI                       | Vulkan                        |
+| EnigmaRHI                       | Vulkan                        |
 |----------------------------------|-------------------------------|
 | `IBuffer`                        | `VulkanBuffer`                |
 | `ICommandBuffer`                 | `VulkanCommandBuffer`         |
@@ -51,7 +51,7 @@
 **Create Render Interface :**
 
 ````cpp
-	EclipseRHI::IRenderInterface* rhi = EclipseRHI::IRenderInterface::CreateRenderInterface(EclipseRHI::ERenderAPI::Vulkan);
+	EnigmaRHI::IRenderInterface* rhi = EnigmaRHI::IRenderInterface::CreateRenderInterface(EnigmaRHI::ERenderAPI::Vulkan);
 ````
 
 **Create an object :**

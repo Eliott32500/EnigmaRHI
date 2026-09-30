@@ -5,18 +5,18 @@
 
 #include <array>
 
-class VulkanCommandBuffer : public EclipseRHI::ICommandBuffer
+class VulkanCommandBuffer : public EnigmaRHI::ICommandBuffer
 {
 public:
 
-    void Create(EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool) override;
+    void Create(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool) override;
 
-    void BeginDraw(EclipseRHI::IRenderPass* renderPass, EclipseRHI::ISwapChain* swapChain, EclipseRHI::IPipeline* pipeline, uint32_t imageIndex) override;
+    void BeginDraw(EnigmaRHI::IRenderPass* renderPass, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::IPipeline* pipeline, uint32_t imageIndex) override;
     void EndDraw() override;
 
-    void BindDescriptorSet(EclipseRHI::IPipeline* pipeline, EclipseRHI::IDescriptor* descriptor, EclipseRHI::ISync* sync) override;
-    void BindVertexBuffer(EclipseRHI::IBuffer* buffer) override;
-    void BindIndexBuffer(EclipseRHI::IBuffer* buffer) override;
+    void BindDescriptorSet(EnigmaRHI::IPipeline* pipeline, EnigmaRHI::IDescriptor* descriptor, EnigmaRHI::ISync* sync) override;
+    void BindVertexBuffer(EnigmaRHI::IBuffer* buffer) override;
+    void BindIndexBuffer(EnigmaRHI::IBuffer* buffer) override;
 
     void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1) override;
 

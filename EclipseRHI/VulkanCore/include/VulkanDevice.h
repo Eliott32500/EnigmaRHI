@@ -30,13 +30,13 @@ struct SwapChainSupportDetails
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-class VulkanDevice : public EclipseRHI::IDevice
+class VulkanDevice : public EnigmaRHI::IDevice
 {
 public:
 
     VulkanDevice() = default;
 
-    void Create(EclipseRHI::IInstance* instance, EclipseRHI::ISurface* surface) override;
+    void Create(EnigmaRHI::IInstance* instance, EnigmaRHI::ISurface* surface) override;
 	void Destroy() override;
 
     void CreateLogicalDevice(VulkanSurface* surface);
@@ -45,8 +45,8 @@ public:
 
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
-    EclipseRHI::ImageFormat FindDepthFormat() override;
-    EclipseRHI::ImageFormat FindSupportedFormat(const std::vector<EclipseRHI::ImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+    EnigmaRHI::ImageFormat FindDepthFormat() override;
+    EnigmaRHI::ImageFormat FindSupportedFormat(const std::vector<EnigmaRHI::ImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     bool HasStencilComponent(VkFormat format);
 
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const;

@@ -15,14 +15,14 @@ void Application::InitWindow()
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-	mainWindow = glfwCreateWindow(WIDTH, HEIGHT, "EclipseRHI", nullptr, nullptr);
+	mainWindow = glfwCreateWindow(WIDTH, HEIGHT, "EnigmaRHI", nullptr, nullptr);
 	glfwSetWindowUserPointer(mainWindow, this);
 	glfwSetCursorPosCallback(mainWindow, InputManager::MouseCallback);
 }
 
 void Application::InitAPI()
 {
-	rhi = EclipseRHI::IRenderInterface::CreateRenderInterface(EclipseRHI::ERenderAPI::Vulkan);
+	rhi = EnigmaRHI::IRenderInterface::CreateRenderInterface(EnigmaRHI::ERenderAPI::Vulkan);
 
 	instance = rhi->InstantiateInstance();
 	surface = rhi->InstantiateSurface();
@@ -36,15 +36,27 @@ void Application::InitAPI()
 	vertShader = rhi->InstantiateShaderModule();
 	fragShader = rhi->InstantiateShaderModule();
 
-	instance->Create();
+	uint32_t glfwExtensionCount = 0;
+	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);;
+
+	EnigmaRHI::InstanceCreateInfo instanceInfo
+	{
+		.extensions = std::vector<const char*>(glfwExtensions, glfwExtensions + glfwExtensionCount),
+		.applicationName = "EnigmaRHI",
+		.engineName = "EnigmaEngine",
+		.applicationVersion = 1,
+		.engineVersion = 1,
+	};
+
+	instance->Create(instanceInfo);
 	surface->Create(instance, mainWindow);
 	device->Create(instance, surface);
 	commandPool->Create(device, surface);
 	swapChain->Create(device, surface, commandPool, mainWindow);
 	renderPass->Create(device, swapChain, device->FindDepthFormat());
 
-	descriptor->AddBufferBinding( 0, EclipseRHI::ShaderStage::Vertex );
-	descriptor->AddBufferBinding( 1, EclipseRHI::ShaderStage::Vertex );
+	descriptor->AddBufferBinding( 0, EnigmaRHI::ShaderStage::Vertex );
+	descriptor->AddBufferBinding( 1, EnigmaRHI::ShaderStage::Vertex );
 	descriptor->AddImageBinding(2);
 	descriptor->Create(device);
 
@@ -69,7 +81,7 @@ void Application::InitAPI()
 
 	descriptor->AddImageInfo(roomTexture);
 
-	std::vector<EclipseRHI::IDescriptor::FrameDescriptorInfo> perFrameDescriptors;
+	std::vector<EnigmaRHI::IDescriptor::FrameDescriptorInfo> perFrameDescriptors;
 	perFrameDescriptors.resize(device->MAX_FRAMES_IN_FLIGHT);
 
 	for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
@@ -142,7 +154,7 @@ void Application::DrawFrame()
 	
 	model->UpdateDataBuffer(syncronizer->GetCurrentFrame(), translate, rotate, scale);
 	
-	EclipseRHI::ICommandBuffer* cmd = commandPool->GetCommandBuffer(syncronizer->GetCurrentFrame());
+	EnigmaRHI::ICommandBuffer* cmd = commandPool->GetCommandBuffer(syncronizer->GetCurrentFrame());
 	
 	cmd->BeginDraw(renderPass, swapChain, pipeline, imageIndex);
 	cmd->BindDescriptorSet(pipeline, descriptor, syncronizer);

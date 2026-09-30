@@ -6,15 +6,15 @@
 #include "VulkanDevice.h"
 #include "VulkanRenderPass.h"
 
-class VulkanSync : public EclipseRHI::ISync
+class VulkanSync : public EnigmaRHI::ISync
 {
 public:
 
-	void Create(EclipseRHI::IDevice* device) override;
-	void Destroy(EclipseRHI::IDevice* device) override;
+	void Create(EnigmaRHI::IDevice* device) override;
+	void Destroy(EnigmaRHI::IDevice* device) override;
 
-	void AquireNextImage(EclipseRHI::IDevice* device, EclipseRHI::ISwapChain* swapChain, EclipseRHI::ICommandPool* commandPool, EclipseRHI::ISurface* surface, EclipseRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex) override;
-	void PresentFrame(EclipseRHI::IDevice* device, EclipseRHI::ISwapChain* swapChain, EclipseRHI::ICommandPool* commandPool, EclipseRHI::ISurface* surface, EclipseRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex) override;
+	void AquireNextImage(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ICommandPool* commandPool, EnigmaRHI::ISurface* surface, EnigmaRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex) override;
+	void PresentFrame(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ICommandPool* commandPool, EnigmaRHI::ISurface* surface, EnigmaRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex) override;
 
 	VulkanSync& API_Vulkan() override { return (*this); }
 

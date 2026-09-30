@@ -2,7 +2,7 @@
 #include "../include/VulkanUtilities.h"
 
 
-void VulkanRenderPass::Create(EclipseRHI::IDevice* device, EclipseRHI::ISwapChain* swapChain, EclipseRHI::ImageFormat depthFormat)
+void VulkanRenderPass::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ImageFormat depthFormat)
 {
 	VkAttachmentDescription colorAttachment
 	{
@@ -98,7 +98,7 @@ void VulkanRenderPass::Create(EclipseRHI::IDevice* device, EclipseRHI::ISwapChai
 	swapChain->API_Vulkan().CreateSwapChainFramebuffers(&device->API_Vulkan(), renderPass);
 }
 
-void VulkanRenderPass::Destroy(EclipseRHI::IDevice* device)
+void VulkanRenderPass::Destroy(EnigmaRHI::IDevice* device)
 {
 	vkDestroyRenderPass(device->API_Vulkan().GetDevice(), renderPass, nullptr);
 }

@@ -5,12 +5,12 @@
 #include "VulkanImage.h"
 #include <cstdint>
 
-class VulkanSwapChain : public EclipseRHI::ISwapChain
+class VulkanSwapChain : public EnigmaRHI::ISwapChain
 {
 public:
 
-	void Create(EclipseRHI::IDevice* device, EclipseRHI::ISurface* surface, EclipseRHI::ICommandPool* commandPool, GLFWwindow* window) override;
-	void Destroy(EclipseRHI::IDevice* device) override;
+	void Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISurface* surface, EnigmaRHI::ICommandPool* commandPool, GLFWwindow* window) override;
+	void Destroy(EnigmaRHI::IDevice* device) override;
 
 	void RecreateSwapChain(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanSurface* surface, VkRenderPass renderPass, GLFWwindow* window);
 	void CreateImageViews(VulkanDevice* device);
@@ -19,7 +19,7 @@ public:
 
 	VkExtent2D GetSwapChainExtent() const { return swapChainExtent; };
 
-	EclipseRHI::ImageFormat GetSwapChainImageFormat() override { return swapChainImageFormat; };
+	EnigmaRHI::ImageFormat GetSwapChainImageFormat() override { return swapChainImageFormat; };
 
 	VkSwapchainKHR GetSwapChain() const { return swapChain; };
 	std::vector<VkFramebuffer> GetSwapChainFramebuffers() const { return swapChainFramebuffers; };
@@ -34,7 +34,7 @@ private:
 
 	VkSwapchainKHR swapChain;
 
-	EclipseRHI::ImageFormat swapChainImageFormat;
+	EnigmaRHI::ImageFormat swapChainImageFormat;
 
 	VkExtent2D swapChainExtent;
 

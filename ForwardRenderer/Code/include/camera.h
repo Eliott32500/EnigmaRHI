@@ -1,8 +1,8 @@
 #pragma once
 
 #include "InputManager.h"
-#include "../../../EclipseRHI/include/IBuffer.h"
-#include "../../../EclipseRHI/include/IRenderInterface.h"
+#include "IBuffer.h"
+#include "IRenderInterface.h"
 
 struct CameraData
 {
@@ -14,18 +14,18 @@ class Camera
 public:
 
 	Camera(float width, float height);
-	void CreateCameraDataBuffer(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* vulkanDevice);
+	void CreateCameraDataBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* vulkanDevice);
 	void SetCamera(float fov, float aspectRatio, float zNear, float zFar, glm::vec3 _position);
 	void GetInputs(GLFWwindow* window);
 	void MouseCallback(GLFWwindow* window);
 	void UpdateCameraDataBuffer(uint32_t currentImage, float width, float height, GLFWwindow* mainWindow);
-	void Destroy(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device);
+	void Destroy(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device);
 
-	std::vector<EclipseRHI::IBuffer*> GetCameraDataBuffers() { return cameraDataBuffers; }
+	std::vector<EnigmaRHI::IBuffer*> GetCameraDataBuffers() { return cameraDataBuffers; }
 
 private:
 
-	std::vector<EclipseRHI::IBuffer*> cameraDataBuffers;
+	std::vector<EnigmaRHI::IBuffer*> cameraDataBuffers;
 	float width,height;
 
 	glm::mat4 projection;

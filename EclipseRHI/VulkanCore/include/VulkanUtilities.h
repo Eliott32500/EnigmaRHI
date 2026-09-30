@@ -5,7 +5,7 @@
 
 struct UtilitiesVulkan
 {
-	static VkFormat FormatToVulkan(EclipseRHI::ImageFormat format);
-	static VkShaderStageFlags ShaderStageToVulkan(EclipseRHI::ShaderStage stage);
-	static EclipseRHI::ImageFormat FormatFromVulkan(VkFormat format);
+	static VkFormat FormatToVulkan(EnigmaRHI::ImageFormat format);
+	static VkShaderStageFlags ShaderStageToVulkan(EnigmaRHI::ShaderStage stage);
+	static EnigmaRHI::ImageFormat FormatFromVulkan(VkFormat format);
 };

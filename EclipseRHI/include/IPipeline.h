@@ -9,7 +9,7 @@
 
 class VulkanPipeline;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class IPipeline
 	{

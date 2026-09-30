@@ -9,7 +9,7 @@
 
 class VulkanBuffer;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	class IBuffer
 	{

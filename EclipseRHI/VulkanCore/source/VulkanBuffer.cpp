@@ -1,6 +1,6 @@
 #include "../include/VulkanBuffer.h"
 
-void VulkanBuffer::Create(EclipseRHI::IDevice* device, size_t size, uint32_t usage,size_t properties)
+void VulkanBuffer::Create(EnigmaRHI::IDevice* device, size_t size, uint32_t usage,size_t properties)
 {
 	VkBufferCreateInfo bufferInfo
 	{
@@ -36,7 +36,7 @@ void VulkanBuffer::CreateDescriptorBufferInfo()
 	bufferInfo.range = sizeof(this);
 }
 
-void VulkanBuffer::CopyBuffer(EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool, EclipseRHI::IBuffer* dstBuffer, size_t size)
+void VulkanBuffer::CopyBuffer(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, EnigmaRHI::IBuffer* dstBuffer, size_t size)
 {
 	VkCommandBuffer commandBuffer = commandPool->API_Vulkan().BeginSingleTimeCommands(&device->API_Vulkan());
 
@@ -47,20 +47,20 @@ void VulkanBuffer::CopyBuffer(EclipseRHI::IDevice* device, EclipseRHI::ICommandP
 	commandPool->API_Vulkan().EndSingleTimeCommands(&device->API_Vulkan(), commandBuffer);
 }
 
-void VulkanBuffer::UploadData(EclipseRHI::IDevice* device, size_t offset, size_t size, const void* src, uint32_t flags)
+void VulkanBuffer::UploadData(EnigmaRHI::IDevice* device, size_t offset, size_t size, const void* src, uint32_t flags)
 {
 	MapMemory(device, offset, size, flags);
 	CopyData(src, size);
 	UnMapMemory(device);
 }
 
-void VulkanBuffer::Destroy(EclipseRHI::IDevice* device)
+void VulkanBuffer::Destroy(EnigmaRHI::IDevice* device)
 {
 	vkDestroyBuffer(device->API_Vulkan().GetDevice(), buffer, nullptr);
 	vkFreeMemory(device->API_Vulkan().GetDevice(), bufferMemory, nullptr);
 }
 
-void VulkanBuffer::MapMemory(EclipseRHI::IDevice* device, size_t offset, size_t size, uint32_t flags)
+void VulkanBuffer::MapMemory(EnigmaRHI::IDevice* device, size_t offset, size_t size, uint32_t flags)
 {
 	vkMapMemory(device->API_Vulkan().GetDevice(), bufferMemory, offset, size, flags, &data);
 }
@@ -70,7 +70,7 @@ void VulkanBuffer::CopyData(const void* src, size_t size)
 	memcpy(data, src, size);
 }
 
-void VulkanBuffer::UnMapMemory(EclipseRHI::IDevice* device)
+void VulkanBuffer::UnMapMemory(EnigmaRHI::IDevice* device)
 {
 	vkUnmapMemory(device->API_Vulkan().GetDevice(), bufferMemory);
 }

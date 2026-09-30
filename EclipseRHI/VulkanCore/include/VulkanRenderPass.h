@@ -5,12 +5,12 @@
 #include "../include/VulkanSwapChain.h"
 #include <array>
 
-class VulkanRenderPass : public EclipseRHI::IRenderPass
+class VulkanRenderPass : public EnigmaRHI::IRenderPass
 {
 public:
 
-	void Create(EclipseRHI::IDevice* device, EclipseRHI::ISwapChain* swapChain, EclipseRHI::ImageFormat depthFormat) override;
-	void Destroy(EclipseRHI::IDevice* device) override;
+	void Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ImageFormat depthFormat) override;
+	void Destroy(EnigmaRHI::IDevice* device) override;
 
 	VkRenderPass GetRenderPass() const { return renderPass; }
 

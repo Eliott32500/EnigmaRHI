@@ -25,20 +25,20 @@ public:
 
 private:
 
-	EclipseRHI::IRenderInterface* rhi;
+	EnigmaRHI::IRenderInterface* rhi;
 
-	EclipseRHI::IInstance* instance;
-	EclipseRHI::IDevice* device;
-	EclipseRHI::ISwapChain* swapChain;
-	EclipseRHI::ICommandPool* commandPool;
-	EclipseRHI::IImage* roomTexture;
-	EclipseRHI::IDescriptor* descriptor;
-	EclipseRHI::IPipeline* pipeline;
-	EclipseRHI::ISurface* surface;
-	EclipseRHI::IRenderPass* renderPass;
-	EclipseRHI::ISync* syncronizer;
-	EclipseRHI::IShaderModule* vertShader;
-	EclipseRHI::IShaderModule* fragShader;
+	EnigmaRHI::IInstance* instance;
+	EnigmaRHI::IDevice* device;
+	EnigmaRHI::ISwapChain* swapChain;
+	EnigmaRHI::ICommandPool* commandPool;
+	EnigmaRHI::IImage* roomTexture;
+	EnigmaRHI::IDescriptor* descriptor;
+	EnigmaRHI::IPipeline* pipeline;
+	EnigmaRHI::ISurface* surface;
+	EnigmaRHI::IRenderPass* renderPass;
+	EnigmaRHI::ISync* syncronizer;
+	EnigmaRHI::IShaderModule* vertShader;
+	EnigmaRHI::IShaderModule* fragShader;
 
 	Camera* cam;
 	Model* model;

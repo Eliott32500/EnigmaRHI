@@ -6,7 +6,7 @@ Camera::Camera(float width, float height)
     SetCamera(45.f, width / height, 0.1f, 100.f, glm::vec3(-1.f, 2.4f, 1.4f));
 }
 
-void Camera::CreateCameraDataBuffer(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* vulkanDevice)
+void Camera::CreateCameraDataBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* vulkanDevice)
 {
 	VkDeviceSize bufferSize = sizeof(CameraData);
 
@@ -138,7 +138,7 @@ void Camera::MouseCallback(GLFWwindow* window)
     }
 }
 
-void Camera::Destroy(EclipseRHI::IRenderInterface* rhi, EclipseRHI::IDevice* device)
+void Camera::Destroy(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device)
 {
     for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
     {

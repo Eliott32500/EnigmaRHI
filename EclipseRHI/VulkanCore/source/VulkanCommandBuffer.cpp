@@ -4,7 +4,7 @@
 
 #include "../../include/ISync.h"
 
-void VulkanCommandBuffer::Create(EclipseRHI::IDevice* device, EclipseRHI::ICommandPool* commandPool)
+void VulkanCommandBuffer::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool)
 {
 	VkCommandBufferAllocateInfo allocInfo
 	{
@@ -18,7 +18,7 @@ void VulkanCommandBuffer::Create(EclipseRHI::IDevice* device, EclipseRHI::IComma
 		throw std::runtime_error("failed to allocate command buffers!");
 }
 
-void VulkanCommandBuffer::BeginDraw(EclipseRHI::IRenderPass* renderPass, EclipseRHI::ISwapChain* swapChain, EclipseRHI::IPipeline* pipeline, uint32_t imageIndex)
+void VulkanCommandBuffer::BeginDraw(EnigmaRHI::IRenderPass* renderPass, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::IPipeline* pipeline, uint32_t imageIndex)
 {
 	vkResetCommandBuffer(commandBuffer, 0);
 
@@ -81,19 +81,19 @@ void VulkanCommandBuffer::EndDraw()
 }
 
 
-void VulkanCommandBuffer::BindDescriptorSet(EclipseRHI::IPipeline* pipeline, EclipseRHI::IDescriptor* descriptor, EclipseRHI::ISync* sync)
+void VulkanCommandBuffer::BindDescriptorSet(EnigmaRHI::IPipeline* pipeline, EnigmaRHI::IDescriptor* descriptor, EnigmaRHI::ISync* sync)
 {
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetPipelineLayout(), 0, 1, &descriptor->API_Vulkan().GetDescriptorSets()[sync->GetCurrentFrame()], 0, nullptr);
 }
 
-void VulkanCommandBuffer::BindVertexBuffer(EclipseRHI::IBuffer* buffer)
+void VulkanCommandBuffer::BindVertexBuffer(EnigmaRHI::IBuffer* buffer)
 {
 	VkBuffer vertexBuffers[] = { buffer->API_Vulkan().GetBuffer()};
 	VkDeviceSize offsets[] = { buffer->API_Vulkan().bufferInfo.offset};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 }
 
-void VulkanCommandBuffer::BindIndexBuffer(EclipseRHI::IBuffer* buffer)
+void VulkanCommandBuffer::BindIndexBuffer(EnigmaRHI::IBuffer* buffer)
 {
 	vkCmdBindIndexBuffer(commandBuffer, buffer->API_Vulkan().GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 }
