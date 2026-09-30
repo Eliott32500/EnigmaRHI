@@ -15,7 +15,7 @@
 
 class VulkanRenderInterface;
 
-namespace EclipseRHI
+namespace EnigmaRHI
 {
 	enum ERenderAPI
 	{
@@ -28,7 +28,7 @@ namespace EclipseRHI
 	{
 	public:
 
-		~IRenderInterface() = default;
+		virtual ~IRenderInterface() = default;
 
 		static IRenderInterface* CreateRenderInterface(ERenderAPI api);
 

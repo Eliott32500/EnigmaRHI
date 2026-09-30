@@ -1,21 +1,22 @@
-#include "../include/VulkanInstance.h"
+#include "VulkanInstance.h"
+#include <string>
 
-void VulkanInstance::Create()
+void VulkanInstance::Create(EnigmaRHI::InstanceCreateInfo instanceInfo)
 {
-	volkInitialize();
-
 	if (enableValidationLayers && !CheckValidationLayerSupport()) {
 		throw std::runtime_error("validation layers requested, but not available!");
 	}
 
+	CheckSupportedVersion();
+
 	VkApplicationInfo appInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-		.pApplicationName = "VulkanTest",
-		.applicationVersion = VK_MAKE_VERSION(1, 0, 0),
-		.pEngineName = "No Engine",
-		.engineVersion = VK_MAKE_VERSION(1, 0, 0),
-		.apiVersion = VK_API_VERSION_1_0
+		.pApplicationName = instanceInfo.applicationName,
+		.applicationVersion = instanceInfo.applicationVersion,
+		.pEngineName = instanceInfo.engineName,
+		.engineVersion = instanceInfo.engineVersion,
+		.apiVersion = RequiredVulkanVersion
 	};
 
 	VkInstanceCreateInfo createInfo{
@@ -24,11 +25,13 @@ void VulkanInstance::Create()
 	};
 
 
-	auto extensions = GetRequiredExtensions();
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-	createInfo.ppEnabledExtensionNames = extensions.data();
+	if (enableValidationLayers)
+		instanceInfo.extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(instanceInfo.extensions.size());
+	createInfo.ppEnabledExtensionNames = instanceInfo.extensions.data();
 
 	if (enableValidationLayers)
 	{
@@ -58,22 +61,29 @@ void VulkanInstance::Destroy()
 		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 
 	vkDestroyInstance(instance, nullptr);
-	volkFinalize();
 }
 
-std::vector<const char*> VulkanInstance::GetRequiredExtensions()
+void VulkanInstance::CheckSupportedVersion()
 {
-	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions;
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+	uint32_t supportedVersion = VK_API_VERSION_1_0;
 
-	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	if (vkEnumerateInstanceVersion)
+		vkEnumerateInstanceVersion(&supportedVersion);
 
-	if (enableValidationLayers) {
-		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	if (supportedVersion < RequiredVulkanVersion)
+	{
+		uint32_t major = VK_API_VERSION_MAJOR(RequiredVulkanVersion);
+		uint32_t minor = VK_API_VERSION_MINOR(RequiredVulkanVersion);
+		uint32_t patch = VK_API_VERSION_PATCH(RequiredVulkanVersion);
+
+		throw std::runtime_error(
+			"Vulkan " +
+			std::to_string(major) + "." +
+			std::to_string(minor) + "." +
+			std::to_string(patch) +
+			" is required"
+		);
 	}
-
-	return extensions;
 }
 
 bool VulkanInstance::CheckValidationLayerSupport()

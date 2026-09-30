@@ -12,18 +12,15 @@
 #include <vector>
 #include <iostream>
 
-#include "../../include/IInstance.h"
+#include "IInstance.h"
 
-// Ajout du forward declaration pour VulkanSurface
-//class VulkanSurface;
-
-class VulkanInstance : public EclipseRHI::IInstance
+class VulkanInstance : public EnigmaRHI::IInstance
 {
 public:
 
 	VulkanInstance() = default;
 
-	void Create() override;
+	void Create(EnigmaRHI::InstanceCreateInfo instanceInfo) override;
 	void Destroy() override;
 
 	void CreateDebugMessenger();
@@ -38,21 +35,16 @@ private:
 
 	VkInstance instance{};
 
-	//VALIDATION LAYERS
+	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
+	static constexpr uint32_t RequiredVulkanVersion = VK_MAKE_API_VERSION(0, 1, 3, 0);
+	VkDebugUtilsMessengerEXT debugMessenger;
+
 	#ifdef NDEBUG
 		const bool enableValidationLayers = false;
 	#else
 		const bool enableValidationLayers = true;
 	#endif
 
-	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-
-	std::vector<const char*> GetRequiredExtensions();
-
-	bool CheckValidationLayerSupport();
-
-	//DEBUG MESSENGER
-	VkDebugUtilsMessengerEXT debugMessenger;
 
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
 		const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
@@ -67,5 +59,6 @@ private:
 
 	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 	void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-
+	bool CheckValidationLayerSupport();
+	void CheckSupportedVersion();
 };
