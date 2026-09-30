@@ -1,16 +1,7 @@
 #pragma once
 
-#define VK_USE_PLATFORM_WIN32_KHR
-#include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-
 #include <vulkan/vulkan.h>
 #include "volk.h"
-
-#include <stdlib.h>
-#include <vector>
-#include <iostream>
 
 #include "IInstance.h"
 
@@ -36,7 +27,7 @@ private:
 	VkInstance instance{};
 
 	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-	static constexpr uint32_t RequiredVulkanVersion = VK_MAKE_API_VERSION(0, 1, 3, 0);
+	static constexpr uint32_t requiredVulkanVersion = VK_MAKE_API_VERSION(0, 1, 3, 0);
 	VkDebugUtilsMessengerEXT debugMessenger;
 
 	#ifdef NDEBUG

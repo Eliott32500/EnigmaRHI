@@ -16,7 +16,7 @@ void VulkanInstance::Create(EnigmaRHI::InstanceCreateInfo instanceInfo)
 		.applicationVersion = instanceInfo.applicationVersion,
 		.pEngineName = instanceInfo.engineName,
 		.engineVersion = instanceInfo.engineVersion,
-		.apiVersion = RequiredVulkanVersion
+		.apiVersion = requiredVulkanVersion
 	};
 
 	VkInstanceCreateInfo createInfo{
@@ -70,11 +70,11 @@ void VulkanInstance::CheckSupportedVersion()
 	if (vkEnumerateInstanceVersion)
 		vkEnumerateInstanceVersion(&supportedVersion);
 
-	if (supportedVersion < RequiredVulkanVersion)
+	if (supportedVersion < requiredVulkanVersion)
 	{
-		uint32_t major = VK_API_VERSION_MAJOR(RequiredVulkanVersion);
-		uint32_t minor = VK_API_VERSION_MINOR(RequiredVulkanVersion);
-		uint32_t patch = VK_API_VERSION_PATCH(RequiredVulkanVersion);
+		uint32_t major = VK_API_VERSION_MAJOR(requiredVulkanVersion);
+		uint32_t minor = VK_API_VERSION_MINOR(requiredVulkanVersion);
+		uint32_t patch = VK_API_VERSION_PATCH(requiredVulkanVersion);
 
 		throw std::runtime_error(
 			"Vulkan " +
