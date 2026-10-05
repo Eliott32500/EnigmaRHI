@@ -1,4 +1,6 @@
 #include "../include/VulkanDevice.h"
+#include "VulkanBuffer.h"
+#include "IBuffer.h"
 
 void VulkanDevice::Create(EnigmaRHI::IInstance* instance, EnigmaRHI::ISurface* surface)
 {
@@ -134,34 +136,6 @@ void VulkanDevice::CreateLogicalDevice(VulkanSurface* surface)
 	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentationQueue);
 }
-
-//void VulkanDevice::CreateSyncObjects()
-//{
-//	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-//	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-//	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-//
-//	VkSemaphoreCreateInfo semaphoreInfo
-//	{
-//		.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-//	};
-//
-//	VkFenceCreateInfo fenceInfo
-//	{
-//		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-//		.flags = VK_FENCE_CREATE_SIGNALED_BIT,
-//	};
-//
-//	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-//	{
-//		if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-//			vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-//			vkCreateFence(logicalDevice, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
-//
-//			throw std::runtime_error("failed to create synchronization objects for a frame!");
-//		}
-//	}
-//}
 
 QueueFamilyIndices VulkanDevice::FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) const
 {

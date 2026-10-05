@@ -7,7 +7,7 @@
 class VulkanSurface : public EnigmaRHI::ISurface
 {
 public:
-	void Create(EnigmaRHI::IInstance* instance, GLFWwindow* mainWindow) override;
+	void Create(EnigmaRHI::IInstance* instance, EnigmaRHI::WindowInfo windowInfo) override;
 	void Destroy(EnigmaRHI::IInstance* instance) override;
 
 	VkSurfaceKHR GetSurface() const { return surface; }

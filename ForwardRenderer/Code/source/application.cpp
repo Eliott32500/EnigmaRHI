@@ -48,8 +48,14 @@ void Application::InitAPI()
 		.engineVersion = 1,
 	};
 
+	EnigmaRHI::WindowInfo windowInfo
+	{
+		.hInstance = GetModuleHandle(nullptr),
+		.hwnd = glfwGetWin32Window(mainWindow)
+	};
+
 	instance->Create(instanceInfo);
-	surface->Create(instance, mainWindow);
+	surface->Create(instance, windowInfo);
 	device->Create(instance, surface);
 	commandPool->Create(device, surface);
 	swapChain->Create(device, surface, commandPool, mainWindow);

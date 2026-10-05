@@ -12,12 +12,18 @@ class VulkanSurface;
 
 namespace EnigmaRHI
 {
+	struct WindowInfo
+	{
+		HINSTANCE hInstance;
+		HWND hwnd;
+	};
+
 	class ISurface
 	{
 	public:
 
 		virtual ~ISurface() = default;
-		virtual void Create(IInstance* instance, GLFWwindow* window) = 0;
+		virtual void Create(IInstance* instance, WindowInfo windowInfo) = 0;
 		virtual void Destroy(IInstance* instance) = 0;
 
 		virtual VulkanSurface& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanSurface"); }

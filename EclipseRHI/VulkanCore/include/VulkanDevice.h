@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../include/IDevice.h"
-#include "../../include/IFormat.h"
+#include "IDevice.h"
+#include "IFormat.h"
 #include "VulkanInstance.h"
 #include "VulkanSurface.h"
 #include "VulkanUtilities.h"

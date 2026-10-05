@@ -1,8 +1,15 @@
-#include "../include/VulkanSurface.h"
+#include "VulkanSurface.h"
 
-void VulkanSurface::Create(EnigmaRHI::IInstance* instance, GLFWwindow* mainWindow)
+void VulkanSurface::Create(EnigmaRHI::IInstance* instance, EnigmaRHI::WindowInfo windowInfo)
 {
-	if (glfwCreateWindowSurface(instance->API_Vulkan().GetInstance(), mainWindow, nullptr, &surface) != VK_SUCCESS)
+	VkWin32SurfaceCreateInfoKHR createInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+		.hinstance = windowInfo.hInstance,
+		.hwnd = windowInfo.hwnd,
+	};
+
+	if(vkCreateWin32SurfaceKHR(instance->API_Vulkan().GetInstance(), &createInfo, nullptr, &surface) != VK_SUCCESS)
 		throw std::runtime_error("failed to create window surface!");
 }
 
