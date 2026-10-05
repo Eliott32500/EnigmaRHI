@@ -8,10 +8,11 @@
 
 #include <vector>
 
-class VulkanDescriptor;
 
 namespace EnigmaRHI
 {
+	class VulkanDescriptor;
+
 	class IDescriptor
 	{
 	public:

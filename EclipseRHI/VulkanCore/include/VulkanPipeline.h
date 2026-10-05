@@ -3,26 +3,28 @@
 #include "VulkanSwapChain.h"
 #include "VulkanDescriptor.h"
 #include "VulkanRenderPass.h"
-#include "../../include/IPipeline.h"
-#include "../include/VulkanVertex.h"
+#include "IPipeline.h"
+#include "VulkanVertex.h"
 
-
-class VulkanPipeline : public EnigmaRHI::IPipeline
+namespace EnigmaRHI
 {
-public:
+	class VulkanPipeline : public IPipeline
+	{
+	public:
 
-	VulkanPipeline() = default;
+		VulkanPipeline() = default;
 
-	void Create(EnigmaRHI::IShaderModule* vertShader, EnigmaRHI::IShaderModule* fragShader, EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapchain, EnigmaRHI::IRenderPass* renderPass, EnigmaRHI::IDescriptor* descriptor) override;
-	void Destroy(EnigmaRHI::IDevice* device) override;
+		void Create(IShaderModule* vertShader, IShaderModule* fragShader, IDevice* device, ISwapChain* swapchain, IRenderPass* renderPass, IDescriptor* descriptor) override;
+		void Destroy(IDevice* device) override;
 
-	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline; }
-	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout; }
+		VkPipeline GetGraphicsPipeline() const { return graphicsPipeline; }
+		VkPipelineLayout GetPipelineLayout() const { return pipelineLayout; }
 
-	VulkanPipeline& API_Vulkan() override { return (*this); }
+		VulkanPipeline& API_Vulkan() override { return (*this); }
 
-private:
+	private:
 
-	VkPipeline graphicsPipeline;
-	VkPipelineLayout pipelineLayout;
-};
+		VkPipeline graphicsPipeline;
+		VkPipelineLayout pipelineLayout;
+	};
+}

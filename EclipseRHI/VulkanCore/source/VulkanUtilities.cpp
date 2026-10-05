@@ -1,32 +1,32 @@
-#include "../include/VulkanUtilities.h"
+#include "VulkanUtilities.h"
 #include <iostream>
 
-VkFormat UtilitiesVulkan::FormatToVulkan(EnigmaRHI::ImageFormat format)
+VkFormat EnigmaRHI::UtilitiesVulkan::FormatToVulkan(ImageFormat format)
 {
 	switch (format)
 	{
-		case EnigmaRHI::ImageFormat::R8:
+		case ImageFormat::R8:
 			return VK_FORMAT_R8_UNORM;
 
-		case EnigmaRHI::ImageFormat::RG8:
+		case ImageFormat::RG8:
 			return VK_FORMAT_R8G8_UNORM;
 
-		case EnigmaRHI::ImageFormat::RGB8:
+		case ImageFormat::RGB8:
 			return VK_FORMAT_R8G8B8_UNORM;
 
-		case EnigmaRHI::ImageFormat::RGBA8:
+		case ImageFormat::RGBA8:
 			return VK_FORMAT_R8G8B8A8_UNORM;
 
-		case EnigmaRHI::ImageFormat::sRGBA8:
+		case ImageFormat::sRGBA8:
 			return VK_FORMAT_R8G8B8A8_SRGB;
 
-		case EnigmaRHI::ImageFormat::D24_UNORM_S8_UINT:
+		case ImageFormat::D24_UNORM_S8_UINT:
 			return VK_FORMAT_D24_UNORM_S8_UINT;
 
-		case EnigmaRHI::ImageFormat::D32_SFLOAT:
+		case ImageFormat::D32_SFLOAT:
 			return VK_FORMAT_D32_SFLOAT;
 
-		case EnigmaRHI::ImageFormat::D32_SFLOAT_S8_UINT:
+		case ImageFormat::D32_SFLOAT_S8_UINT:
 			return VK_FORMAT_D32_SFLOAT_S8_UINT;
 
 		default:
@@ -34,17 +34,17 @@ VkFormat UtilitiesVulkan::FormatToVulkan(EnigmaRHI::ImageFormat format)
 	}
 }
 
-VkShaderStageFlags UtilitiesVulkan::ShaderStageToVulkan(EnigmaRHI::ShaderStage stage)
+VkShaderStageFlags EnigmaRHI::UtilitiesVulkan::ShaderStageToVulkan(ShaderStage stage)
 {
 	switch (stage)
 	{
-		case EnigmaRHI::ShaderStage::Vertex:
+		case ShaderStage::Vertex:
 			return VK_SHADER_STAGE_VERTEX_BIT;
 
-		case EnigmaRHI::ShaderStage::Fragment:
+		case ShaderStage::Fragment:
 			return VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		case EnigmaRHI::ShaderStage::Compute:
+		case ShaderStage::Compute:
 			return VK_SHADER_STAGE_COMPUTE_BIT;
 
 		default:
@@ -52,26 +52,26 @@ VkShaderStageFlags UtilitiesVulkan::ShaderStageToVulkan(EnigmaRHI::ShaderStage s
 	}
 }
 
-EnigmaRHI::ImageFormat UtilitiesVulkan::FormatFromVulkan(VkFormat format)
+EnigmaRHI::ImageFormat EnigmaRHI::UtilitiesVulkan::FormatFromVulkan(VkFormat format)
 {
 	switch (format)
 	{
 	case VK_FORMAT_R8G8B8A8_UNORM:
-		return EnigmaRHI::ImageFormat::RGBA8;
+		return ImageFormat::RGBA8;
 
 	case VK_FORMAT_R8G8B8A8_SRGB:
-		return EnigmaRHI::ImageFormat::sRGBA8;
+		return ImageFormat::sRGBA8;
 
 	case VK_FORMAT_D24_UNORM_S8_UINT:
-		return EnigmaRHI::ImageFormat::D24_UNORM_S8_UINT;
+		return ImageFormat::D24_UNORM_S8_UINT;
 
 	case VK_FORMAT_D32_SFLOAT:
-		return EnigmaRHI::ImageFormat::D32_SFLOAT;
+		return ImageFormat::D32_SFLOAT;
 
 	case VK_FORMAT_D32_SFLOAT_S8_UINT:
-		return EnigmaRHI::ImageFormat::D32_SFLOAT_S8_UINT;
+		return ImageFormat::D32_SFLOAT_S8_UINT;
 
 	default:
-		return EnigmaRHI::ImageFormat::UNDEFINED;
+		return ImageFormat::UNDEFINED;
 	}
 }

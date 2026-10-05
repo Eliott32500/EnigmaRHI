@@ -5,10 +5,11 @@
 #include "IFormat.h"
 #include "ISwapChain.h"
 
-class VulkanRenderPass;
 
 namespace EnigmaRHI
 {
+	class VulkanRenderPass;
+
 	class IRenderPass
 	{
 	public:

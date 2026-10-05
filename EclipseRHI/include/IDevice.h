@@ -6,10 +6,11 @@
 #include "IImage.h"
 #include <iostream>
 
-class VulkanDevice;
 
 namespace EnigmaRHI
 {
+	class VulkanDevice;
+
 	class IDevice
 	{
 	public:

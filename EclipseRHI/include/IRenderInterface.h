@@ -13,10 +13,11 @@
 #include "ISwapChain.h"
 #include "ISync.h"
 
-class VulkanRenderInterface;
 
 namespace EnigmaRHI
 {
+	class VulkanRenderInterface;
+
 	enum ERenderAPI
 	{
 		Vulkan,

@@ -1,6 +1,6 @@
 #include "../include/VulkanVertex.h"
 
-VkVertexInputBindingDescription VulkanVertex::GetBindingDescription()
+VkVertexInputBindingDescription EnigmaRHI::VulkanVertex::GetBindingDescription()
 {
 	VkVertexInputBindingDescription bindingDescription
 	{
@@ -15,7 +15,7 @@ VkVertexInputBindingDescription VulkanVertex::GetBindingDescription()
 	return bindingDescription;
 }
 
-std::array<VkVertexInputAttributeDescription, 3> VulkanVertex::GetAttributeDescriptions()
+std::array<VkVertexInputAttributeDescription, 3> EnigmaRHI::VulkanVertex::GetAttributeDescriptions()
 {
 	std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 	

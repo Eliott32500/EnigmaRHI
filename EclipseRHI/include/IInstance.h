@@ -3,10 +3,10 @@
 #include <vector>
 #include <iostream>
 
-class VulkanInstance;
-
 namespace EnigmaRHI
 {
+	class VulkanInstance;
+
 	struct InstanceCreateInfo
 	{
 		std::vector<const char*> extensions;

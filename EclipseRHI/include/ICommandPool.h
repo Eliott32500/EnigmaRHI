@@ -3,10 +3,11 @@
 #include <iostream>
 #include <vector>
 
-class VulkanCommandPool;
 
 namespace EnigmaRHI
 {
+	class VulkanCommandPool;
+
 	class ICommandPool
 	{
 	public:

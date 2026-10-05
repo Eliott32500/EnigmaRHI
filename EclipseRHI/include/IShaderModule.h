@@ -4,10 +4,11 @@
 #include "IDevice.h"
 #include "ISwapChain.h"
 
-class VulkanShaderModule;
 
 namespace EnigmaRHI
 {
+	class VulkanShaderModule;
+
 	class IShaderModule
 	{
 	public:

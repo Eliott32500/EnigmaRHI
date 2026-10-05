@@ -3,23 +3,26 @@
 #include "IShaderModule.h"
 #include <fstream>
 
-class VulkanShaderModule : public EnigmaRHI::IShaderModule
+namespace EnigmaRHI
 {
-public:
+	class VulkanShaderModule : public IShaderModule
+	{
+	public:
 
-	VulkanShaderModule() = default;
+		VulkanShaderModule() = default;
 
-	void Create(EnigmaRHI::IDevice* device, const std::string& filename) override;
+		void Create(IDevice* device, const std::string& filename) override;
 
-	VkShaderModule GetModule() const { return module; }
+		VkShaderModule GetModule() const { return module; }
 
-	VulkanShaderModule& API_Vulkan() override { return (*this); }
+		VulkanShaderModule& API_Vulkan() override { return (*this); }
 
-private:
+	private:
 
-	std::vector<char> code;
-	std::vector<char> ReadShader(const std::string& filename);
+		std::vector<char> code;
+		std::vector<char> ReadShader(const std::string& filename);
 
-	VkShaderModule module = VK_NULL_HANDLE;
-	VkShaderModule CreateShaderModule(VkDevice device);
-};
+		VkShaderModule module = VK_NULL_HANDLE;
+		VkShaderModule CreateShaderModule(VkDevice device);
+	};
+}

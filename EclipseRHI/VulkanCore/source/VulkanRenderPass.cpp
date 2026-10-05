@@ -1,8 +1,8 @@
-#include "../include/VulkanRenderPass.h"
-#include "../include/VulkanUtilities.h"
+#include "VulkanRenderPass.h"
+#include "VulkanUtilities.h"
 
 
-void VulkanRenderPass::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ImageFormat depthFormat)
+void EnigmaRHI::VulkanRenderPass::Create(IDevice* device, ISwapChain* swapChain, ImageFormat depthFormat)
 {
 	VkAttachmentDescription colorAttachment
 	{
@@ -98,7 +98,7 @@ void VulkanRenderPass::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain*
 	swapChain->API_Vulkan().CreateSwapChainFramebuffers(&device->API_Vulkan(), renderPass);
 }
 
-void VulkanRenderPass::Destroy(EnigmaRHI::IDevice* device)
+void EnigmaRHI::VulkanRenderPass::Destroy(IDevice* device)
 {
 	vkDestroyRenderPass(device->API_Vulkan().GetDevice(), renderPass, nullptr);
 }

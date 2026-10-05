@@ -1,7 +1,7 @@
 #include "VulkanInstance.h"
 #include <string>
 
-void VulkanInstance::Create(EnigmaRHI::InstanceCreateInfo instanceInfo)
+void EnigmaRHI::VulkanInstance::Create(InstanceCreateInfo instanceInfo)
 {
 	if (enableValidationLayers && !CheckValidationLayerSupport()) {
 		throw std::runtime_error("validation layers requested, but not available!");
@@ -55,7 +55,7 @@ void VulkanInstance::Create(EnigmaRHI::InstanceCreateInfo instanceInfo)
 	CreateDebugMessenger();
 }
 
-void VulkanInstance::Destroy()
+void EnigmaRHI::VulkanInstance::Destroy()
 {
 	if (enableValidationLayers)
 		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
@@ -63,7 +63,7 @@ void VulkanInstance::Destroy()
 	vkDestroyInstance(instance, nullptr);
 }
 
-void VulkanInstance::CheckSupportedVersion()
+void EnigmaRHI::VulkanInstance::CheckSupportedVersion()
 {
 	uint32_t supportedVersion = VK_API_VERSION_1_0;
 
@@ -86,7 +86,7 @@ void VulkanInstance::CheckSupportedVersion()
 	}
 }
 
-bool VulkanInstance::CheckValidationLayerSupport()
+bool EnigmaRHI::VulkanInstance::CheckValidationLayerSupport()
 {
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -116,7 +116,7 @@ bool VulkanInstance::CheckValidationLayerSupport()
 	return true;
 }
 
-void VulkanInstance::CreateDebugMessenger()
+void EnigmaRHI::VulkanInstance::CreateDebugMessenger()
 {
 	if (!enableValidationLayers) return;
 
@@ -128,13 +128,13 @@ void VulkanInstance::CreateDebugMessenger()
 	}
 }
 
-void VulkanInstance::DestroyDebugMessenger()
+void EnigmaRHI::VulkanInstance::DestroyDebugMessenger()
 {
 	if (enableValidationLayers)
 		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 }
 
-VkResult VulkanInstance::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
+VkResult EnigmaRHI::VulkanInstance::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
 {
 	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
 	if (func != nullptr)
@@ -143,7 +143,7 @@ VkResult VulkanInstance::CreateDebugUtilsMessengerEXT(VkInstance instance, const
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL VulkanInstance::DebugCallback(
+VKAPI_ATTR VkBool32 VKAPI_CALL EnigmaRHI::VulkanInstance::DebugCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 	VkDebugUtilsMessageTypeFlagsEXT messageType,
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -153,7 +153,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanInstance::DebugCallback(
 	return VK_FALSE;
 }
 
-void VulkanInstance::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
+void EnigmaRHI::VulkanInstance::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
 {
 	createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -162,7 +162,7 @@ void VulkanInstance::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreat
 	createInfo.pfnUserCallback = DebugCallback;
 }
 
-void VulkanInstance::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
+void EnigmaRHI::VulkanInstance::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
 {
 	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
 	if (func != nullptr)

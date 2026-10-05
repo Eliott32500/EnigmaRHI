@@ -8,10 +8,11 @@
 #include "ICommandPool.h"
 #include "IFormat.h"
 
-class VulkanSwapChain;
 
 namespace EnigmaRHI
 {
+	class VulkanSwapChain;
+
 	class ISwapChain
 	{
 	public:

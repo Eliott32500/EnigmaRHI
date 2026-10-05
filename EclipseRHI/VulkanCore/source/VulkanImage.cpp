@@ -1,7 +1,7 @@
 #include "../include/VulkanImage.h"
 #include "../include/VulkanUtilities.h"
 
-void VulkanImage::Create(EnigmaRHI::IDevice* device, uint32_t width, uint32_t height, EnigmaRHI::ImageFormat format, bool isTexture)
+void EnigmaRHI::VulkanImage::Create(IDevice* device, uint32_t width, uint32_t height, ImageFormat format, bool isTexture)
 {
 	VkImageUsageFlags usage = 0;
 
@@ -47,7 +47,7 @@ void VulkanImage::Create(EnigmaRHI::IDevice* device, uint32_t width, uint32_t he
 	vkBindImageMemory(device->API_Vulkan().GetDevice(), image, memory, 0);
 }
 
-void VulkanImage::CreateTextureImage(const void* textureData, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, uint32_t width, uint32_t height, EnigmaRHI::ImageFormat format)
+void EnigmaRHI::VulkanImage::CreateTextureImage(const void* textureData, IDevice* device, ICommandPool* commandPool, uint32_t width, uint32_t height, ImageFormat format)
 {
 	VkDeviceSize imageSize = width * height * 4;
 	VulkanBuffer stagingBuffer;
@@ -74,7 +74,7 @@ void VulkanImage::CreateTextureImage(const void* textureData, EnigmaRHI::IDevice
 	CreateSampler(&device->API_Vulkan());
 }
 
-void VulkanImage::CreateView(VulkanDevice* device, VkImage imageInfo, VkFormat format, VkImageAspectFlags aspect)
+void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkImage imageInfo, VkFormat format, VkImageAspectFlags aspect)
 {
 	VkImageViewCreateInfo viewInfo
 	{
@@ -94,7 +94,7 @@ void VulkanImage::CreateView(VulkanDevice* device, VkImage imageInfo, VkFormat f
 		throw std::runtime_error("failed to create image view!");
 }
 
-void VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter)
+void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter)
 {
 	VkSamplerCreateInfo samplerInfo
 	{
@@ -146,7 +146,7 @@ void VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter)
 }
 
 
-void VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, VkImageLayout oldLayout, VkImageLayout newLayout)
+void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
 	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device);
 
@@ -222,7 +222,7 @@ void VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* comm
 	commandPool->EndSingleTimeCommands(device, commandBuffer);
 }
 
-void VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* commandPool, VkBuffer buffer, uint32_t width, uint32_t height)
+void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* commandPool, VkBuffer buffer, uint32_t width, uint32_t height)
 {
 	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device);
 
@@ -247,7 +247,7 @@ void VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* comman
 	commandPool->EndSingleTimeCommands(device, commandBuffer);
 }
 
-void VulkanImage::Destroy(EnigmaRHI::IDevice* device)
+void EnigmaRHI::VulkanImage::Destroy(IDevice* device)
 {
 	if (sampler != VK_NULL_HANDLE)
 		vkDestroySampler(device->API_Vulkan().GetDevice(), sampler, nullptr);

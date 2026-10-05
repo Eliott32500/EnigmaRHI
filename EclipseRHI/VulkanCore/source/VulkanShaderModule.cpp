@@ -1,12 +1,12 @@
-#include "../include/VulkanShaderModule.h"
+#include "VulkanShaderModule.h"
 
-void VulkanShaderModule::Create(EnigmaRHI::IDevice* device, const std::string& filename)
+void EnigmaRHI::VulkanShaderModule::Create(IDevice* device, const std::string& filename)
 {
 	code = ReadShader(filename);
 	module = CreateShaderModule(device->API_Vulkan().GetDevice());
 }
 
-VkShaderModule VulkanShaderModule::CreateShaderModule(VkDevice vulkanDevice)
+VkShaderModule EnigmaRHI::VulkanShaderModule::CreateShaderModule(VkDevice vulkanDevice)
 {
 	VkShaderModuleCreateInfo createInfo
 	{
@@ -22,7 +22,7 @@ VkShaderModule VulkanShaderModule::CreateShaderModule(VkDevice vulkanDevice)
 	return shaderModule;
 }
 
-std::vector<char> VulkanShaderModule::ReadShader(const std::string& filename)
+std::vector<char> EnigmaRHI::VulkanShaderModule::ReadShader(const std::string& filename)
 {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 

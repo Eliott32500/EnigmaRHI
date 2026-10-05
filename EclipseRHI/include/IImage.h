@@ -5,10 +5,11 @@
 #include "IDevice.h"
 #include "ICommandPool.h"
 
-class VulkanImage;
 
 namespace EnigmaRHI
 {
+	class VulkanImage;
+
 	class IImage
 	{
 	public:

@@ -1,7 +1,7 @@
 #include "VulkanDescriptor.h"
 #include "RHIConfig.h"
 
-void VulkanDescriptor::AddImageBinding(uint32_t binding)
+void EnigmaRHI::VulkanDescriptor::AddImageBinding(uint32_t binding)
 {
 	VkDescriptorSetLayoutBinding descriptorBinding
 	{
@@ -14,7 +14,7 @@ void VulkanDescriptor::AddImageBinding(uint32_t binding)
 	bindings.push_back(descriptorBinding);
 }
 
-void VulkanDescriptor::AddBufferBinding(uint32_t binding, EnigmaRHI::ShaderStage stageFlags)
+void EnigmaRHI::VulkanDescriptor::AddBufferBinding(uint32_t binding, ShaderStage stageFlags)
 {
 	VkDescriptorSetLayoutBinding descriptorBinding
 	{
@@ -27,7 +27,7 @@ void VulkanDescriptor::AddBufferBinding(uint32_t binding, EnigmaRHI::ShaderStage
 	bindings.push_back(descriptorBinding);
 }
 
-void VulkanDescriptor::AddImageInfo(EnigmaRHI::IImage* image)
+void EnigmaRHI::VulkanDescriptor::AddImageInfo(IImage* image)
 {
 	VkDescriptorImageInfo info
 	{
@@ -39,7 +39,7 @@ void VulkanDescriptor::AddImageInfo(EnigmaRHI::IImage* image)
 	imageInfos.push_back(info);
 }
 
-void VulkanDescriptor::Create(EnigmaRHI::IDevice* device)
+void EnigmaRHI::VulkanDescriptor::Create(IDevice* device)
 {
 	VkDescriptorSetLayoutCreateInfo layoutInfo
 	{
@@ -54,13 +54,13 @@ void VulkanDescriptor::Create(EnigmaRHI::IDevice* device)
 	CreateDescriptorPool(&device->API_Vulkan());
 }
 
-void VulkanDescriptor::Destroy(EnigmaRHI::IDevice* device)
+void EnigmaRHI::VulkanDescriptor::Destroy(IDevice* device)
 {
 	vkDestroyDescriptorPool(device->API_Vulkan().GetDevice(), descriptorPool, nullptr);
 	vkDestroyDescriptorSetLayout(device->API_Vulkan().GetDevice(), descriptorSetLayout, nullptr);
 }
 
-void VulkanDescriptor::CreateDescriptorPool(VulkanDevice* device)
+void EnigmaRHI::VulkanDescriptor::CreateDescriptorPool(VulkanDevice* device)
 {
 	std::vector<VkDescriptorPoolSize> poolSizes;
 	poolSizes.resize(bindings.size());
@@ -83,7 +83,7 @@ void VulkanDescriptor::CreateDescriptorPool(VulkanDevice* device)
 		throw std::runtime_error("failed to create descriptor pool!");
 }
 
-void VulkanDescriptor::CreateDescriptorSets(EnigmaRHI::IDevice* device, std::vector<EnigmaRHI::IDescriptor::FrameDescriptorInfo> bufferInfos)
+void EnigmaRHI::VulkanDescriptor::CreateDescriptorSets(IDevice* device, std::vector<EnigmaRHI::IDescriptor::FrameDescriptorInfo> bufferInfos)
 {
 	std::vector<VkDescriptorSetLayout> layouts(EnigmaRHI::MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
 	 

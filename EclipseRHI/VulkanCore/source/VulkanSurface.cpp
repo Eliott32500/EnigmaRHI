@@ -1,6 +1,6 @@
 #include "VulkanSurface.h"
 
-void VulkanSurface::Create(EnigmaRHI::IInstance* instance, EnigmaRHI::WindowInfo windowInfo)
+void EnigmaRHI::VulkanSurface::Create(IInstance* instance, WindowInfo windowInfo)
 {
 	VkWin32SurfaceCreateInfoKHR createInfo
 	{
@@ -13,7 +13,7 @@ void VulkanSurface::Create(EnigmaRHI::IInstance* instance, EnigmaRHI::WindowInfo
 		throw std::runtime_error("failed to create window surface!");
 }
 
-void VulkanSurface::Destroy(EnigmaRHI::IInstance* instance)
+void EnigmaRHI::VulkanSurface::Destroy(IInstance* instance)
 {
 	vkDestroySurfaceKHR(instance->API_Vulkan().GetInstance(), surface, nullptr);
 }

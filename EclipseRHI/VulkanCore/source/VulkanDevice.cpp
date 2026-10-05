@@ -1,47 +1,47 @@
-#include "../include/VulkanDevice.h"
+#include "VulkanDevice.h"
 #include "VulkanBuffer.h"
 #include "VulkanImage.h"
 
-void VulkanDevice::Create(EnigmaRHI::IInstance* instance, EnigmaRHI::ISurface* surface)
+void EnigmaRHI::VulkanDevice::Create(IInstance* instance, ISurface* surface)
 {
 	PickPhysicalDevice(&instance->API_Vulkan(), &surface->API_Vulkan());
 	CreateLogicalDevice(&surface->API_Vulkan());
 }
 
-void VulkanDevice::Destroy()
+void EnigmaRHI::VulkanDevice::Destroy()
 {
 	vkDestroyDevice(logicalDevice, nullptr);
 }
 
-EnigmaRHI::IBuffer* VulkanDevice::CreateBuffer(size_t size, uint32_t usage, size_t properties)
+EnigmaRHI::IBuffer* EnigmaRHI::VulkanDevice::CreateBuffer(size_t size, uint32_t usage, size_t properties)
 {
-	EnigmaRHI::IBuffer* buffer = new VulkanBuffer();
+	IBuffer* buffer = new VulkanBuffer();
 	buffer->Create(this, size, usage, properties);
 
 	return buffer;
 }
 
-EnigmaRHI::IImage* VulkanDevice::CreateImage(uint32_t width, uint32_t height, EnigmaRHI::ImageFormat format, bool isTexture)
+EnigmaRHI::IImage* EnigmaRHI::VulkanDevice::CreateImage(uint32_t width, uint32_t height, ImageFormat format, bool isTexture)
 {
-	EnigmaRHI::IImage* image = new VulkanImage();
+	IImage* image = new VulkanImage();
 	image->Create(this, width, height, format, isTexture);
 
 	return image;
 }
 
-void VulkanDevice::DeleteBuffer(EnigmaRHI::IBuffer* buffer)
+void EnigmaRHI::VulkanDevice::DeleteBuffer(IBuffer* buffer)
 {
 	if (buffer)
 		delete buffer;
 }
 
-void VulkanDevice::DeleteImage(EnigmaRHI::IImage* image)
+void EnigmaRHI::VulkanDevice::DeleteImage(IImage* image)
 {
 	if (image)
 		delete image;
 }
 
-void VulkanDevice::PickPhysicalDevice(VulkanInstance* instance, VulkanSurface* surface)
+void EnigmaRHI::VulkanDevice::PickPhysicalDevice(VulkanInstance* instance, VulkanSurface* surface)
 {
 	// compte le nombre de GPU
 	uint32_t deviceCount = 0;
@@ -70,7 +70,7 @@ void VulkanDevice::PickPhysicalDevice(VulkanInstance* instance, VulkanSurface* s
 		throw std::runtime_error("failed to find a suitable GPU!");
 }
 
-int VulkanDevice::RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface)
+int EnigmaRHI::VulkanDevice::RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
 	VkPhysicalDeviceProperties deviceProperties;
 	VkPhysicalDeviceFeatures deviceFeatures;
@@ -96,7 +96,7 @@ int VulkanDevice::RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR su
 	return score;
 }
 
-bool VulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
+bool EnigmaRHI::VulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 {
 	uint32_t extensionCount;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -114,7 +114,7 @@ bool VulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 	return requiredExtensions.empty();
 }
 
-bool VulkanDevice::IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface)
+bool EnigmaRHI::VulkanDevice::IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
 	QueueFamilyIndices indices = FindQueueFamilies(device, surface);
 
@@ -132,7 +132,7 @@ bool VulkanDevice::IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surfac
 	return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 }
 
-void VulkanDevice::CreateLogicalDevice(VulkanSurface* surface)
+void EnigmaRHI::VulkanDevice::CreateLogicalDevice(VulkanSurface* surface)
 {
 	QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface->GetSurface());
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -165,7 +165,7 @@ void VulkanDevice::CreateLogicalDevice(VulkanSurface* surface)
 	vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentationQueue);
 }
 
-QueueFamilyIndices VulkanDevice::FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) const
+EnigmaRHI::QueueFamilyIndices EnigmaRHI::VulkanDevice::FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) const
 {
 	QueueFamilyIndices indices;
 	uint32_t queueFamilyCount = 0;
@@ -188,7 +188,7 @@ QueueFamilyIndices VulkanDevice::FindQueueFamilies(VkPhysicalDevice device, VkSu
 	return indices;
 }
 
-uint32_t VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
+uint32_t EnigmaRHI::VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
 {
 	VkPhysicalDeviceMemoryProperties memProperties;
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
@@ -200,7 +200,7 @@ uint32_t VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
 	throw std::runtime_error("failed to find suitable memory type!");
 }
 
-EnigmaRHI::ImageFormat VulkanDevice::FindDepthFormat()
+EnigmaRHI::ImageFormat EnigmaRHI::VulkanDevice::FindDepthFormat()
 {
 	return FindSupportedFormat(
 		{ EnigmaRHI::ImageFormat::D32_SFLOAT, EnigmaRHI::ImageFormat::D32_SFLOAT_S8_UINT, EnigmaRHI::ImageFormat::D24_UNORM_S8_UINT },
@@ -209,7 +209,7 @@ EnigmaRHI::ImageFormat VulkanDevice::FindDepthFormat()
 	);
 }
 
-EnigmaRHI::ImageFormat VulkanDevice::FindSupportedFormat(const std::vector<EnigmaRHI::ImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+EnigmaRHI::ImageFormat EnigmaRHI::VulkanDevice::FindSupportedFormat(const std::vector<EnigmaRHI::ImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
 	for (EnigmaRHI::ImageFormat format : candidates)
 	{
@@ -227,12 +227,12 @@ EnigmaRHI::ImageFormat VulkanDevice::FindSupportedFormat(const std::vector<Enigm
 	throw std::runtime_error("failed to find supported format!");
 }
 
-bool VulkanDevice::HasStencilComponent(VkFormat format)
+bool EnigmaRHI::VulkanDevice::HasStencilComponent(VkFormat format)
 {
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-SwapChainSupportDetails VulkanDevice::QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const
+EnigmaRHI::SwapChainSupportDetails EnigmaRHI::VulkanDevice::QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const
 {
 	SwapChainSupportDetails details;
 
@@ -259,7 +259,7 @@ SwapChainSupportDetails VulkanDevice::QuerySwapChainSupport(VkPhysicalDevice dev
 	return details;
 }
 
-void VulkanDevice::DeviceWaitIdle()
+void EnigmaRHI::VulkanDevice::DeviceWaitIdle()
 {
 	vkDeviceWaitIdle(logicalDevice);
 }

@@ -3,9 +3,12 @@
 #include "IFormat.h"
 #include <vulkan/vulkan.h>
 
-struct UtilitiesVulkan
+namespace EnigmaRHI
 {
-	static VkFormat FormatToVulkan(EnigmaRHI::ImageFormat format);
-	static VkShaderStageFlags ShaderStageToVulkan(EnigmaRHI::ShaderStage stage);
-	static EnigmaRHI::ImageFormat FormatFromVulkan(VkFormat format);
-};
+	struct UtilitiesVulkan
+	{
+		static VkFormat FormatToVulkan(ImageFormat format);
+		static VkShaderStageFlags ShaderStageToVulkan(ShaderStage stage);
+		static ImageFormat FormatFromVulkan(VkFormat format);
+	};
+}

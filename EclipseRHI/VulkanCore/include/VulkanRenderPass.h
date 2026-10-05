@@ -1,22 +1,25 @@
 #pragma once
 
 #include "VulkanDevice.h"
-#include "../../include/IRenderPass.h"
-#include "../include/VulkanSwapChain.h"
+#include "IRenderPass.h"
+#include "VulkanSwapChain.h"
 #include <array>
 
-class VulkanRenderPass : public EnigmaRHI::IRenderPass
+namespace EnigmaRHI
 {
-public:
+	class VulkanRenderPass : public IRenderPass
+	{
+	public:
 
-	void Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ImageFormat depthFormat) override;
-	void Destroy(EnigmaRHI::IDevice* device) override;
+		void Create(IDevice* device, ISwapChain* swapChain, ImageFormat depthFormat) override;
+		void Destroy(IDevice* device) override;
 
-	VkRenderPass GetRenderPass() const { return renderPass; }
+		VkRenderPass GetRenderPass() const { return renderPass; }
 
-	VulkanRenderPass& API_Vulkan() override { return (*this); }
+		VulkanRenderPass& API_Vulkan() override { return (*this); }
 
-private:
+	private:
 
-	VkRenderPass renderPass = VK_NULL_HANDLE;
-};
+		VkRenderPass renderPass = VK_NULL_HANDLE;
+	};
+}

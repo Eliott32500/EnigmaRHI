@@ -8,10 +8,11 @@
 #include "IInstance.h"
 #include <iostream>
 
-class VulkanSurface;
 
 namespace EnigmaRHI
 {
+	class VulkanSurface;
+
 	struct WindowInfo
 	{
 		HINSTANCE hInstance;

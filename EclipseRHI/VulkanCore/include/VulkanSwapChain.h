@@ -1,48 +1,51 @@
 #pragma once
 
-#include "../../include/ISwapChain.h"
+#include "ISwapChain.h"
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
 #include <cstdint>
 
-class VulkanSwapChain : public EnigmaRHI::ISwapChain
+namespace EnigmaRHI
 {
-public:
+	class VulkanSwapChain : public ISwapChain
+	{
+	public:
 
-	void Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISurface* surface, EnigmaRHI::ICommandPool* commandPool, GLFWwindow* window) override;
-	void Destroy(EnigmaRHI::IDevice* device) override;
+		void Create(IDevice* device, ISurface* surface, ICommandPool* commandPool, GLFWwindow* window) override;
+		void Destroy(IDevice* device) override;
 
-	void RecreateSwapChain(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanSurface* surface, VkRenderPass renderPass, GLFWwindow* window);
-	void CreateImageViews(VulkanDevice* device);
-	void CreateSwapChainFramebuffers(VulkanDevice* device, VkRenderPass renderPass);
-	void CreateSwapChainDepthResources(VulkanDevice* device, VulkanCommandPool* commandPool);
+		void RecreateSwapChain(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanSurface* surface, VkRenderPass renderPass, GLFWwindow* window);
+		void CreateImageViews(VulkanDevice* device);
+		void CreateSwapChainFramebuffers(VulkanDevice* device, VkRenderPass renderPass);
+		void CreateSwapChainDepthResources(VulkanDevice* device, VulkanCommandPool* commandPool);
 
-	VkExtent2D GetSwapChainExtent() const { return swapChainExtent; };
+		VkExtent2D GetSwapChainExtent() const { return swapChainExtent; };
 
-	EnigmaRHI::ImageFormat GetSwapChainImageFormat() override { return swapChainImageFormat; };
+		ImageFormat GetSwapChainImageFormat() override { return swapChainImageFormat; };
 
-	VkSwapchainKHR GetSwapChain() const { return swapChain; };
-	std::vector<VkFramebuffer> GetSwapChainFramebuffers() const { return swapChainFramebuffers; };
+		VkSwapchainKHR GetSwapChain() const { return swapChain; };
+		std::vector<VkFramebuffer> GetSwapChainFramebuffers() const { return swapChainFramebuffers; };
 
-	VulkanSwapChain& API_Vulkan() override { return (*this); }
+		VulkanSwapChain& API_Vulkan() override { return (*this); }
 
-private:
+	private:
 
-	VkImage depthImage;
-	VkImageView depthImageView;
-	VkDeviceMemory depthImageMemory;
+		VkImage depthImage;
+		VkImageView depthImageView;
+		VkDeviceMemory depthImageMemory;
 
-	VkSwapchainKHR swapChain;
+		VkSwapchainKHR swapChain;
 
-	EnigmaRHI::ImageFormat swapChainImageFormat;
+		ImageFormat swapChainImageFormat;
 
-	VkExtent2D swapChainExtent;
+		VkExtent2D swapChainExtent;
 
-	std::vector<VkImage> swapChainImages;
-	std::vector<VkImageView> swapChainImageViews;
-	std::vector<VkFramebuffer> swapChainFramebuffers;
+		std::vector<VkImage> swapChainImages;
+		std::vector<VkImageView> swapChainImageViews;
+		std::vector<VkFramebuffer> swapChainFramebuffers;
 
-	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
-};
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
+	};
+}

@@ -5,10 +5,11 @@
 #include "IRenderPass.h"
 #include "RHIConfig.h"
 
-class VulkanSync;
 
 namespace EnigmaRHI
 {
+	class VulkanSync;
+
 	class ISync
 	{
 	public:

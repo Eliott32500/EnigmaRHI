@@ -1,6 +1,6 @@
 #include "VulkanSync.h"
 
-void VulkanSync::Create(EnigmaRHI::IDevice* device)
+void EnigmaRHI::VulkanSync::Create(EnigmaRHI::IDevice* device)
 {
 	imageAvailableSemaphores.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 	renderFinishedSemaphores.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
@@ -28,7 +28,7 @@ void VulkanSync::Create(EnigmaRHI::IDevice* device)
 	}
 }
 
-void VulkanSync::Destroy(EnigmaRHI::IDevice* device)
+void EnigmaRHI::VulkanSync::Destroy(IDevice* device)
 {
 	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -38,7 +38,7 @@ void VulkanSync::Destroy(EnigmaRHI::IDevice* device)
 	}
 }
 
-void VulkanSync::AquireNextImage(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ICommandPool* commandPool, EnigmaRHI::ISurface* surface, EnigmaRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
+void EnigmaRHI::VulkanSync::AquireNextImage(IDevice* device, ISwapChain* swapChain, ICommandPool* commandPool, ISurface* surface, IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
 {
 	vkWaitForFences(device->API_Vulkan().GetDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -59,7 +59,7 @@ void VulkanSync::AquireNextImage(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapCha
 	vkResetFences(device->API_Vulkan().GetDevice(), 1, &inFlightFences[currentFrame]);
 }
 
-void VulkanSync::PresentFrame(EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::ICommandPool* commandPool, EnigmaRHI::ISurface* surface, EnigmaRHI::IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
+void EnigmaRHI::VulkanSync::PresentFrame(IDevice* device, ISwapChain* swapChain, ICommandPool* commandPool, ISurface* surface, IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
 {
 	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };

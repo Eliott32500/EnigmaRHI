@@ -1,10 +1,10 @@
-#include "../include/VulkanCommandBuffer.h"
-#include "../include/VulkanCommandPool.h"
-#include "../include/VulkanPipeline.h"
+#include "VulkanCommandBuffer.h"
+#include "VulkanCommandPool.h"
+#include "VulkanPipeline.h"
 
-#include "../../include/ISync.h"
+#include "ISync.h"
 
-void VulkanCommandBuffer::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool)
+void EnigmaRHI::VulkanCommandBuffer::Create(IDevice* device, ICommandPool* commandPool)
 {
 	VkCommandBufferAllocateInfo allocInfo
 	{
@@ -18,7 +18,7 @@ void VulkanCommandBuffer::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ICommand
 		throw std::runtime_error("failed to allocate command buffers!");
 }
 
-void VulkanCommandBuffer::BeginDraw(EnigmaRHI::IRenderPass* renderPass, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::IPipeline* pipeline, uint32_t imageIndex)
+void EnigmaRHI::VulkanCommandBuffer::BeginDraw(IRenderPass* renderPass, ISwapChain* swapChain, IPipeline* pipeline, uint32_t imageIndex)
 {
 	vkResetCommandBuffer(commandBuffer, 0);
 
@@ -72,7 +72,7 @@ void VulkanCommandBuffer::BeginDraw(EnigmaRHI::IRenderPass* renderPass, EnigmaRH
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void VulkanCommandBuffer::EndDraw()
+void EnigmaRHI::VulkanCommandBuffer::EndDraw()
 {
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -81,24 +81,24 @@ void VulkanCommandBuffer::EndDraw()
 }
 
 
-void VulkanCommandBuffer::BindDescriptorSet(EnigmaRHI::IPipeline* pipeline, EnigmaRHI::IDescriptor* descriptor, EnigmaRHI::ISync* sync)
+void EnigmaRHI::VulkanCommandBuffer::BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, ISync* sync)
 {
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetPipelineLayout(), 0, 1, &descriptor->API_Vulkan().GetDescriptorSets()[sync->GetCurrentFrame()], 0, nullptr);
 }
 
-void VulkanCommandBuffer::BindVertexBuffer(EnigmaRHI::IBuffer* buffer)
+void EnigmaRHI::VulkanCommandBuffer::BindVertexBuffer(IBuffer* buffer)
 {
 	VkBuffer vertexBuffers[] = { buffer->API_Vulkan().GetBuffer()};
 	VkDeviceSize offsets[] = { buffer->API_Vulkan().bufferInfo.offset};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 }
 
-void VulkanCommandBuffer::BindIndexBuffer(EnigmaRHI::IBuffer* buffer)
+void EnigmaRHI::VulkanCommandBuffer::BindIndexBuffer(IBuffer* buffer)
 {
 	vkCmdBindIndexBuffer(commandBuffer, buffer->API_Vulkan().GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 }
 
-void VulkanCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount)
+void EnigmaRHI::VulkanCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount)
 {
 	vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, 0, 0, 0);
 }

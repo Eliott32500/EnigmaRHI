@@ -1,6 +1,6 @@
-#include "../include/VulkanPipeline.h"
+#include "VulkanPipeline.h"
 
-void VulkanPipeline::Create(EnigmaRHI::IShaderModule* vertShader, EnigmaRHI::IShaderModule* fragShader, EnigmaRHI::IDevice* device, EnigmaRHI::ISwapChain* swapChain, EnigmaRHI::IRenderPass* renderPass, EnigmaRHI::IDescriptor* descriptor)
+void EnigmaRHI::VulkanPipeline::Create(IShaderModule* vertShader, IShaderModule* fragShader, IDevice* device, ISwapChain* swapChain, IRenderPass* renderPass, IDescriptor* descriptor)
 {
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo
 	{
@@ -229,7 +229,7 @@ void VulkanPipeline::Create(EnigmaRHI::IShaderModule* vertShader, EnigmaRHI::ISh
 	vkDestroyShaderModule(device->API_Vulkan().GetDevice(), vertShader->API_Vulkan().GetModule(), nullptr);
 }
 
-void VulkanPipeline::Destroy(EnigmaRHI::IDevice* device)
+void EnigmaRHI::VulkanPipeline::Destroy(IDevice* device)
 {
 	vkDestroyPipeline(device->API_Vulkan().GetDevice(), graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(device->API_Vulkan().GetDevice(), pipelineLayout, nullptr);

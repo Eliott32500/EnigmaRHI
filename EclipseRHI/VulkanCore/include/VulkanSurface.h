@@ -4,17 +4,20 @@
 #include "VulkanInstance.h"
 #include "ISurface.h"
 
-class VulkanSurface : public EnigmaRHI::ISurface
+namespace EnigmaRHI
 {
-public:
-	void Create(EnigmaRHI::IInstance* instance, EnigmaRHI::WindowInfo windowInfo) override;
-	void Destroy(EnigmaRHI::IInstance* instance) override;
+	class VulkanSurface : public ISurface
+	{
+	public:
+		void Create(IInstance* instance, WindowInfo windowInfo) override;
+		void Destroy(IInstance* instance) override;
 
-	VkSurfaceKHR GetSurface() const { return surface; }
+		VkSurfaceKHR GetSurface() const { return surface; }
 
-	VulkanSurface& API_Vulkan() override { return (*this); }
-	
-private:
+		VulkanSurface& API_Vulkan() override { return (*this); }
 
-	VkSurfaceKHR surface;
-};
+	private:
+
+		VkSurfaceKHR surface;
+	};
+}

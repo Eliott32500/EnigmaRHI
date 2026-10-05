@@ -7,10 +7,11 @@
 #include "IDescriptor.h"
 #include "IShaderModule.h"
 
-class VulkanPipeline;
 
 namespace EnigmaRHI
 {
+	class VulkanPipeline;
+
 	class IPipeline
 	{
 	public:

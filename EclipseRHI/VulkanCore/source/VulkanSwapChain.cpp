@@ -8,10 +8,10 @@
 #include "volk.h"
 #include <vulkan/vulkan.h>
 
-#include "../include/VulkanSwapChain.h"
-#include "../include/VulkanUtilities.h"
+#include "VulkanSwapChain.h"
+#include "VulkanUtilities.h"
 
-VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+VkSurfaceFormatKHR EnigmaRHI::VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
 	for (const auto& availableFormat : availableFormats)
 	{
@@ -23,7 +23,7 @@ VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<Vk
 	return availableFormats[0];
 }
 
-VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+VkPresentModeKHR EnigmaRHI::VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 {
 	for (const auto& availablePresentMode : availablePresentModes)
 	{
@@ -34,7 +34,7 @@ VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPres
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window)
+VkExtent2D EnigmaRHI::VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window)
 {
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 	{
@@ -57,7 +57,7 @@ VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap
 	}
 }
 
-void VulkanSwapChain::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISurface* surface, EnigmaRHI::ICommandPool* commandPool, GLFWwindow* window)
+void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICommandPool* commandPool, GLFWwindow* window)
 {
 	SwapChainSupportDetails swapChainSupport = device->API_Vulkan().QuerySwapChainSupport(device->API_Vulkan().GetPhysicalDevice(), surface->API_Vulkan().GetSurface());
 
@@ -121,7 +121,7 @@ void VulkanSwapChain::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISurface* su
 	CreateSwapChainDepthResources(&device->API_Vulkan(), &commandPool->API_Vulkan());
 }
 
-void VulkanSwapChain::Destroy(EnigmaRHI::IDevice* device)
+void EnigmaRHI::VulkanSwapChain::Destroy(IDevice* device)
 {
 	vkDestroyImageView(device->API_Vulkan().GetDevice(), depthImageView, nullptr);
 	vkDestroyImage(device->API_Vulkan().GetDevice(), depthImage, nullptr);
@@ -140,7 +140,7 @@ void VulkanSwapChain::Destroy(EnigmaRHI::IDevice* device)
 	vkDestroySwapchainKHR(device->API_Vulkan().GetDevice(), swapChain, nullptr);
 }
 
-void VulkanSwapChain::RecreateSwapChain(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanSurface* surface, VkRenderPass renderPass, GLFWwindow* window)
+void EnigmaRHI::VulkanSwapChain::RecreateSwapChain(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanSurface* surface, VkRenderPass renderPass, GLFWwindow* window)
 {
 	int width = 0, height = 0;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -157,7 +157,7 @@ void VulkanSwapChain::RecreateSwapChain(VulkanDevice* device, VulkanCommandPool*
 	CreateSwapChainFramebuffers(device, renderPass);
 }
 
-void VulkanSwapChain::CreateImageViews(VulkanDevice* device)
+void EnigmaRHI::VulkanSwapChain::CreateImageViews(VulkanDevice* device)
 {
 	swapChainImageViews.resize(swapChainImages.size());
 
@@ -169,7 +169,7 @@ void VulkanSwapChain::CreateImageViews(VulkanDevice* device)
 	}
 }
 
-void VulkanSwapChain::CreateSwapChainFramebuffers(VulkanDevice* device, VkRenderPass renderPass)
+void EnigmaRHI::VulkanSwapChain::CreateSwapChainFramebuffers(VulkanDevice* device, VkRenderPass renderPass)
 {
 	swapChainFramebuffers.resize(swapChainImages.size());
 
@@ -195,7 +195,7 @@ void VulkanSwapChain::CreateSwapChainFramebuffers(VulkanDevice* device, VkRender
 	}
 }
 
-void VulkanSwapChain::CreateSwapChainDepthResources(VulkanDevice* device, VulkanCommandPool* commandPool)
+void EnigmaRHI::VulkanSwapChain::CreateSwapChainDepthResources(VulkanDevice* device, VulkanCommandPool* commandPool)
 {
 	VulkanImage temp;
 

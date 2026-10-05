@@ -2,10 +2,10 @@
 
 #include <iostream>
 
-class VulkanCommandBuffer;
 
 namespace EnigmaRHI
 {
+    class VulkanCommandBuffer;
     class IDevice;
 	class ICommandPool;
 	class IPipeline;

@@ -6,24 +6,27 @@
 #include "VulkanSurface.h"
 #include "VulkanSync.h"
 
-class VulkanRenderInterface : public EnigmaRHI::IRenderInterface
+namespace EnigmaRHI
 {
-public:
+	class VulkanRenderInterface : public IRenderInterface
+	{
+	public:
 
-	VulkanRenderInterface();
-	~VulkanRenderInterface();
+		VulkanRenderInterface();
+		~VulkanRenderInterface();
 
-	//EnigmaRHI::IBuffer* InstantiateBuffer() override { return new VulkanBuffer(); }
-	EnigmaRHI::ICommandBuffer* InstantiateCommandBuffer() override { return new VulkanCommandBuffer(); }
-	EnigmaRHI::ICommandPool* InstantiateCommandPool() override { return new VulkanCommandPool(); }
-	EnigmaRHI::IDescriptor* InstantiateDescriptor() override { return new VulkanDescriptor(); }
-	EnigmaRHI::IDevice* InstantiateDevice() override { return new VulkanDevice(); }
-	//EnigmaRHI::IImage* InstantiateImage() override { return new VulkanImage(); }
-	EnigmaRHI::IInstance* InstantiateInstance() override { return new VulkanInstance(); }
-	EnigmaRHI::IPipeline* InstantiatePipeline() override { return new VulkanPipeline(); }
-	EnigmaRHI::IShaderModule* InstantiateShaderModule() override { return new VulkanShaderModule(); }
-	EnigmaRHI::IRenderPass* InstantiateRenderPass() override { return new VulkanRenderPass(); }
-	EnigmaRHI::ISurface* InstantiateSurface() override { return new VulkanSurface(); }
-	EnigmaRHI::ISwapChain* InstantiateSwapChain() override { return new VulkanSwapChain(); }
-	EnigmaRHI::ISync* InstantiateSync() override { return new VulkanSync(); }
-};
+		//IBuffer* InstantiateBuffer() override { return new VulkanBuffer(); }
+		ICommandBuffer* InstantiateCommandBuffer() override { return new VulkanCommandBuffer(); }
+		ICommandPool* InstantiateCommandPool() override { return new VulkanCommandPool(); }
+		IDescriptor* InstantiateDescriptor() override { return new VulkanDescriptor(); }
+		IDevice* InstantiateDevice() override { return new VulkanDevice(); }
+		//IImage* InstantiateImage() override { return new VulkanImage(); }
+		IInstance* InstantiateInstance() override { return new VulkanInstance(); }
+		IPipeline* InstantiatePipeline() override { return new VulkanPipeline(); }
+		IShaderModule* InstantiateShaderModule() override { return new VulkanShaderModule(); }
+		IRenderPass* InstantiateRenderPass() override { return new VulkanRenderPass(); }
+		ISurface* InstantiateSurface() override { return new VulkanSurface(); }
+		ISwapChain* InstantiateSwapChain() override { return new VulkanSwapChain(); }
+		ISync* InstantiateSync() override { return new VulkanSync(); }
+	};
+}

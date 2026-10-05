@@ -1,15 +1,15 @@
 #include "VulkanCommandPool.h"
 #include "RHIConfig.h"
 
-void VulkanCommandPool::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISurface* surface)
+void EnigmaRHI::VulkanCommandPool::Create(IDevice* device, ISurface* surface)
 {
 	CreateCommandPool(&device->API_Vulkan(), surface->API_Vulkan().GetSurface());
 	commandBuffers = CreateCommandBuffer(&device->API_Vulkan(), EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 }
 
-std::vector<VulkanCommandBuffer> VulkanCommandPool::CreateCommandBuffer(VulkanDevice* device, uint32_t size)
+std::vector<EnigmaRHI::VulkanCommandBuffer> EnigmaRHI::VulkanCommandPool::CreateCommandBuffer(VulkanDevice* device, uint32_t size)
 {
-	std::vector<VulkanCommandBuffer> commandBuffers(size);
+	std::vector<EnigmaRHI::VulkanCommandBuffer> commandBuffers(size);
 	
 	for(uint32_t i = 0; i < size; i++)
 	{
@@ -19,7 +19,7 @@ std::vector<VulkanCommandBuffer> VulkanCommandPool::CreateCommandBuffer(VulkanDe
 	return commandBuffers;
 }
 
-void VulkanCommandPool::CreateCommandPool(VulkanDevice* device, VkSurfaceKHR surface)
+void EnigmaRHI::VulkanCommandPool::CreateCommandPool(VulkanDevice* device, VkSurfaceKHR surface)
 {
 	QueueFamilyIndices queueFamilyIndices = device->FindQueueFamilies(device->GetPhysicalDevice(), surface);
 	
@@ -34,7 +34,7 @@ void VulkanCommandPool::CreateCommandPool(VulkanDevice* device, VkSurfaceKHR sur
 		throw std::runtime_error("failed to create command pool!");
 }
 
-VkCommandBuffer VulkanCommandPool::BeginSingleTimeCommands(VulkanDevice* device)
+VkCommandBuffer EnigmaRHI::VulkanCommandPool::BeginSingleTimeCommands(VulkanDevice* device)
 {
 	VkCommandBufferAllocateInfo allocInfo
 	{
@@ -58,7 +58,7 @@ VkCommandBuffer VulkanCommandPool::BeginSingleTimeCommands(VulkanDevice* device)
 	return commandBuffer;
 }
 
-void VulkanCommandPool::EndSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer)
+void EnigmaRHI::VulkanCommandPool::EndSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer)
 {
 	vkEndCommandBuffer(commandBuffer);
 	
@@ -75,7 +75,7 @@ void VulkanCommandPool::EndSingleTimeCommands(VulkanDevice* device, VkCommandBuf
 	vkFreeCommandBuffers(device->GetDevice(), commandPool, 1, &commandBuffer);
 }
 
-void VulkanCommandPool::Destroy(EnigmaRHI::IDevice* device)
+void EnigmaRHI::VulkanCommandPool::Destroy(IDevice* device)
 {
 	vkDestroyCommandPool(device->API_Vulkan().GetDevice(), commandPool, nullptr);
 }

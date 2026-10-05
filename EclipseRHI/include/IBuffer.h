@@ -5,10 +5,11 @@
 
 #include "ICommandPool.h"
 
-class VulkanBuffer;
 
 namespace EnigmaRHI
 {
+	class VulkanBuffer;
+
 	class IBuffer
 	{
 	public:
