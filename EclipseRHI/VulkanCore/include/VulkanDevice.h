@@ -39,6 +39,11 @@ public:
     void Create(EnigmaRHI::IInstance* instance, EnigmaRHI::ISurface* surface) override;
 	void Destroy() override;
 
+    EnigmaRHI::IBuffer* CreateBuffer(size_t size, uint32_t usage, size_t properties) override;
+    EnigmaRHI::IImage* CreateImage(uint32_t width, uint32_t height, EnigmaRHI::ImageFormat format, bool isTexture = false) override;
+    void DeleteBuffer(EnigmaRHI::IBuffer* buffer) override;
+    void DeleteImage(EnigmaRHI::IImage* image) override;
+
     void CreateLogicalDevice(VulkanSurface* surface);
 
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) const;

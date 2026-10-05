@@ -32,8 +32,8 @@ namespace EnigmaRHI
 
 		static IRenderInterface* CreateRenderInterface(ERenderAPI api);
 
-		virtual IBuffer* InstantiateBuffer() = 0;
-		virtual void DeleteBuffer(IBuffer* buffer) { delete buffer; }
+		//virtual IBuffer* InstantiateBuffer() = 0;
+		//virtual void DeleteBuffer(IBuffer* buffer) { delete buffer; }
 
 		virtual ICommandBuffer* InstantiateCommandBuffer() = 0;
 		virtual void DeleteCommandBuffer(ICommandBuffer* commandBuffer) { delete commandBuffer; }
@@ -47,8 +47,8 @@ namespace EnigmaRHI
 		virtual IDevice* InstantiateDevice() = 0;
 		virtual void DeleteDevice(IDevice* device) { delete device; }
 
-		virtual IImage* InstantiateImage() = 0;
-		virtual void DeleteImage(IImage* image) { delete image; }
+		//virtual IImage* InstantiateImage() = 0;
+		//virtual void DeleteImage(IImage* image) { delete image; }
 
 		virtual IInstance* InstantiateInstance() = 0;
 		virtual void DeleteInstance(IInstance* instance) { delete instance; }

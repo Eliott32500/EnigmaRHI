@@ -6,6 +6,7 @@
 #include <GLFW/glfw3native.h>
 
 #include "ICommandPool.h"
+#include "IFormat.h"
 
 class VulkanSwapChain;
 

@@ -23,9 +23,9 @@ public:
 	Model() = default;
 
 	void LoadModel(const char* filePath);
-	void Create(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool);
+	void Create(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool);
 	void UpdateDataBuffer(uint32_t currentImage, glm::mat4 translate, glm::mat4 rotate, glm::mat4 scale);
-	void Destroy(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device);
+	void Destroy(EnigmaRHI::IDevice* device);
 	void Render(EnigmaRHI::ICommandBuffer* cmd);
 
 	std::vector<EnigmaRHI::IBuffer*> GetModelBuffers() {return modelBuffers; }
@@ -34,8 +34,8 @@ public:
 
 private:
 
-	void CreateVertexBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<Vertex> vertices);
-	void CreateIndexBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<uint32_t> indices);
+	void CreateVertexBuffer(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<Vertex> vertices);
+	void CreateIndexBuffer(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<uint32_t> indices);
 
 	EnigmaRHI::IBuffer* vertexBuffer = nullptr;
 	EnigmaRHI::IBuffer* indexBuffer = nullptr;

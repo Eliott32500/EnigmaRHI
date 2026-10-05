@@ -71,19 +71,19 @@ void Application::InitAPI()
 
 	pipeline->Create(vertShader, fragShader, device, swapChain, renderPass, descriptor);
 
-	roomTexture = rhi->InstantiateImage();
 	
 	Texture texture{};
 	texture.LoadTexture(TEXTURE_PATH);
+	roomTexture = device->CreateImage(texture.GetWidth(), texture.GetHeight(), texture.GetImageFormat());
 	roomTexture->CreateTextureImage(texture.GetData(), device, commandPool, texture.GetWidth(), texture.GetHeight(), texture.GetImageFormat());
 	texture.FreeTextureData();
 
 	model = new Model();
 	model->LoadModel(MODEL_PATH);
-	model->Create(rhi, device, commandPool);
+	model->Create(device, commandPool);
 
 	cam = new Camera(swapChain->GetWidth(), swapChain->GetHeight());
-	cam->CreateCameraDataBuffer(rhi, device);
+	cam->CreateCameraDataBuffer(device);
 
 	descriptor->AddImageInfo(roomTexture);
 
@@ -118,8 +118,8 @@ void Application::CleanUp()
 	roomTexture->Destroy(device);
 	renderPass->Destroy(device);
 	descriptor->Destroy(device);
-	model->Destroy(rhi, device);
-	cam->Destroy(rhi, device);
+	model->Destroy(device);
+	cam->Destroy(device);
 	syncronizer->Destroy(device);
 	commandPool->Destroy(device);
 	device->Destroy();
@@ -131,7 +131,7 @@ void Application::CleanUp()
 	rhi->DeleteShaderModule(vertShader);
 	rhi->DeletePipeline(pipeline);
 	rhi->DeleteRenderPass(renderPass);
-	rhi->DeleteImage(roomTexture);
+	device->DeleteImage(roomTexture);
 	rhi->DeleteDescriptor(descriptor);
 	delete model;
 	delete cam;

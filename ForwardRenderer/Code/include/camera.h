@@ -2,7 +2,8 @@
 
 #include "InputManager.h"
 #include "IBuffer.h"
-#include "IRenderInterface.h"
+#include "IDevice.h"
+#include "RHIConfig.h"
 
 struct CameraData
 {
@@ -14,12 +15,12 @@ class Camera
 public:
 
 	Camera(float width, float height);
-	void CreateCameraDataBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* vulkanDevice);
+	void CreateCameraDataBuffer(EnigmaRHI::IDevice* vulkanDevice);
 	void SetCamera(float fov, float aspectRatio, float zNear, float zFar, glm::vec3 _position);
 	void GetInputs(GLFWwindow* window);
 	void MouseCallback(GLFWwindow* window);
 	void UpdateCameraDataBuffer(uint32_t currentImage, float width, float height, GLFWwindow* mainWindow);
-	void Destroy(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device);
+	void Destroy(EnigmaRHI::IDevice* device);
 
 	std::vector<EnigmaRHI::IBuffer*> GetCameraDataBuffers() { return cameraDataBuffers; }
 

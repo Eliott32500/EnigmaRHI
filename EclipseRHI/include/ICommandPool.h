@@ -1,5 +1,4 @@
 #pragma once
-#include "IDevice.h"
 #include "ICommandBuffer.h"
 #include <iostream>
 #include <vector>
@@ -13,8 +12,8 @@ namespace EnigmaRHI
 	public:
 
 		virtual ~ICommandPool() = default;
-		virtual void Create(IDevice* device, ISurface* surface) = 0;
-		virtual void Destroy(IDevice* device) = 0;
+		virtual void Create(class IDevice* device, class ISurface* surface) = 0;
+		virtual void Destroy(class IDevice* device) = 0;
 
 		virtual ICommandBuffer* GetCommandBuffer(uint32_t index) = 0;
 

@@ -1,6 +1,6 @@
 #include "../include/VulkanDevice.h"
 #include "VulkanBuffer.h"
-#include "IBuffer.h"
+#include "VulkanImage.h"
 
 void VulkanDevice::Create(EnigmaRHI::IInstance* instance, EnigmaRHI::ISurface* surface)
 {
@@ -11,6 +11,34 @@ void VulkanDevice::Create(EnigmaRHI::IInstance* instance, EnigmaRHI::ISurface* s
 void VulkanDevice::Destroy()
 {
 	vkDestroyDevice(logicalDevice, nullptr);
+}
+
+EnigmaRHI::IBuffer* VulkanDevice::CreateBuffer(size_t size, uint32_t usage, size_t properties)
+{
+	EnigmaRHI::IBuffer* buffer = new VulkanBuffer();
+	buffer->Create(this, size, usage, properties);
+
+	return buffer;
+}
+
+EnigmaRHI::IImage* VulkanDevice::CreateImage(uint32_t width, uint32_t height, EnigmaRHI::ImageFormat format, bool isTexture)
+{
+	EnigmaRHI::IImage* image = new VulkanImage();
+	image->Create(this, width, height, format, isTexture);
+
+	return image;
+}
+
+void VulkanDevice::DeleteBuffer(EnigmaRHI::IBuffer* buffer)
+{
+	if (buffer)
+		delete buffer;
+}
+
+void VulkanDevice::DeleteImage(EnigmaRHI::IImage* image)
+{
+	if (image)
+		delete image;
 }
 
 void VulkanDevice::PickPhysicalDevice(VulkanInstance* instance, VulkanSurface* surface)

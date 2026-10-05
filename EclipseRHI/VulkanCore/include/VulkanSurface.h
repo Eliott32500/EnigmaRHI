@@ -2,7 +2,7 @@
 
 #include "VulkanDevice.h"
 #include "VulkanInstance.h"
-#include "../../include/ISurface.h"
+#include "ISurface.h"
 
 class VulkanSurface : public EnigmaRHI::ISurface
 {

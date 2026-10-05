@@ -13,12 +13,12 @@ public:
 	VulkanRenderInterface();
 	~VulkanRenderInterface();
 
-	EnigmaRHI::IBuffer* InstantiateBuffer() override { return new VulkanBuffer(); }
+	//EnigmaRHI::IBuffer* InstantiateBuffer() override { return new VulkanBuffer(); }
 	EnigmaRHI::ICommandBuffer* InstantiateCommandBuffer() override { return new VulkanCommandBuffer(); }
 	EnigmaRHI::ICommandPool* InstantiateCommandPool() override { return new VulkanCommandPool(); }
 	EnigmaRHI::IDescriptor* InstantiateDescriptor() override { return new VulkanDescriptor(); }
 	EnigmaRHI::IDevice* InstantiateDevice() override { return new VulkanDevice(); }
-	EnigmaRHI::IImage* InstantiateImage() override { return new VulkanImage(); }
+	//EnigmaRHI::IImage* InstantiateImage() override { return new VulkanImage(); }
 	EnigmaRHI::IInstance* InstantiateInstance() override { return new VulkanInstance(); }
 	EnigmaRHI::IPipeline* InstantiatePipeline() override { return new VulkanPipeline(); }
 	EnigmaRHI::IShaderModule* InstantiateShaderModule() override { return new VulkanShaderModule(); }

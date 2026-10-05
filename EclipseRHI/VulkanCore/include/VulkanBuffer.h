@@ -2,7 +2,7 @@
 
 #include "VulkanDevice.h"
 #include "VulkanCommandPool.h"
-#include "../../include/IBuffer.h"
+#include "IBuffer.h"
 
 class VulkanBuffer : public EnigmaRHI::IBuffer
 {

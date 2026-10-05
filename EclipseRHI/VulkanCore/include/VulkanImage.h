@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VulkanBuffer.h"
-#include "../../include/IImage.h"
+#include "IImage.h"
 
 class VulkanImage : public EnigmaRHI::IImage
 {

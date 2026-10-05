@@ -3,9 +3,7 @@
 #include <iostream>
 #include <memory>
 
-#include "IDevice.h"
 #include "ICommandPool.h"
-
 
 class VulkanBuffer;
 
