@@ -9,7 +9,7 @@
 #include <vulkan/vulkan.h>
 
 #include "VulkanSwapChain.h"
-#include "VulkanUtilities.h"
+#include "VulkanImageTypes.h"
 
 VkSurfaceFormatKHR EnigmaRHI::VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
@@ -83,7 +83,7 @@ void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICom
 		.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 	};
 
-	swapChainImageFormat = UtilitiesVulkan::FormatFromVulkan(surfaceFormat.format);
+	swapChainImageFormat = Utilities::FormatFromVulkan(surfaceFormat.format);
 	swapChainExtent = extent;
 	width = static_cast<float>(extent.width);
 	height = static_cast<float>(extent.height);
@@ -164,7 +164,7 @@ void EnigmaRHI::VulkanSwapChain::CreateImageViews(VulkanDevice* device)
 	for (uint32_t i = 0; i < swapChainImages.size(); i++) 
 	{
 		VulkanImage temp;
-		temp.CreateView(device, swapChainImages[i], UtilitiesVulkan::FormatToVulkan(swapChainImageFormat), VK_IMAGE_ASPECT_COLOR_BIT);
+		temp.CreateView(device, swapChainImages[i], Utilities::ToVulkanFormat(swapChainImageFormat), VK_IMAGE_ASPECT_COLOR_BIT);
 		swapChainImageViews[i] = temp.GetImageView();
 	}
 }
@@ -200,7 +200,7 @@ void EnigmaRHI::VulkanSwapChain::CreateSwapChainDepthResources(VulkanDevice* dev
 	VulkanImage temp;
 
 	temp.Create(device, swapChainExtent.width, swapChainExtent.height, device->FindDepthFormat());
-	temp.CreateView(device, temp.GetImage(), UtilitiesVulkan::FormatToVulkan(device->FindDepthFormat()), VK_IMAGE_ASPECT_DEPTH_BIT);
+	temp.CreateView(device, temp.GetImage(), Utilities::ToVulkanFormat(device->FindDepthFormat()), VK_IMAGE_ASPECT_DEPTH_BIT);
 
 	depthImage = temp.GetImage();
 	depthImageView = temp.GetImageView();

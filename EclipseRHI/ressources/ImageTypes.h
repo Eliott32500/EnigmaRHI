@@ -43,7 +43,6 @@ namespace EnigmaRHI
 
     enum class EImageType
     {
-        UNDEFINED,
         TYPE_1D,
         TYPE_2D,
         TYPE_3D,
@@ -51,14 +50,16 @@ namespace EnigmaRHI
         TYPE_CUBE_MAP,
     };
 
-    enum class EFilteringMode
+    enum class EFilter
     {
-        LINEAR,
         NEAREST,
-        NEAREST_MIPMAP_LINEAR,
-        LINEAR_MIPMAP_NEAREST,
-        NEAREST_MIPMAP_NEAREST,
-        LINEAR_MIPMAP_LINEAR,
+        LINEAR
+    };
+
+    enum class EMipmapMode
+    {
+        NEAREST,
+        LINEAR
     };
 
     enum class EWrappingMode
@@ -68,14 +69,5 @@ namespace EnigmaRHI
         CLAMP_TO_BORDER,
         MIRRORED_REPEAT,
         MIRROR_CLAMP_TO_EDGE,
-    };
-
-    enum class EImageDataType
-    {
-        FLOAT,
-        UNSIGNED_BYTE,
-        DEPTH_COMPONENT,
-        UNSIGNED_INT_24_8,
-        FLOAT_32_INT_8,
     };
 }

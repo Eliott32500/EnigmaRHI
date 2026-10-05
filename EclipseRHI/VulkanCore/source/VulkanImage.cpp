@@ -1,5 +1,4 @@
-#include "../include/VulkanImage.h"
-#include "../include/VulkanUtilities.h"
+#include "VulkanImage.h"
 
 void EnigmaRHI::VulkanImage::Create(IDevice* device, uint32_t width, uint32_t height, EImageFormat format, bool isTexture)
 {
@@ -14,7 +13,7 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, uint32_t width, uint32_t he
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.imageType = VK_IMAGE_TYPE_2D,
-		.format = UtilitiesVulkan::FormatToVulkan(format),
+		.format = Utilities::ToVulkanFormat(format),
 		.mipLevels = 1,
 		.arrayLayers = 1,
 		.samples = VK_SAMPLE_COUNT_1_BIT,

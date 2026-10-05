@@ -3,9 +3,8 @@
 #include "IDevice.h"
 #include "VulkanInstance.h"
 #include "VulkanSurface.h"
-#include "VulkanUtilities.h"
+#include "VulkanImageTypes.h"
 
-#include <vulkan/vulkan.h>
 #include "volk.h"
 
 #include <stdlib.h>

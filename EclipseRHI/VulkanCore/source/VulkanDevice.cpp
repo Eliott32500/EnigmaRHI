@@ -214,7 +214,7 @@ EnigmaRHI::EImageFormat EnigmaRHI::VulkanDevice::FindSupportedFormat(const std::
 	for (EnigmaRHI::EImageFormat format : candidates)
 	{
 		VkFormatProperties props;
-		vkGetPhysicalDeviceFormatProperties(physicalDevice, UtilitiesVulkan::FormatToVulkan(format), &props);
+		vkGetPhysicalDeviceFormatProperties(physicalDevice, Utilities::ToVulkanFormat(format), &props);
 
 		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
 			return format;

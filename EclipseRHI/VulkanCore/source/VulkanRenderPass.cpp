@@ -1,12 +1,11 @@
 #include "VulkanRenderPass.h"
-#include "VulkanUtilities.h"
 
 
 void EnigmaRHI::VulkanRenderPass::Create(IDevice* device, ISwapChain* swapChain, EImageFormat depthFormat)
 {
 	VkAttachmentDescription colorAttachment
 	{
-		.format = UtilitiesVulkan::FormatToVulkan(swapChain->GetSwapChainImageFormat()),
+		.format = Utilities::ToVulkanFormat(swapChain->GetSwapChainImageFormat()),
 		.samples = VK_SAMPLE_COUNT_1_BIT,
 
 		// What to do before Rendering for color and depth data
@@ -49,7 +48,7 @@ void EnigmaRHI::VulkanRenderPass::Create(IDevice* device, ISwapChain* swapChain,
 
 	VkAttachmentDescription depthAttachment
 	{
-		.format = UtilitiesVulkan::FormatToVulkan(depthFormat),
+		.format = Utilities::ToVulkanFormat(depthFormat),
 		.samples = VK_SAMPLE_COUNT_1_BIT,
 		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 		.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
