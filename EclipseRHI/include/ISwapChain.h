@@ -6,7 +6,7 @@
 #include <GLFW/glfw3native.h>
 
 #include "ICommandPool.h"
-#include "IFormat.h"
+#include "ImageTypes.h"
 
 
 namespace EnigmaRHI
@@ -24,7 +24,7 @@ namespace EnigmaRHI
 		float GetWidth() const { return width; }
 		float GetHeight() const { return height; }
 
-		virtual ImageFormat GetSwapChainImageFormat() = 0;
+		virtual EImageFormat GetSwapChainImageFormat() = 0;
 
 		virtual VulkanSwapChain& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanSwapChain"); }
 

@@ -5,7 +5,7 @@
 #include "IDevice.h"
 #include "IImage.h"
 #include "IBuffer.h"
-
+#include "ShaderTypes.h"
 #include <vector>
 
 
@@ -29,7 +29,7 @@ namespace EnigmaRHI
 
 		virtual void CreateDescriptorSets(EnigmaRHI::IDevice* device, std::vector<EnigmaRHI::IDescriptor::FrameDescriptorInfo> bufferInfos) = 0;
 
-		virtual void AddBufferBinding(uint32_t binding, ShaderStage stageFlags) = 0;
+		virtual void AddBufferBinding(uint32_t binding, EShaderType stageFlags) = 0;
 		virtual void AddImageBinding(uint32_t binding) = 0;
 
 		virtual void AddImageInfo(EnigmaRHI::IImage* imageInfo) = 0;

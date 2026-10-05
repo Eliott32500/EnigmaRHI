@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IFormat.h"
+#include "ImageTypes.h"
 #include <iostream>
 
 class Texture
@@ -16,7 +16,7 @@ public:
 	uint32_t GetWidth() const { return static_cast<uint32_t>(width); }
 	uint32_t GetHeight() const { return static_cast<uint32_t>(height); }
 	uint32_t GetChannels() const { return static_cast<uint32_t>(channels); }
-	EnigmaRHI::ImageFormat GetImageFormat() const { return imageFormat; }
+	EnigmaRHI::EImageFormat GetImageFormat() const { return imageFormat; }
 	unsigned char* GetData() const { return data; }
 
 private:
@@ -24,6 +24,6 @@ private:
 	int width = 0;
 	int height = 0;
 	int channels = 0;
-	EnigmaRHI::ImageFormat imageFormat = EnigmaRHI::ImageFormat::UNDEFINED;
+	EnigmaRHI::EImageFormat imageFormat = EnigmaRHI::EImageFormat::UNDEFINED;
 	unsigned char* data = nullptr;
 };

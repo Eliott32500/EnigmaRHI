@@ -9,11 +9,11 @@ namespace EnigmaRHI
     {
     public:
 
-        void Create(IDevice* device, uint32_t width, uint32_t height, ImageFormat format, bool isTexture = false) override;
+        void Create(IDevice* device, uint32_t width, uint32_t height, EImageFormat format, bool isTexture = false) override;
 
         void CreateTextureImage(const void* data, IDevice* device, ICommandPool* commandPool,
             uint32_t width, uint32_t height,
-            ImageFormat format
+            EImageFormat format
         ) override;
 
         void CreateView(VulkanDevice* device, VkImage image, VkFormat format, VkImageAspectFlags aspect);

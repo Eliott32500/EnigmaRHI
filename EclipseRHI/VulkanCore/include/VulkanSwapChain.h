@@ -21,7 +21,7 @@ namespace EnigmaRHI
 
 		VkExtent2D GetSwapChainExtent() const { return swapChainExtent; };
 
-		ImageFormat GetSwapChainImageFormat() override { return swapChainImageFormat; };
+		EImageFormat GetSwapChainImageFormat() override { return swapChainImageFormat; };
 
 		VkSwapchainKHR GetSwapChain() const { return swapChain; };
 		std::vector<VkFramebuffer> GetSwapChainFramebuffers() const { return swapChainFramebuffers; };
@@ -36,7 +36,7 @@ namespace EnigmaRHI
 
 		VkSwapchainKHR swapChain;
 
-		ImageFormat swapChainImageFormat;
+		EImageFormat swapChainImageFormat;
 
 		VkExtent2D swapChainExtent;
 

@@ -21,7 +21,7 @@ EnigmaRHI::IBuffer* EnigmaRHI::VulkanDevice::CreateBuffer(size_t size, uint32_t 
 	return buffer;
 }
 
-EnigmaRHI::IImage* EnigmaRHI::VulkanDevice::CreateImage(uint32_t width, uint32_t height, ImageFormat format, bool isTexture)
+EnigmaRHI::IImage* EnigmaRHI::VulkanDevice::CreateImage(uint32_t width, uint32_t height, EImageFormat format, bool isTexture)
 {
 	IImage* image = new VulkanImage();
 	image->Create(this, width, height, format, isTexture);
@@ -200,18 +200,18 @@ uint32_t EnigmaRHI::VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPr
 	throw std::runtime_error("failed to find suitable memory type!");
 }
 
-EnigmaRHI::ImageFormat EnigmaRHI::VulkanDevice::FindDepthFormat()
+EnigmaRHI::EImageFormat EnigmaRHI::VulkanDevice::FindDepthFormat()
 {
 	return FindSupportedFormat(
-		{ EnigmaRHI::ImageFormat::D32_SFLOAT, EnigmaRHI::ImageFormat::D32_SFLOAT_S8_UINT, EnigmaRHI::ImageFormat::D24_UNORM_S8_UINT },
+		{ EnigmaRHI::EImageFormat::D32_SFLOAT, EnigmaRHI::EImageFormat::D32_SFLOAT_S8_UINT, EnigmaRHI::EImageFormat::D24_UNORM_S8_UINT },
 		VK_IMAGE_TILING_OPTIMAL,
 		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 	);
 }
 
-EnigmaRHI::ImageFormat EnigmaRHI::VulkanDevice::FindSupportedFormat(const std::vector<EnigmaRHI::ImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+EnigmaRHI::EImageFormat EnigmaRHI::VulkanDevice::FindSupportedFormat(const std::vector<EnigmaRHI::EImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
-	for (EnigmaRHI::ImageFormat format : candidates)
+	for (EnigmaRHI::EImageFormat format : candidates)
 	{
 		VkFormatProperties props;
 		vkGetPhysicalDeviceFormatProperties(physicalDevice, UtilitiesVulkan::FormatToVulkan(format), &props);

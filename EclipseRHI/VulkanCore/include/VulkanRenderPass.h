@@ -11,7 +11,7 @@ namespace EnigmaRHI
 	{
 	public:
 
-		void Create(IDevice* device, ISwapChain* swapChain, ImageFormat depthFormat) override;
+		void Create(IDevice* device, ISwapChain* swapChain, EImageFormat depthFormat) override;
 		void Destroy(IDevice* device) override;
 
 		VkRenderPass GetRenderPass() const { return renderPass; }

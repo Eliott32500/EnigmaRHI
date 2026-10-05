@@ -61,8 +61,8 @@ void Application::InitAPI()
 	swapChain->Create(device, surface, commandPool, mainWindow);
 	renderPass->Create(device, swapChain, device->FindDepthFormat());
 
-	descriptor->AddBufferBinding( 0, EnigmaRHI::ShaderStage::Vertex );
-	descriptor->AddBufferBinding( 1, EnigmaRHI::ShaderStage::Vertex );
+	descriptor->AddBufferBinding( 0, EnigmaRHI::EShaderType::VERTEX );
+	descriptor->AddBufferBinding( 1, EnigmaRHI::EShaderType::VERTEX );
 	descriptor->AddImageBinding(2);
 	descriptor->Create(device);
 

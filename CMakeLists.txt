@@ -65,6 +65,7 @@ add_library(EnigmaRHI STATIC ${EclipseRHI_SOURCES})
 target_include_directories(EnigmaRHI
     PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/ressources"
         "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/VulkanCore/include"
 )
 

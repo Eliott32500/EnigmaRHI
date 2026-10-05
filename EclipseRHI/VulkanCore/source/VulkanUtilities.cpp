@@ -1,50 +1,94 @@
 #include "VulkanUtilities.h"
 #include <iostream>
 
-VkFormat EnigmaRHI::UtilitiesVulkan::FormatToVulkan(ImageFormat format)
+VkFormat EnigmaRHI::UtilitiesVulkan::FormatToVulkan(EImageFormat format)
 {
-	switch (format)
-	{
-		case ImageFormat::R8:
-			return VK_FORMAT_R8_UNORM;
+    switch (format)
+    {
+    case EImageFormat::UNDEFINED:
+        return VK_FORMAT_UNDEFINED;
 
-		case ImageFormat::RG8:
-			return VK_FORMAT_R8G8_UNORM;
+    //UNORM
+    case EImageFormat::R8_UNORM:
+        return VK_FORMAT_R8_UNORM;
 
-		case ImageFormat::RGB8:
-			return VK_FORMAT_R8G8B8_UNORM;
+    case EImageFormat::RG8_UNORM:
+        return VK_FORMAT_R8G8_UNORM;
 
-		case ImageFormat::RGBA8:
-			return VK_FORMAT_R8G8B8A8_UNORM;
+    case EImageFormat::RGB8_UNORM:
+        return VK_FORMAT_R8G8B8_UNORM;
 
-		case ImageFormat::sRGBA8:
-			return VK_FORMAT_R8G8B8A8_SRGB;
+    case EImageFormat::RGBA8_UNORM:
+        return VK_FORMAT_R8G8B8A8_UNORM;
 
-		case ImageFormat::D24_UNORM_S8_UINT:
-			return VK_FORMAT_D24_UNORM_S8_UINT;
+    //sRGB
+    case EImageFormat::R8_SRGB:
+        return VK_FORMAT_R8_SRGB;
 
-		case ImageFormat::D32_SFLOAT:
-			return VK_FORMAT_D32_SFLOAT;
+    case EImageFormat::RGBA8_SRGB:
+        return VK_FORMAT_R8G8B8A8_SRGB;
 
-		case ImageFormat::D32_SFLOAT_S8_UINT:
-			return VK_FORMAT_D32_SFLOAT_S8_UINT;
+     //FLOAT16
+    case EImageFormat::R16_SFLOAT:
+        return VK_FORMAT_R16_SFLOAT;
 
-		default:
-			return VK_FORMAT_UNDEFINED;
-	}
+    case EImageFormat::RG16_SFLOAT:
+        return VK_FORMAT_R16G16_SFLOAT;
+
+    case EImageFormat::RGB16_SFLOAT:
+        return VK_FORMAT_R16G16B16_SFLOAT;
+
+    case EImageFormat::RGBA16_SFLOAT:
+        return VK_FORMAT_R16G16B16A16_SFLOAT;
+
+     //FLOAT32
+    case EImageFormat::R32_SFLOAT:
+        return VK_FORMAT_R32_SFLOAT;
+
+    case EImageFormat::RG32_SFLOAT:
+        return VK_FORMAT_R32G32_SFLOAT;
+
+    case EImageFormat::RGB32_SFLOAT:
+        return VK_FORMAT_R32G32B32_SFLOAT;
+
+    case EImageFormat::RGBA32_SFLOAT:
+        return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+     //UINT
+    case EImageFormat::R8_UINT:
+        return VK_FORMAT_R8_UINT;
+    case EImageFormat::RG8_UINT:
+        return VK_FORMAT_R8G8_UINT;
+    case EImageFormat::RGB8_UINT:
+        return VK_FORMAT_R8G8B8_UINT;
+    case EImageFormat::RGBA8_UINT:
+        return VK_FORMAT_R8G8B8A8_UINT;
+
+     //Depth
+    case EImageFormat::D24_UNORM_S8_UINT:
+        return VK_FORMAT_D24_UNORM_S8_UINT;
+
+    case EImageFormat::D32_SFLOAT:
+        return VK_FORMAT_D32_SFLOAT;
+
+    case EImageFormat::D32_SFLOAT_S8_UINT:
+        return VK_FORMAT_D32_SFLOAT_S8_UINT;
+    }
+
+    return VK_FORMAT_UNDEFINED;
 }
 
-VkShaderStageFlags EnigmaRHI::UtilitiesVulkan::ShaderStageToVulkan(ShaderStage stage)
+VkShaderStageFlags EnigmaRHI::UtilitiesVulkan::ShaderStageToVulkan(EShaderType stage)
 {
 	switch (stage)
 	{
-		case ShaderStage::Vertex:
+		case EShaderType::VERTEX:
 			return VK_SHADER_STAGE_VERTEX_BIT;
 
-		case ShaderStage::Fragment:
+		case EShaderType::FRAGMENT:
 			return VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		case ShaderStage::Compute:
+		case EShaderType::COMPUTE:
 			return VK_SHADER_STAGE_COMPUTE_BIT;
 
 		default:
@@ -52,26 +96,26 @@ VkShaderStageFlags EnigmaRHI::UtilitiesVulkan::ShaderStageToVulkan(ShaderStage s
 	}
 }
 
-EnigmaRHI::ImageFormat EnigmaRHI::UtilitiesVulkan::FormatFromVulkan(VkFormat format)
+EnigmaRHI::EImageFormat EnigmaRHI::UtilitiesVulkan::FormatFromVulkan(VkFormat format)
 {
 	switch (format)
 	{
 	case VK_FORMAT_R8G8B8A8_UNORM:
-		return ImageFormat::RGBA8;
+		return EImageFormat::RGBA8_UNORM;
 
 	case VK_FORMAT_R8G8B8A8_SRGB:
-		return ImageFormat::sRGBA8;
+		return EImageFormat::RGBA8_SRGB;
 
 	case VK_FORMAT_D24_UNORM_S8_UINT:
-		return ImageFormat::D24_UNORM_S8_UINT;
+		return EImageFormat::D24_UNORM_S8_UINT;
 
 	case VK_FORMAT_D32_SFLOAT:
-		return ImageFormat::D32_SFLOAT;
+		return EImageFormat::D32_SFLOAT;
 
 	case VK_FORMAT_D32_SFLOAT_S8_UINT:
-		return ImageFormat::D32_SFLOAT_S8_UINT;
+		return EImageFormat::D32_SFLOAT_S8_UINT;
 
 	default:
-		return ImageFormat::UNDEFINED;
+		return EImageFormat::UNDEFINED;
 	}
 }

@@ -2,7 +2,7 @@
 #include "VulkanUtilities.h"
 
 
-void EnigmaRHI::VulkanRenderPass::Create(IDevice* device, ISwapChain* swapChain, ImageFormat depthFormat)
+void EnigmaRHI::VulkanRenderPass::Create(IDevice* device, ISwapChain* swapChain, EImageFormat depthFormat)
 {
 	VkAttachmentDescription colorAttachment
 	{

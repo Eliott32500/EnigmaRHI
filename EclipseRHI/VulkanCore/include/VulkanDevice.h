@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IDevice.h"
-#include "IFormat.h"
 #include "VulkanInstance.h"
 #include "VulkanSurface.h"
 #include "VulkanUtilities.h"
@@ -46,7 +45,7 @@ namespace EnigmaRHI
         void Destroy() override;
 
         IBuffer* CreateBuffer(size_t size, uint32_t usage, size_t properties) override;
-        IImage* CreateImage(uint32_t width, uint32_t height, ImageFormat format, bool isTexture = false) override;
+        IImage* CreateImage(uint32_t width, uint32_t height, EImageFormat format, bool isTexture = false) override;
         void DeleteBuffer(IBuffer* buffer) override;
         void DeleteImage(IImage* image) override;
 
@@ -56,8 +55,8 @@ namespace EnigmaRHI
 
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
-        ImageFormat FindDepthFormat() override;
-        ImageFormat FindSupportedFormat(const std::vector<ImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        EImageFormat FindDepthFormat() override;
+        EImageFormat FindSupportedFormat(const std::vector<EImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
         bool HasStencilComponent(VkFormat format);
 
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const;

@@ -14,7 +14,7 @@ void EnigmaRHI::VulkanDescriptor::AddImageBinding(uint32_t binding)
 	bindings.push_back(descriptorBinding);
 }
 
-void EnigmaRHI::VulkanDescriptor::AddBufferBinding(uint32_t binding, ShaderStage stageFlags)
+void EnigmaRHI::VulkanDescriptor::AddBufferBinding(uint32_t binding, EShaderType stageFlags)
 {
 	VkDescriptorSetLayoutBinding descriptorBinding
 	{

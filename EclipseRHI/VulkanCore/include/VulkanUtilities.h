@@ -1,14 +1,15 @@
 #pragma once
 
-#include "IFormat.h"
+#include "ImageTypes.h"
+#include "ShaderTypes.h"
 #include <vulkan/vulkan.h>
 
 namespace EnigmaRHI
 {
 	struct UtilitiesVulkan
 	{
-		static VkFormat FormatToVulkan(ImageFormat format);
-		static VkShaderStageFlags ShaderStageToVulkan(ShaderStage stage);
-		static ImageFormat FormatFromVulkan(VkFormat format);
+		static VkFormat FormatToVulkan(EImageFormat format);
+		static VkShaderStageFlags ShaderStageToVulkan(EShaderType stage);
+		static EImageFormat FormatFromVulkan(VkFormat format);
 	};
 }

@@ -11,7 +11,7 @@ namespace EnigmaRHI
 	public:
 
 		void AddImageBinding(uint32_t binding) override;
-		void AddBufferBinding(uint32_t binding, ShaderStage stageFlags) override;
+		void AddBufferBinding(uint32_t binding, EShaderType stageFlags) override;
 
 		void AddImageInfo(IImage* imageInfo) override;
 		void AddBufferInfo(std::vector<VkDescriptorBufferInfo> bufferInfo) { bufferInfos.push_back(bufferInfo); }
