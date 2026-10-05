@@ -67,6 +67,7 @@ target_include_directories(EnigmaRHI
         "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/include"
         "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/ressources"
         "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/VulkanCore/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/VulkanCore/ressources/include"
 )
 
 target_compile_definitions(EnigmaRHI
@@ -94,8 +95,7 @@ file(GLOB_RECURSE FORWARD_RENDERER_SOURCES CONFIGURE_DEPENDS
 )
 
 add_executable(VulkanForwardRenderer
-    ${FORWARD_RENDERER_SOURCES}
- "EclipseRHI/VulkanCore/source/VulkanRenderInterface.cpp")
+    ${FORWARD_RENDERER_SOURCES})
 
 target_include_directories(VulkanForwardRenderer
     PRIVATE

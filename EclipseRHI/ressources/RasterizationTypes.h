@@ -17,7 +17,7 @@ namespace EnigmaRHI
         POINT
     };
 
-    enum class EFrontFace
+    enum class EFrontFaceMode
     {
         CLOCKWISE,
         COUNTER_CLOCKWISE
