@@ -48,6 +48,8 @@ FetchContent_MakeAvailable(
     tinyobjloader
 )
 
+target_compile_definitions(volk PUBLIC VK_USE_PLATFORM_WIN32_KHR)
+
 # ============================================================
 # EnigmaRHI
 # ============================================================
