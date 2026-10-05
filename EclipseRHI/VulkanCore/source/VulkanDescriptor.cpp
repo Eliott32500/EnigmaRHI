@@ -1,5 +1,6 @@
 #include "VulkanDescriptor.h"
 #include "RHIConfig.h"
+#include "VulkanShaderTypes.h"
 
 void EnigmaRHI::VulkanDescriptor::AddImageBinding(uint32_t binding)
 {
@@ -21,7 +22,7 @@ void EnigmaRHI::VulkanDescriptor::AddBufferBinding(uint32_t binding, EShaderType
 		.binding = binding,
 		.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 		.descriptorCount = 1,
-		.stageFlags = UtilitiesVulkan::ShaderStageToVulkan(stageFlags),
+		.stageFlags = Utilities::ToVulkanShaderType(stageFlags),
 	};
 
 	bindings.push_back(descriptorBinding);
