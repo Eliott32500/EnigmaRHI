@@ -1,9 +1,10 @@
-#include "../include/VulkanCommandPool.h"
+#include "VulkanCommandPool.h"
+#include "RHIConfig.h"
 
 void VulkanCommandPool::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ISurface* surface)
 {
 	CreateCommandPool(&device->API_Vulkan(), surface->API_Vulkan().GetSurface());
-	commandBuffers = CreateCommandBuffer(&device->API_Vulkan(), device->MAX_FRAMES_IN_FLIGHT);
+	commandBuffers = CreateCommandBuffer(&device->API_Vulkan(), EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 }
 
 std::vector<VulkanCommandBuffer> VulkanCommandPool::CreateCommandBuffer(VulkanDevice* device, uint32_t size)

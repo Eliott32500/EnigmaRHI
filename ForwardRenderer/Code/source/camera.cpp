@@ -10,9 +10,9 @@ void Camera::CreateCameraDataBuffer(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI:
 {
 	VkDeviceSize bufferSize = sizeof(CameraData);
 
-	cameraDataBuffers.resize(vulkanDevice->MAX_FRAMES_IN_FLIGHT);
+	cameraDataBuffers.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 
-	for (size_t i = 0; i < vulkanDevice->MAX_FRAMES_IN_FLIGHT; i++)
+	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		cameraDataBuffers[i] = rhi->InstantiateBuffer();
 		cameraDataBuffers[i]->Create(vulkanDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -140,7 +140,7 @@ void Camera::MouseCallback(GLFWwindow* window)
 
 void Camera::Destroy(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device)
 {
-    for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
+    for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
     {
         cameraDataBuffers[i]->UnMapMemory(device);
         cameraDataBuffers[i]->Destroy(device);

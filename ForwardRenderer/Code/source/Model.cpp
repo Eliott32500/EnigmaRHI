@@ -7,9 +7,9 @@ void Model::Create(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device,
 {
 	size_t bufferSize = sizeof(ModelData);
 
-	modelBuffers.resize(device->MAX_FRAMES_IN_FLIGHT);
+	modelBuffers.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 
-	for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
+	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		modelBuffers[i] = rhi->InstantiateBuffer();
 		modelBuffers[i]->Create(device, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -31,7 +31,7 @@ void Model::UpdateDataBuffer(uint32_t currentImage, glm::mat4 translate, glm::ma
 
 void Model::Destroy(EnigmaRHI::IRenderInterface* rhi, EnigmaRHI::IDevice* device)
 {
-	for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
+	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		modelBuffers[i]->Destroy(device);
 		rhi->DeleteBuffer(modelBuffers[i]);

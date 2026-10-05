@@ -1,4 +1,5 @@
-#include "../include/VulkanDescriptor.h"
+#include "VulkanDescriptor.h"
+#include "RHIConfig.h"
 
 void VulkanDescriptor::AddImageBinding(uint32_t binding)
 {
@@ -67,13 +68,13 @@ void VulkanDescriptor::CreateDescriptorPool(VulkanDevice* device)
 	for (int i = 0; i < bindings.size(); i++)
 	{
 		poolSizes[i].type = bindings[i].descriptorType;
-		poolSizes[i].descriptorCount = static_cast<uint32_t>(device->MAX_FRAMES_IN_FLIGHT);
+		poolSizes[i].descriptorCount = static_cast<uint32_t>(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 	}
 
 	VkDescriptorPoolCreateInfo poolInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-		.maxSets = static_cast<uint32_t>(device->MAX_FRAMES_IN_FLIGHT),
+		.maxSets = static_cast<uint32_t>(EnigmaRHI::MAX_FRAMES_IN_FLIGHT),
 		.poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
 		.pPoolSizes = poolSizes.data(),
 	};
@@ -84,22 +85,22 @@ void VulkanDescriptor::CreateDescriptorPool(VulkanDevice* device)
 
 void VulkanDescriptor::CreateDescriptorSets(EnigmaRHI::IDevice* device, std::vector<EnigmaRHI::IDescriptor::FrameDescriptorInfo> bufferInfos)
 {
-	std::vector<VkDescriptorSetLayout> layouts(device->MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
+	std::vector<VkDescriptorSetLayout> layouts(EnigmaRHI::MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
 	 
 	VkDescriptorSetAllocateInfo allocInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
 		.descriptorPool = descriptorPool,
-		.descriptorSetCount = static_cast<uint32_t>(device->MAX_FRAMES_IN_FLIGHT),
+		.descriptorSetCount = static_cast<uint32_t>(EnigmaRHI::MAX_FRAMES_IN_FLIGHT),
 		.pSetLayouts = layouts.data(),
 	};
 	
-	descriptorSets.resize(device->MAX_FRAMES_IN_FLIGHT);
+	descriptorSets.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 
 	if (vkAllocateDescriptorSets(device->API_Vulkan().GetDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS)
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	
-	for (size_t frame = 0; frame < device->MAX_FRAMES_IN_FLIGHT; frame++)
+	for (size_t frame = 0; frame < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; frame++)
 	{
 		uint32_t bufferIndex = 0;
 		uint32_t imageIndex = 0;

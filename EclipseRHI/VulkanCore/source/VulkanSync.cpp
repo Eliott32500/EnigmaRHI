@@ -1,10 +1,10 @@
-#include "../include/VulkanSync.h"
+#include "VulkanSync.h"
 
 void VulkanSync::Create(EnigmaRHI::IDevice* device)
 {
-	imageAvailableSemaphores.resize(device->MAX_FRAMES_IN_FLIGHT);
-	renderFinishedSemaphores.resize(device->MAX_FRAMES_IN_FLIGHT);
-	inFlightFences.resize(device->MAX_FRAMES_IN_FLIGHT);
+	imageAvailableSemaphores.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
+	renderFinishedSemaphores.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
+	inFlightFences.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 
 	VkSemaphoreCreateInfo semaphoreInfo
 	{
@@ -17,7 +17,7 @@ void VulkanSync::Create(EnigmaRHI::IDevice* device)
 		.flags = VK_FENCE_CREATE_SIGNALED_BIT,
 	};
 
-	for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
+	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		if (vkCreateSemaphore(device->API_Vulkan().GetDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
 			vkCreateSemaphore(device->API_Vulkan().GetDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
@@ -30,7 +30,7 @@ void VulkanSync::Create(EnigmaRHI::IDevice* device)
 
 void VulkanSync::Destroy(EnigmaRHI::IDevice* device)
 {
-	for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
+	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		vkDestroySemaphore(device->API_Vulkan().GetDevice(), renderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(device->API_Vulkan().GetDevice(), imageAvailableSemaphores[i], nullptr);

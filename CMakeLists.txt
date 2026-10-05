@@ -58,9 +58,7 @@ file(GLOB_RECURSE EclipseRHI_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/*.hpp"
 )
 
-add_library(EnigmaRHI STATIC
-    ${EclipseRHI_SOURCES}
- "EclipseRHI/VulkanCore/source/VulkanRenderInterface.cpp")
+add_library(EnigmaRHI STATIC ${EclipseRHI_SOURCES})
 
 target_include_directories(EnigmaRHI
     PUBLIC

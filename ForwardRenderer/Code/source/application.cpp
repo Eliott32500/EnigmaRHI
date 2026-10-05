@@ -82,9 +82,9 @@ void Application::InitAPI()
 	descriptor->AddImageInfo(roomTexture);
 
 	std::vector<EnigmaRHI::IDescriptor::FrameDescriptorInfo> perFrameDescriptors;
-	perFrameDescriptors.resize(device->MAX_FRAMES_IN_FLIGHT);
+	perFrameDescriptors.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 
-	for (size_t i = 0; i < device->MAX_FRAMES_IN_FLIGHT; i++)
+	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		perFrameDescriptors[i].buffers.push_back(cam->GetCameraDataBuffers()[i]->bufferInfo);
 		perFrameDescriptors[i].buffers.push_back(model->GetModelBuffers()[i]->bufferInfo);
@@ -164,5 +164,5 @@ void Application::DrawFrame()
 	cmd->EndDraw();
 	
 	syncronizer->PresentFrame(device, swapChain, commandPool, surface, renderPass, mainWindow, &imageIndex);
-	syncronizer->MoveToNextFrame(device);
+	syncronizer->MoveToNextFrame();
 }
