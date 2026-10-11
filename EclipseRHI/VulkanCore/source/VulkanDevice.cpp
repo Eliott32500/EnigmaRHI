@@ -1,265 +1,96 @@
 #include "VulkanDevice.h"
 #include "VulkanBuffer.h"
 #include "VulkanImage.h"
+#include "RHILog.h"
+#include <set>
 
-void EnigmaRHI::VulkanDevice::Create(IInstance* instance, ISurface* surface)
+namespace EnigmaRHI
 {
-	PickPhysicalDevice(&instance->API_Vulkan(), &surface->API_Vulkan());
-	CreateLogicalDevice(&surface->API_Vulkan());
-}
+    void VulkanDevice::Create(IInstance* instance, ISurface* surface)
+    {
+        physicalVulkanDevice.Pick(&instance->API_Vulkan(), &surface->API_Vulkan());
+        CreateLogicalDevice();
+    }
 
-void EnigmaRHI::VulkanDevice::Destroy()
-{
-	vkDestroyDevice(logicalDevice, nullptr);
-}
+    void VulkanDevice::Destroy()
+    {
+        if (logicalDevice != VK_NULL_HANDLE)
+        {
+            vkDestroyDevice(logicalDevice, nullptr);
+            logicalDevice = VK_NULL_HANDLE;
+        }
+    }
 
-EnigmaRHI::IBuffer* EnigmaRHI::VulkanDevice::CreateBuffer(size_t size, uint32_t usage, size_t properties)
-{
-	IBuffer* buffer = new VulkanBuffer();
-	buffer->Create(this, size, usage, properties);
+    void VulkanDevice::CreateLogicalDevice()
+    {
+        const QueueFamilyIndices& indices = physicalVulkanDevice.Queues();
 
-	return buffer;
-}
+        std::set<uint32_t> uniqueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+        std::vector<VkDeviceQueueCreateInfo> queueInfos;
+        float priority = 1.0f;
+        for (uint32_t family : uniqueFamilies)
+        {
+            VkDeviceQueueCreateInfo info{};
+            info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            info.queueFamilyIndex = family;
+            info.queueCount = 1;
+            info.pQueuePriorities = &priority;
+            queueInfos.push_back(info);
+        }
 
-EnigmaRHI::IImage* EnigmaRHI::VulkanDevice::CreateImage(uint32_t width, uint32_t height, EImageFormat format, bool isTexture)
-{
-	IImage* image = new VulkanImage();
-	image->Create(this, width, height, format, isTexture);
+        VkPhysicalDeviceVulkan13Features f13
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+            .synchronization2 = VK_TRUE,
+            .dynamicRendering = VK_TRUE,
+        };
+        VkPhysicalDeviceVulkan12Features f12
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+            .pNext = &f13,
+            .timelineSemaphore = VK_TRUE,
+        };
+        VkPhysicalDeviceFeatures2 features2
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+            .pNext = &f12,
+            .features = {.samplerAnisotropy = VK_TRUE },
+        };
 
-	return image;
-}
+        VkDeviceCreateInfo createInfo{};
+		createInfo.pNext = &features2;
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size());
+        createInfo.pQueueCreateInfos = queueInfos.data();
+        createInfo.pEnabledFeatures = nullptr;
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(kRequiredDeviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = kRequiredDeviceExtensions.data();
 
-void EnigmaRHI::VulkanDevice::DeleteBuffer(IBuffer* buffer)
-{
-	if (buffer)
-		delete buffer;
-}
+        if (vkCreateDevice(physicalVulkanDevice.Handle(), &createInfo, nullptr, &logicalDevice) != VK_SUCCESS)
+            LOG_FATAL(LogCategory::Vulkan, "Failed to create logical device !");
 
-void EnigmaRHI::VulkanDevice::DeleteImage(IImage* image)
-{
-	if (image)
-		delete image;
-}
+        volkLoadDevice(logicalDevice);
 
-void EnigmaRHI::VulkanDevice::PickPhysicalDevice(VulkanInstance* instance, VulkanSurface* surface)
-{
-	// compte le nombre de GPU
-	uint32_t deviceCount = 0;
-	vkEnumeratePhysicalDevices(instance->GetInstance(), &deviceCount, nullptr);
+        graphicsQueue.Init(logicalDevice, indices.graphicsFamily.value());
+        presentQueue.Init(logicalDevice, indices.presentFamily.value());
+    }
 
-	if (deviceCount == 0)
-	{
-		throw std::runtime_error("failed to find GPUs with Vulkan support!");
-	}
+    IBuffer* VulkanDevice::CreateBuffer(size_t size, uint32_t usage, size_t properties)
+    {
+        IBuffer* buffer = new VulkanBuffer();
+        buffer->Create(this, size, usage, properties);
+        return buffer;
+    }
 
-	std::vector<VkPhysicalDevice> devices(deviceCount);
-	vkEnumeratePhysicalDevices(instance->GetInstance(), &deviceCount, devices.data());
+    IImage* VulkanDevice::CreateImage(uint32_t w, uint32_t h, EImageFormat format, bool isTexture)
+    {
+        IImage* image = new VulkanImage();
+        image->Create(this, w, h, format, isTexture);
+        return image;
+    }
 
-	std::multimap<int, VkPhysicalDevice> candidates;
+    void VulkanDevice::DeleteBuffer(IBuffer* buffer) { delete buffer; }
+    void VulkanDevice::DeleteImage(IImage* image) { delete image; }
 
-	for (const auto& device : devices)
-	{
-		int score = RateDeviceSuitability(device, surface->GetSurface());
-		candidates.insert(std::make_pair(score, device));
-	}
-
-	// Check if the best candidate is suitable at all
-	if (candidates.rbegin()->first > 0)
-		physicalDevice = candidates.rbegin()->second;
-	else
-		throw std::runtime_error("failed to find a suitable GPU!");
-}
-
-int EnigmaRHI::VulkanDevice::RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface)
-{
-	VkPhysicalDeviceProperties deviceProperties;
-	VkPhysicalDeviceFeatures deviceFeatures;
-	vkGetPhysicalDeviceProperties(device, &deviceProperties);
-	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-	int score = 0;
-
-	if (!IsDeviceSuitable(device, surface))
-		return score;
-
-	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-		score += 1000;
-	}
-
-	// Maximum possible size of textures affects graphics quality
-	score += deviceProperties.limits.maxImageDimension2D;
-
-	if (!deviceFeatures.geometryShader) {
-		return 0;
-	}
-
-	return score;
-}
-
-bool EnigmaRHI::VulkanDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
-{
-	uint32_t extensionCount;
-	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
-
-	for (const auto& extension : availableExtensions)
-	{
-		requiredExtensions.erase(extension.extensionName);
-	}
-
-	return requiredExtensions.empty();
-}
-
-bool EnigmaRHI::VulkanDevice::IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface)
-{
-	QueueFamilyIndices indices = FindQueueFamilies(device, surface);
-
-	bool extensionsSupported = CheckDeviceExtensionSupport(device);
-
-	bool swapChainAdequate = false;
-	if (extensionsSupported) {
-		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);
-		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-	}
-
-	VkPhysicalDeviceFeatures supportedFeatures;
-	vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
-
-	return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
-}
-
-void EnigmaRHI::VulkanDevice::CreateLogicalDevice(VulkanSurface* surface)
-{
-	QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface->GetSurface());
-	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
-	float queuePriority = 1.0f;
-	for (uint32_t queueFamily : uniqueQueueFamilies)
-	{
-		VkDeviceQueueCreateInfo queueCreateInfo{};
-		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueCreateInfo.queueFamilyIndex = queueFamily;
-		queueCreateInfo.queueCount = 1;
-		queueCreateInfo.pQueuePriorities = &queuePriority;
-		queueCreateInfos.push_back(queueCreateInfo);
-	}
-	VkPhysicalDeviceFeatures deviceFeatures{};
-	deviceFeatures.samplerAnisotropy = VK_TRUE;
-
-	VkDeviceCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-	createInfo.pQueueCreateInfos = queueCreateInfos.data();
-	createInfo.pEnabledFeatures = &deviceFeatures;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-
-	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) != VK_SUCCESS)
-		throw std::runtime_error("failed to create logical device!");
-
-	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
-	vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentationQueue);
-}
-
-EnigmaRHI::QueueFamilyIndices EnigmaRHI::VulkanDevice::FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) const
-{
-	QueueFamilyIndices indices;
-	uint32_t queueFamilyCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-	int i = 0;
-	for (const auto& queueFamily : queueFamilies)
-	{
-		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			indices.graphicsFamily = i;
-		VkBool32 presentSupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-		if (presentSupport)
-			indices.presentFamily = i;
-		if (indices.isComplete())
-			break;
-		i++;
-	}
-	return indices;
-}
-
-uint32_t EnigmaRHI::VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
-{
-	VkPhysicalDeviceMemoryProperties memProperties;
-	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
-	{
-		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-			return i;
-	}
-	throw std::runtime_error("failed to find suitable memory type!");
-}
-
-EnigmaRHI::EImageFormat EnigmaRHI::VulkanDevice::FindDepthFormat()
-{
-	return FindSupportedFormat(
-		{ EnigmaRHI::EImageFormat::D32_SFLOAT, EnigmaRHI::EImageFormat::D32_SFLOAT_S8_UINT, EnigmaRHI::EImageFormat::D24_UNORM_S8_UINT },
-		VK_IMAGE_TILING_OPTIMAL,
-		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-	);
-}
-
-EnigmaRHI::EImageFormat EnigmaRHI::VulkanDevice::FindSupportedFormat(const std::vector<EnigmaRHI::EImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
-{
-	for (EnigmaRHI::EImageFormat format : candidates)
-	{
-		VkFormatProperties props;
-		vkGetPhysicalDeviceFormatProperties(physicalDevice, Utilities::ToVulkanFormat(format), &props);
-
-		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
-			return format;
-		}
-		else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
-			return format;
-		}
-	}
-
-	throw std::runtime_error("failed to find supported format!");
-}
-
-bool EnigmaRHI::VulkanDevice::HasStencilComponent(VkFormat format)
-{
-	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
-}
-
-EnigmaRHI::SwapChainSupportDetails EnigmaRHI::VulkanDevice::QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const
-{
-	SwapChainSupportDetails details;
-
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
-
-	uint32_t formatCount;
-	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
-
-	if (formatCount != 0)
-	{
-		details.formats.resize(formatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
-	}
-
-	uint32_t presentModeCount;
-	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
-
-	if (presentModeCount != 0)
-	{
-		details.presentModes.resize(presentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
-	}
-
-	return details;
-}
-
-void EnigmaRHI::VulkanDevice::DeviceWaitIdle()
-{
-	vkDeviceWaitIdle(logicalDevice);
+    void VulkanDevice::DeviceWaitIdle() { vkDeviceWaitIdle(logicalDevice); }
 }

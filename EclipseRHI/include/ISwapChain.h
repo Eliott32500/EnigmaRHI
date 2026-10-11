@@ -17,7 +17,7 @@ namespace EnigmaRHI
 	public:
 
 		virtual ~ISwapChain() = default;
-		virtual void Create(IDevice* device, ISurface* surface, ICommandPool* commandPool, GLFWwindow* window) = 0;
+		virtual void Create(IDevice* device, class ISurface* surface, ICommandPool* commandPool, GLFWwindow* window) = 0;
 		virtual void Destroy(IDevice* device) = 0;
 
 		float GetWidth() const { return width; }

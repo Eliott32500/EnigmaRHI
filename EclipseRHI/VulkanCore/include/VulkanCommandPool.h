@@ -12,10 +12,10 @@ namespace EnigmaRHI
 
 		VulkanCommandPool() = default;
 
-		void Create(IDevice* device, ISurface* surface) override;
+		void Create(IDevice* device) override;
 
 		std::vector<VulkanCommandBuffer> CreateCommandBuffer(VulkanDevice* device, uint32_t size);
-		void CreateCommandPool(VulkanDevice* device, VkSurfaceKHR surface);
+		void CreateCommandPool(VulkanDevice* device);
 
 		VkCommandBuffer BeginSingleTimeCommands(VulkanDevice* device);
 		void EndSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer);

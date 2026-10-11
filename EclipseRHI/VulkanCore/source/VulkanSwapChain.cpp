@@ -10,6 +10,7 @@
 
 #include "VulkanSwapChain.h"
 #include "VulkanImageTypes.h"
+#include "VulkanSwapChainSupport.h"
 
 VkSurfaceFormatKHR EnigmaRHI::VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
@@ -59,7 +60,7 @@ VkExtent2D EnigmaRHI::VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilit
 
 void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICommandPool* commandPool, GLFWwindow* window)
 {
-	SwapChainSupportDetails swapChainSupport = device->API_Vulkan().QuerySwapChainSupport(device->API_Vulkan().GetPhysicalDevice(), surface->API_Vulkan().GetSurface());
+	SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device->API_Vulkan().GetPhysicalDevice().Handle(), surface->API_Vulkan().GetSurface());
 
 	VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
 	VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
@@ -88,10 +89,9 @@ void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICom
 	width = static_cast<float>(extent.width);
 	height = static_cast<float>(extent.height);
 
-	QueueFamilyIndices indices = device->API_Vulkan().FindQueueFamilies(device->API_Vulkan().GetPhysicalDevice(), surface->API_Vulkan().GetSurface());
-	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+	uint32_t queueFamilyIndices[] = { device->API_Vulkan().GetGraphicsQueue().FamilyIndex(), device->API_Vulkan().GetPresentQueue().FamilyIndex() };
 
-	if (indices.graphicsFamily != indices.presentFamily)
+	if (queueFamilyIndices[0] != queueFamilyIndices[1])
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		createInfo.queueFamilyIndexCount = 2;

@@ -13,7 +13,7 @@ namespace EnigmaRHI
 	public:
 
 		virtual ~ICommandPool() = default;
-		virtual void Create(class IDevice* device, class ISurface* surface) = 0;
+		virtual void Create(class IDevice* device) = 0;
 		virtual void Destroy(class IDevice* device) = 0;
 
 		virtual ICommandBuffer* GetCommandBuffer(uint32_t index) = 0;

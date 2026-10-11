@@ -20,7 +20,7 @@ void EnigmaRHI::VulkanBuffer::Create(IDevice* device, size_t size, uint32_t usag
 	{
 		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 		.allocationSize = memRequirements.size,
-		.memoryTypeIndex = device->API_Vulkan().FindMemoryType(memRequirements.memoryTypeBits, static_cast<VkMemoryPropertyFlags>(properties)),
+		.memoryTypeIndex = device->API_Vulkan().GetPhysicalDevice().FindMemoryType(memRequirements.memoryTypeBits, static_cast<VkMemoryPropertyFlags>(properties)),
 	};
 
 	if (vkAllocateMemory(device->API_Vulkan().GetDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)

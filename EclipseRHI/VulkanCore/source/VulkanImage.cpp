@@ -1,4 +1,5 @@
 #include "VulkanImage.h"
+#include "RHILog.h"
 
 void EnigmaRHI::VulkanImage::Create(IDevice* device, uint32_t width, uint32_t height, EImageFormat format, bool isTexture)
 {
@@ -28,7 +29,7 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, uint32_t width, uint32_t he
 	imageInfo.extent.depth = 1;
 
 	if (vkCreateImage(device->API_Vulkan().GetDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS)
-		throw std::runtime_error("failed to create image!");
+		LOG_ERROR(LogCategory::Vulkan, "Failed to create image !");
 
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(device->API_Vulkan().GetDevice(), image, &memRequirements);
@@ -37,11 +38,11 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, uint32_t width, uint32_t he
 	{
 		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 		.allocationSize = memRequirements.size,
-		.memoryTypeIndex = device->API_Vulkan().FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
+		.memoryTypeIndex = device->API_Vulkan().GetPhysicalDevice().FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
 	};
 
 	if (vkAllocateMemory(device->API_Vulkan().GetDevice(), &allocInfo, nullptr, &memory) != VK_SUCCESS)
-		throw std::runtime_error("failed to allocate image memory!");
+		LOG_ERROR(LogCategory::Vulkan, "Failed to allocate image memory!");
 
 	vkBindImageMemory(device->API_Vulkan().GetDevice(), image, memory, 0);
 }
@@ -90,7 +91,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkImage imageInfo,
 	viewInfo.subresourceRange.layerCount = 1;
 
 	if (vkCreateImageView(device->GetDevice(), &viewInfo, nullptr, &view) != VK_SUCCESS)
-		throw std::runtime_error("failed to create image view!");
+		LOG_ERROR(LogCategory::Vulkan, "Failed to create image view!");
 }
 
 void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter)
@@ -136,12 +137,12 @@ void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter
 	};
 
 	VkPhysicalDeviceProperties properties{};
-	vkGetPhysicalDeviceProperties(device->GetPhysicalDevice(), &properties);
+	vkGetPhysicalDeviceProperties(device->GetPhysicalDevice().Handle(), &properties);
 
 	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
 
 	if (vkCreateSampler(device->GetDevice(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
-		throw std::runtime_error("failed to create texture sampler!");
+		LOG_ERROR(LogCategory::Vulkan, "Failed to create texture sampler!");
 }
 
 
@@ -171,7 +172,7 @@ void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanComman
 	{
 		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-		if (device->HasStencilComponent(format))
+		if (VulkanPhysicalDevice::HasStencilComponent(format))
 			imageMemoryBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	}
 	else
@@ -250,6 +251,7 @@ void EnigmaRHI::VulkanImage::Destroy(IDevice* device)
 {
 	if (sampler != VK_NULL_HANDLE)
 		vkDestroySampler(device->API_Vulkan().GetDevice(), sampler, nullptr);
+
 	vkDestroyImageView(device->API_Vulkan().GetDevice(), view, nullptr);
 	vkDestroyImage(device->API_Vulkan().GetDevice(), image, nullptr);
 	vkFreeMemory(device->API_Vulkan().GetDevice(), memory, nullptr);

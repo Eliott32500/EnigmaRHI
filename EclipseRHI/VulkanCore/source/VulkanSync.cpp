@@ -79,7 +79,7 @@ void EnigmaRHI::VulkanSync::PresentFrame(IDevice* device, ISwapChain* swapChain,
 		.pSignalSemaphores = signalSemaphores,
 	};
 
-	if (vkQueueSubmit(device->API_Vulkan().GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
+	if (vkQueueSubmit(device->API_Vulkan().GetGraphicsQueue().Handle(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 		throw std::runtime_error("failed to submit draw command buffer!");
 
 	VkSwapchainKHR swapChains[] = { swapChain->API_Vulkan().GetSwapChain() };
@@ -95,17 +95,16 @@ void EnigmaRHI::VulkanSync::PresentFrame(IDevice* device, ISwapChain* swapChain,
 		.pResults = nullptr, // Optional
 	};
 
-	nextImage = vkQueuePresentKHR(device->API_Vulkan().GetPresQueue(), &presentInfo);
+	nextImage = vkQueuePresentKHR(device->API_Vulkan().GetPresentQueue().Handle(), &presentInfo);
 
 	if (nextImage == VK_ERROR_OUT_OF_DATE_KHR || nextImage == VK_SUBOPTIMAL_KHR)
 	{
 		swapChain->API_Vulkan().RecreateSwapChain(&device->API_Vulkan(), &commandPool->API_Vulkan(), &surface->API_Vulkan(), renderPass->API_Vulkan().GetRenderPass(), window);
 	}
-
 	else if (nextImage != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to present swap chain image!");
 	}
 
-	vkQueueWaitIdle(device->API_Vulkan().GetPresQueue());
+	vkQueueWaitIdle(device->API_Vulkan().GetPresentQueue().Handle());
 }

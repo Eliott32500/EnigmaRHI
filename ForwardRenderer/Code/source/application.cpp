@@ -57,7 +57,7 @@ void Application::InitAPI()
 	instance->Create(instanceInfo);
 	surface->Create(instance, windowInfo);
 	device->Create(instance, surface);
-	commandPool->Create(device, surface);
+	commandPool->Create(device);
 	swapChain->Create(device, surface, commandPool, mainWindow);
 	renderPass->Create(device, swapChain, device->FindDepthFormat());
 
@@ -108,7 +108,6 @@ void Application::MainLoop()
 		glfwPollEvents();
 		DrawFrame();
 	}
-	device->DeviceWaitIdle();
 }
 
 void Application::CleanUp()
@@ -171,4 +170,6 @@ void Application::DrawFrame()
 	
 	syncronizer->PresentFrame(device, swapChain, commandPool, surface, renderPass, mainWindow, &imageIndex);
 	syncronizer->MoveToNextFrame();
+
+	device->DeviceWaitIdle();
 }

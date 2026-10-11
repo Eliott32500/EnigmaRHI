@@ -1,9 +1,9 @@
 #include "VulkanCommandPool.h"
 #include "RHIConfig.h"
 
-void EnigmaRHI::VulkanCommandPool::Create(IDevice* device, ISurface* surface)
+void EnigmaRHI::VulkanCommandPool::Create(IDevice* device)
 {
-	CreateCommandPool(&device->API_Vulkan(), surface->API_Vulkan().GetSurface());
+	CreateCommandPool(&device->API_Vulkan());
 	commandBuffers = CreateCommandBuffer(&device->API_Vulkan(), EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 }
 
@@ -19,15 +19,13 @@ std::vector<EnigmaRHI::VulkanCommandBuffer> EnigmaRHI::VulkanCommandPool::Create
 	return commandBuffers;
 }
 
-void EnigmaRHI::VulkanCommandPool::CreateCommandPool(VulkanDevice* device, VkSurfaceKHR surface)
+void EnigmaRHI::VulkanCommandPool::CreateCommandPool(VulkanDevice* device)
 {
-	QueueFamilyIndices queueFamilyIndices = device->FindQueueFamilies(device->GetPhysicalDevice(), surface);
-	
 	VkCommandPoolCreateInfo poolInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 		.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-		.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value(),
+		.queueFamilyIndex = device->GetGraphicsQueue().FamilyIndex(),
 	};
 	
 	if (vkCreateCommandPool(device->GetDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
@@ -69,8 +67,8 @@ void EnigmaRHI::VulkanCommandPool::EndSingleTimeCommands(VulkanDevice* device, V
 		.pCommandBuffers = &commandBuffer,
 	};
 	
-	vkQueueSubmit(device->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(device->GetGraphicsQueue());
+	vkQueueSubmit(device->GetGraphicsQueue().Handle(), 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(device->GetGraphicsQueue().Handle());
 	
 	vkFreeCommandBuffers(device->GetDevice(), commandPool, 1, &commandBuffer);
 }
