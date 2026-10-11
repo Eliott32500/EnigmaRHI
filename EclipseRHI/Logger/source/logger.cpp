@@ -42,8 +42,8 @@ void Logger::Log(LogLevel level, LogCategory category, std::string message)
         break;
     }
 
-	str += message;
     str += RESET;
+	str += message;
 
     if(level == LogLevel::Fatal)
     {
@@ -51,5 +51,5 @@ void Logger::Log(LogLevel level, LogCategory category, std::string message)
         std::cout << std::endl;
 	}
 
-    std::cout << str << std::endl;
+    std::cout << str << std::endl << std::endl;
 }

@@ -68,6 +68,7 @@ target_include_directories(EnigmaRHI
         "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/ressources"
         "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/VulkanCore/include"
         "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/VulkanCore/ressources/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/EclipseRHI/Logger/include"
 )
 
 target_compile_definitions(EnigmaRHI
