@@ -16,7 +16,7 @@ namespace EnigmaRHI
 
         void Create(IInstance* instance, ISurface* surface) override;
         void Destroy() override;
-        void DeviceWaitIdle() override;
+        void WaitIdle() override;
 
         IBuffer* CreateBuffer(size_t size, uint32_t usage, size_t properties) override;
         IImage* CreateImage(uint32_t width, uint32_t height, EImageFormat format, bool isTexture = false) override;

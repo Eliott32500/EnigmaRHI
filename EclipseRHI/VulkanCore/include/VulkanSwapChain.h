@@ -11,41 +11,46 @@ namespace EnigmaRHI
 	{
 	public:
 
-		void Create(IDevice* device, ISurface* surface, ICommandPool* commandPool, GLFWwindow* window) override;
+		void Create(IDevice* device, ISurface* surface, ICommandPool* commandPool, Extent2D windowExtent) override;
 		void Destroy(IDevice* device) override;
+		void CreateVulkanImages(VulkanDevice* device, uint32_t imageCount);
 
+		// A modifier impérativement
 		void RecreateSwapChain(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanSurface* surface, VkRenderPass renderPass, GLFWwindow* window);
-		void CreateImageViews(VulkanDevice* device);
+		//
+
+		//A supprimer plus tard
 		void CreateSwapChainFramebuffers(VulkanDevice* device, VkRenderPass renderPass);
 		void CreateSwapChainDepthResources(VulkanDevice* device, VulkanCommandPool* commandPool);
-
-		VkExtent2D GetSwapChainExtent() const { return swapChainExtent; };
-
 		EImageFormat GetSwapChainImageFormat() override { return swapChainImageFormat; };
+		std::vector<VkFramebuffer> GetSwapChainFramebuffers() const { return swapChainFramebuffers; };
+		//
 
 		VkSwapchainKHR GetSwapChain() const { return swapChain; };
-		std::vector<VkFramebuffer> GetSwapChainFramebuffers() const { return swapChainFramebuffers; };
 
 		VulkanSwapChain& API_Vulkan() override { return (*this); }
 
 	private:
 
+		VkSwapchainKHR swapChain;
+
+		std::vector<VulkanImage> swapChainVulkanImages;
+		VkSurfaceFormatKHR swapChainSurfaceFormat;
+
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		Extent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, Extent2D windowExtent);
+		uint32_t ChooseSwapMinImageCount(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
+
+		//Old
 		VkImage depthImage;
 		VkImageView depthImageView;
 		VkDeviceMemory depthImageMemory;
 
-		VkSwapchainKHR swapChain;
-
+		//A supprimer plus tard
 		EImageFormat swapChainImageFormat;
+		//
 
-		VkExtent2D swapChainExtent;
-
-		std::vector<VkImage> swapChainImages;
-		std::vector<VkImageView> swapChainImageViews;
 		std::vector<VkFramebuffer> swapChainFramebuffers;
-
-		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
 	};
 }

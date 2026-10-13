@@ -18,7 +18,12 @@ namespace EnigmaRHI
         bool isComplete() const { return graphicsFamily.has_value() && presentFamily.has_value(); }
     };
 
-    inline const std::vector<const char*> kRequiredDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+    struct SwapChainSupportDetails
+    {
+        VkSurfaceCapabilitiesKHR capabilities{};
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
 
     class VulkanPhysicalDevice
     {
@@ -34,11 +39,15 @@ namespace EnigmaRHI
 
         static bool HasStencilComponent(VkFormat format);
         static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
+        static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
+
+        static const std::vector<const char*> requiredDeviceExtensions;
 
     private:
         static int  RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface);
         static bool IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
         static bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+
 
         VkPhysicalDevice                 handle = VK_NULL_HANDLE;
         VkPhysicalDeviceProperties       properties{};

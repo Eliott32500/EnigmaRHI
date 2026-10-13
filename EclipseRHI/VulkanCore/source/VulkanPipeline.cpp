@@ -76,10 +76,12 @@ void EnigmaRHI::VulkanPipeline::Create(IShaderModule* vertShader, IShaderModule*
 		.maxDepth = 1.0f,
 	};
 
+	Extent2D extent = swapChain->GetSwapChainExtent();
+
 	VkRect2D scissor
 	{
 		.offset = { 0, 0 },
-		.extent = swapChain->API_Vulkan().GetSwapChainExtent(),
+		.extent = {extent.width, extent.height},
 	};
 
 	VkPipelineViewportStateCreateInfo viewportState

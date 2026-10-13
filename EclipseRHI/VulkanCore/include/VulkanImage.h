@@ -16,7 +16,14 @@ namespace EnigmaRHI
             EImageFormat format
         ) override;
 
-        void CreateView(VulkanDevice* device, VkImage image, VkFormat format, VkImageAspectFlags aspect);
+        void CreateFromExisting(
+            VulkanDevice* device,
+            VkImage existingImage,
+            VkFormat format,
+            VkImageAspectFlags aspectFlags
+        );
+
+        void CreateView(VulkanDevice* device, VkFormat format, VkImageAspectFlags aspect);
         void CreateSampler(VulkanDevice* device, VkFilter filter = VK_FILTER_LINEAR);
 
         void TransitionLayout(VulkanDevice* device, VulkanCommandPool* cmdPool, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -45,5 +52,6 @@ namespace EnigmaRHI
         VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         VkFormat format;
         VkDescriptorImageInfo descriptorInfo{};
+        bool ownsImage = false;
     };
 }

@@ -1,5 +1,4 @@
 #include "VulkanPhysicalDevice.h"
-#include "VulkanSwapChainSupport.h"
 #include "VulkanInstance.h"
 #include "VulkanSurface.h"
 #include "RHILog.h"
@@ -9,6 +8,8 @@
 
 namespace EnigmaRHI
 {
+    const std::vector<const char*> VulkanPhysicalDevice::requiredDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
     void VulkanPhysicalDevice::Pick(VulkanInstance* instance, VulkanSurface* surface)
     {
         uint32_t deviceCount = 0;
@@ -80,7 +81,7 @@ namespace EnigmaRHI
         std::vector<VkExtensionProperties> available(count);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &count, available.data());
 
-        std::set<std::string> required(kRequiredDeviceExtensions.begin(), kRequiredDeviceExtensions.end());
+        std::set<std::string> required(requiredDeviceExtensions.begin(), requiredDeviceExtensions.end());
         for (const auto& ext : available)
             required.erase(ext.extensionName);
         return required.empty();
@@ -157,4 +158,28 @@ namespace EnigmaRHI
     {
         return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
+
+    EnigmaRHI::SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
+    {
+        SwapChainSupportDetails details;
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+
+        uint32_t count = 0;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &count, nullptr);
+        if (count != 0)
+        {
+            details.formats.resize(count);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &count, details.formats.data());
+        }
+
+        count = 0;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &count, nullptr);
+        if (count != 0)
+        {
+            details.presentModes.resize(count);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &count, details.presentModes.data());
+        }
+        return details;
+    }
+
 }

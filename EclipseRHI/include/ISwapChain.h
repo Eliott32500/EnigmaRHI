@@ -6,6 +6,7 @@
 
 #include "ICommandPool.h"
 #include "ImageTypes.h"
+#include "CommonTypes.h"
 
 
 namespace EnigmaRHI
@@ -17,19 +18,16 @@ namespace EnigmaRHI
 	public:
 
 		virtual ~ISwapChain() = default;
-		virtual void Create(IDevice* device, class ISurface* surface, ICommandPool* commandPool, GLFWwindow* window) = 0;
+		virtual void Create(IDevice* device, class ISurface* surface, ICommandPool* commandPool, Extent2D windowExtent) = 0;
 		virtual void Destroy(IDevice* device) = 0;
 
-		float GetWidth() const { return width; }
-		float GetHeight() const { return height; }
-
 		virtual EImageFormat GetSwapChainImageFormat() = 0;
+		Extent2D GetSwapChainExtent() const { return swapChainExtent; };
 
 		virtual VulkanSwapChain& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanSwapChain"); }
 
 	protected:
 
-		float width;
-		float height;
+		Extent2D swapChainExtent;
 	};
 }

@@ -24,7 +24,7 @@ namespace EnigmaRHI
 		virtual void DeleteBuffer(IBuffer* buffer) = 0;
 		virtual void DeleteImage(IImage* image) = 0;
 
-		virtual void DeviceWaitIdle() = 0;
+		virtual void WaitIdle() = 0;
 
 		virtual EImageFormat FindDepthFormat() = 0;
 

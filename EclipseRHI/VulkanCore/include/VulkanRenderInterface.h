@@ -15,12 +15,10 @@ namespace EnigmaRHI
 		VulkanRenderInterface();
 		~VulkanRenderInterface();
 
-		//IBuffer* InstantiateBuffer() override { return new VulkanBuffer(); }
 		ICommandBuffer* InstantiateCommandBuffer() override { return new VulkanCommandBuffer(); }
 		ICommandPool* InstantiateCommandPool() override { return new VulkanCommandPool(); }
 		IDescriptor* InstantiateDescriptor() override { return new VulkanDescriptor(); }
 		IDevice* InstantiateDevice() override { return new VulkanDevice(); }
-		//IImage* InstantiateImage() override { return new VulkanImage(); }
 		IInstance* InstantiateInstance() override { return new VulkanInstance(); }
 		IPipeline* InstantiatePipeline() override { return new VulkanPipeline(); }
 		IShaderModule* InstantiateShaderModule() override { return new VulkanShaderModule(); }

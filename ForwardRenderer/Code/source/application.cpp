@@ -1,4 +1,5 @@
 #include "../include/application.h"
+#include <thread>
 
 void Application::Run()
 {
@@ -18,6 +19,8 @@ void Application::InitWindow()
 	mainWindow = glfwCreateWindow(WIDTH, HEIGHT, "EnigmaRHI", nullptr, nullptr);
 	glfwSetWindowUserPointer(mainWindow, this);
 	glfwSetCursorPosCallback(mainWindow, InputManager::MouseCallback);
+
+	glfwSwapInterval(1);
 }
 
 void Application::InitAPI()
@@ -58,7 +61,7 @@ void Application::InitAPI()
 	surface->Create(instance, windowInfo);
 	device->Create(instance, surface);
 	commandPool->Create(device);
-	swapChain->Create(device, surface, commandPool, mainWindow);
+	swapChain->Create(device, surface, commandPool, EnigmaRHI::Extent2D{WIDTH, HEIGHT});
 	renderPass->Create(device, swapChain, device->FindDepthFormat());
 
 	descriptor->AddBufferBinding( 0, EnigmaRHI::EShaderType::VERTEX );
@@ -82,7 +85,7 @@ void Application::InitAPI()
 	model->LoadModel(MODEL_PATH);
 	model->Create(device, commandPool);
 
-	cam = new Camera(swapChain->GetWidth(), swapChain->GetHeight());
+	cam = new Camera(swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height);
 	cam->CreateCameraDataBuffer(device);
 
 	descriptor->AddImageInfo(roomTexture);
@@ -151,7 +154,7 @@ void Application::DrawFrame()
 	
 	syncronizer->AquireNextImage(device, swapChain, commandPool, surface, renderPass, mainWindow, &imageIndex);
 	
-	cam->UpdateCameraDataBuffer(syncronizer->GetCurrentFrame(), swapChain->GetWidth(), swapChain->GetHeight(), mainWindow);
+	cam->UpdateCameraDataBuffer(syncronizer->GetCurrentFrame(), swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height, mainWindow);
 	
 	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -170,6 +173,4 @@ void Application::DrawFrame()
 	
 	syncronizer->PresentFrame(device, swapChain, commandPool, surface, renderPass, mainWindow, &imageIndex);
 	syncronizer->MoveToNextFrame();
-
-	device->DeviceWaitIdle();
 }

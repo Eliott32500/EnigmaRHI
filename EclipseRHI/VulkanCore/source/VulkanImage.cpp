@@ -1,5 +1,6 @@
 #include "VulkanImage.h"
 #include "RHILog.h"
+#include <assert.h>
 
 void EnigmaRHI::VulkanImage::Create(IDevice* device, uint32_t width, uint32_t height, EImageFormat format, bool isTexture)
 {
@@ -45,6 +46,8 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, uint32_t width, uint32_t he
 		LOG_ERROR(LogCategory::Vulkan, "Failed to allocate image memory!");
 
 	vkBindImageMemory(device->API_Vulkan().GetDevice(), image, memory, 0);
+
+	ownsImage = true;
 }
 
 void EnigmaRHI::VulkanImage::CreateTextureImage(const void* textureData, IDevice* device, ICommandPool* commandPool, uint32_t width, uint32_t height, EImageFormat format)
@@ -70,16 +73,30 @@ void EnigmaRHI::VulkanImage::CreateTextureImage(const void* textureData, IDevice
 
 	stagingBuffer.Destroy(&device->API_Vulkan());
 
-	CreateView(&device->API_Vulkan(), image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	CreateView(&device->API_Vulkan(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	CreateSampler(&device->API_Vulkan());
+
+	ownsImage = true;
 }
 
-void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkImage imageInfo, VkFormat format, VkImageAspectFlags aspect)
+void EnigmaRHI::VulkanImage::CreateFromExisting(VulkanDevice* device, VkImage existingImage, VkFormat format, VkImageAspectFlags aspectFlags)
+{
+	assert(image == VK_NULL_HANDLE);
+	assert(existingImage != VK_NULL_HANDLE);
+
+	image = existingImage;
+
+	CreateView(device, format, aspectFlags);
+
+	ownsImage = false;
+}
+
+void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, VkImageAspectFlags aspect)
 {
 	VkImageViewCreateInfo viewInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-		.image = imageInfo,
+		.image = image,
 		.viewType = VK_IMAGE_VIEW_TYPE_2D,
 		.format = format,
 	};
@@ -249,10 +266,38 @@ void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandP
 
 void EnigmaRHI::VulkanImage::Destroy(IDevice* device)
 {
-	if (sampler != VK_NULL_HANDLE)
-		vkDestroySampler(device->API_Vulkan().GetDevice(), sampler, nullptr);
+	VkDevice vkDevice = device->API_Vulkan().GetDevice();
 
-	vkDestroyImageView(device->API_Vulkan().GetDevice(), view, nullptr);
-	vkDestroyImage(device->API_Vulkan().GetDevice(), image, nullptr);
-	vkFreeMemory(device->API_Vulkan().GetDevice(), memory, nullptr);
+	if (sampler != VK_NULL_HANDLE)
+	{
+		vkDestroySampler(vkDevice, sampler, nullptr);
+		sampler = VK_NULL_HANDLE;
+	}
+
+	if (view != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView(vkDevice, view, nullptr);
+		view = VK_NULL_HANDLE;
+	}
+
+	if (ownsImage)
+	{
+		if (image != VK_NULL_HANDLE)
+		{
+			vkDestroyImage(vkDevice, image, nullptr);
+			image = VK_NULL_HANDLE;
+		}
+
+		if (memory != VK_NULL_HANDLE)
+		{
+			vkFreeMemory(vkDevice, memory, nullptr);
+			memory = VK_NULL_HANDLE;
+		}
+	}
+	else
+	{
+		image = VK_NULL_HANDLE;
+	}
+
+	ownsImage = false;
 }

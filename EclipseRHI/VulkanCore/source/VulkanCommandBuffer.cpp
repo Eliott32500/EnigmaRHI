@@ -46,7 +46,8 @@ void EnigmaRHI::VulkanCommandBuffer::BeginDraw(IRenderPass* renderPass, ISwapCha
 	};
 
 	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapChain->API_Vulkan().GetSwapChainExtent();
+	Extent2D extent = swapChain->GetSwapChainExtent();
+	renderPassInfo.renderArea.extent = { extent.width, extent.height };
 
 	////// BEGIN ///////
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -67,7 +68,7 @@ void EnigmaRHI::VulkanCommandBuffer::BeginDraw(IRenderPass* renderPass, ISwapCha
 	VkRect2D scissor
 	{
 		.offset = { 0, 0 },
-		.extent = swapChain->API_Vulkan().GetSwapChainExtent(),
+		.extent = { extent.width, extent.height },
 	};
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }

@@ -38,33 +38,38 @@ namespace EnigmaRHI
             queueInfos.push_back(info);
         }
 
-        VkPhysicalDeviceVulkan13Features f13
-        {
+        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT DynamicStateFeatures{
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+            .pNext = nullptr,
+            .extendedDynamicState = VK_TRUE,
+        };
+
+        VkPhysicalDeviceVulkan13Features f13 {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+            .pNext = &DynamicStateFeatures,
             .synchronization2 = VK_TRUE,
             .dynamicRendering = VK_TRUE,
         };
-        VkPhysicalDeviceVulkan12Features f12
-        {
+        VkPhysicalDeviceVulkan12Features f12 {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
             .pNext = &f13,
             .timelineSemaphore = VK_TRUE,
         };
-        VkPhysicalDeviceFeatures2 features2
-        {
+        VkPhysicalDeviceFeatures2 features2{
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
             .pNext = &f12,
             .features = {.samplerAnisotropy = VK_TRUE },
         };
 
-        VkDeviceCreateInfo createInfo{};
-		createInfo.pNext = &features2;
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size());
-        createInfo.pQueueCreateInfos = queueInfos.data();
-        createInfo.pEnabledFeatures = nullptr;
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(kRequiredDeviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = kRequiredDeviceExtensions.data();
+        VkDeviceCreateInfo createInfo{
+            .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+		    .pNext = &features2,
+            .queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size()),
+            .pQueueCreateInfos = queueInfos.data(),
+            .enabledExtensionCount = static_cast<uint32_t>(physicalVulkanDevice.requiredDeviceExtensions.size()),
+            .ppEnabledExtensionNames = physicalVulkanDevice.requiredDeviceExtensions.data(),
+            .pEnabledFeatures = nullptr,
+        };
 
         if (vkCreateDevice(physicalVulkanDevice.Handle(), &createInfo, nullptr, &logicalDevice) != VK_SUCCESS)
             LOG_FATAL(LogCategory::Vulkan, "Failed to create logical device !");
@@ -92,5 +97,5 @@ namespace EnigmaRHI
     void VulkanDevice::DeleteBuffer(IBuffer* buffer) { delete buffer; }
     void VulkanDevice::DeleteImage(IImage* image) { delete image; }
 
-    void VulkanDevice::DeviceWaitIdle() { vkDeviceWaitIdle(logicalDevice); }
+    void VulkanDevice::WaitIdle() { vkDeviceWaitIdle(logicalDevice); }
 }
