@@ -69,11 +69,10 @@ void Model::CreateIndexBuffer(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPoo
 	size_t bufferSize = sizeof(indices[0]) * indices.size();
 
 	EnigmaRHI::IBuffer* stagingBuffer = device->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	indexBuffer = device->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	stagingBuffer->UploadData(device, 0, bufferSize, indices.data(), 0);
 
-	indexBuffer->Create(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	indexBuffer = device->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	stagingBuffer->CopyBuffer(device, commandPool, indexBuffer, bufferSize);
 
