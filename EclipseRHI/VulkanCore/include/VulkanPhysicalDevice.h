@@ -1,6 +1,7 @@
 #pragma once
 #include "volk.h"
 #include "VulkanImageTypes.h"
+#include "DeviceCapabilities.h"
 
 #include <cstdint>
 #include <optional>
@@ -33,6 +34,9 @@ namespace EnigmaRHI
         VkPhysicalDevice Handle() const { return handle; }
         const QueueFamilyIndices& Queues() const { return queueFamilies; }
 
+        VkPhysicalDeviceProperties GetProperties() const { return properties; }
+        VkPhysicalDeviceLimits GetLimits() const { return properties.limits; }
+
         uint32_t     FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
         EImageFormat FindDepthFormat() const;
         EImageFormat FindSupportedFormat(const std::vector<EImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
@@ -44,9 +48,10 @@ namespace EnigmaRHI
         static const std::vector<const char*> requiredDeviceExtensions;
 
     private:
-        static int  RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface);
-        static bool IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
-        static bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+        int  RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface);
+        bool IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
+        bool SupportsRequiredFeatures(VkPhysicalDevice device, const DeviceFeatures& required);
+        bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 
 
         VkPhysicalDevice                 handle = VK_NULL_HANDLE;

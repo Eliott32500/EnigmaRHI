@@ -25,11 +25,13 @@ namespace EnigmaRHI
             candidates.emplace(RateDeviceSuitability(device, surface->GetSurface()), device);
 
         if (candidates.rbegin()->first <= 0)
-            LOG_FATAL(LogCategory::Vulkan, "Failed to find a suitable GPU!");
+            LOG_FATAL(LogCategory::Vulkan, "Failed to find a suitable GPU !");
 
         handle = candidates.rbegin()->second;
 
         vkGetPhysicalDeviceProperties(handle, &properties);
+        LOG_INFO(LogCategory::RHI, "Selected GPU : " + std::string(properties.deviceName));
+
         vkGetPhysicalDeviceMemoryProperties(handle, &memoryProperties);
         queueFamilies = FindQueueFamilies(handle, surface->GetSurface());
     }
@@ -45,7 +47,9 @@ namespace EnigmaRHI
         int score = 0;
         if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
             score += 1000;
+
         score += static_cast<int>(props.limits.maxImageDimension2D);
+
         return score;
     }
 
@@ -63,15 +67,47 @@ namespace EnigmaRHI
 
         VkPhysicalDeviceProperties props;
         vkGetPhysicalDeviceProperties(device, &props);
+
         if (props.apiVersion < VK_API_VERSION_1_3) 
             return false;
 
-        VkPhysicalDeviceVulkan13Features f13{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
-        VkPhysicalDeviceFeatures2 f2{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, .pNext = &f13 };
-        vkGetPhysicalDeviceFeatures2(device, &f2);
+        DeviceFeatures requiredFeatures{};
 
         return indices.isComplete() && extensionsSupported && swapChainAdequate
-            && f2.features.samplerAnisotropy && f13.dynamicRendering && f13.synchronization2;
+            && SupportsRequiredFeatures(device, requiredFeatures);
+    }
+
+    bool VulkanPhysicalDevice::SupportsRequiredFeatures(
+        VkPhysicalDevice device,
+        const DeviceFeatures& required)
+    {
+        VkPhysicalDeviceVulkan11Features f11
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+        };
+
+        VkPhysicalDeviceVulkan12Features f12
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+            .pNext = &f11,
+        };
+
+        VkPhysicalDeviceVulkan13Features f13
+        {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+            .pNext = &f12
+        };
+
+        VkPhysicalDeviceFeatures2 f2{
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+            .pNext = &f13
+        };
+
+        vkGetPhysicalDeviceFeatures2(device, &f2);
+
+        return (!required.samplerAnisotropy || f2.features.samplerAnisotropy)
+            && (!required.dynamicRendering || f13.dynamicRendering)
+            && (!required.synchronization2 || f13.synchronization2);
     }
 
     bool VulkanPhysicalDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
