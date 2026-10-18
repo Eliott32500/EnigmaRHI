@@ -11,10 +11,7 @@ namespace EnigmaRHI
 
         void Create(IDevice* device, ImageDesc imageDesc) override;
 
-        void CreateTextureImage(const void* data, IDevice* device, ICommandPool* commandPool,
-            uint32_t width, uint32_t height,
-            EImageFormat format
-        ) override;
+        void CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc imageDesc) override;
 
         void CreateFromExisting(
             VulkanDevice* device,
@@ -26,13 +23,12 @@ namespace EnigmaRHI
         void CreateView(VulkanDevice* device, VkFormat format, VkImageAspectFlags aspect);
         void CreateSampler(VulkanDevice* device, VkFilter filter = VK_FILTER_LINEAR);
 
-        void TransitionLayout(VulkanDevice* device, VulkanCommandPool* cmdPool, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void TransitionLayout(VulkanDevice* device, VulkanCommandPool* cmdPool, EImageFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-        void CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* cmdPool, VkBuffer buffer, uint32_t width, uint32_t height);
+        void CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* cmdPool, VkBuffer buffer, Extent3D extent);
 
         VkDescriptorImageInfo GetDescriptorInfo() const { return descriptorInfo; }
         VkImage GetImage() const { return image; }
-        VkFormat GetFormat() const { return format; }
         VkImageView GetImageView() const { return view; }
         VkDeviceMemory GetMemory() const { return memory; }
         VkSampler GetSampler() const { return sampler; }
@@ -50,7 +46,6 @@ namespace EnigmaRHI
         VkImageView view = VK_NULL_HANDLE;
         VkSampler sampler = VK_NULL_HANDLE;
         VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        VkFormat format;
         VkDescriptorImageInfo descriptorInfo{};
         bool ownsImage = false;
     };

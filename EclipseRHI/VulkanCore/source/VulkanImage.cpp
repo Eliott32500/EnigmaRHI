@@ -6,13 +6,6 @@
 
 void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc imageDesc)
 {
-	//VkImageUsageFlags usage = 0;
-	//
-	//if(!isTexture)
-	//	usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	//else
-	//	 usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-
 	VkImageCreateInfo imageInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -21,7 +14,7 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc imageDesc)
 		.extent = Utilities::ToVulkanExtent(imageDesc.extent),
 		.mipLevels = imageDesc.mipLevels,
 		.arrayLayers = imageDesc.arrayLayers,
-		.samples = std::clamp(imageInfo.samples, static_cast<VkSampleCountFlagBits>(imageDesc.sampleCount), device->API_Vulkan().GetPhysicalDevice().GetLimits().framebufferColorSampleCounts),
+		.samples = static_cast<VkSampleCountFlagBits>(imageDesc.sampleCount),
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = Utilities::ToVulkanImageUsage(imageDesc.usage),
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
@@ -49,24 +42,42 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc imageDesc)
 	ownsImage = true;
 }
 
-void EnigmaRHI::VulkanImage::CreateTextureImage(const void* textureData, IDevice* device, ICommandPool* commandPool, uint32_t width, uint32_t height, EImageFormat format)
+void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc imageDesc)
 {
-	VkDeviceSize imageSize = width * height * 4;
+	if (!imageDesc.data)
+	{
+		LOG_ERROR(LogCategory::Vulkan, "Try to create a textureimage without data inside !");
+
+		VulkanDevice& dev = device->API_Vulkan();
+		VkFormat vkFormat = Utilities::ToVulkanFormat(imageDesc.format);
+		Create(device, imageDesc);
+		CreateView(&dev, vkFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+		CreateSampler(&dev);
+
+		ownsImage = true;
+
+		return;
+	}
+
+	VulkanDevice& dev = device->API_Vulkan();
+	VkFormat vkFormat = Utilities::ToVulkanFormat(imageDesc.format);
+	VkDeviceSize imageSize = static_cast<VkDeviceSize>(imageDesc.extent.width) * imageDesc.extent.height * Utilities::BytesPerPixel(imageDesc.format);
+
 	VulkanBuffer stagingBuffer;
 
 	stagingBuffer.Create(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	stagingBuffer.UploadData(device, 0, imageSize, textureData, 0);
+	stagingBuffer.UploadData(device, 0, imageSize, imageDesc.data, 0);
 
-	Create(device, width, height, format, true);
+	Create(device, imageDesc);
 
-	TransitionLayout(&device->API_Vulkan(), &commandPool->API_Vulkan(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	CopyFromBuffer(&device->API_Vulkan(), &commandPool->API_Vulkan(), stagingBuffer.GetBuffer(), static_cast<uint32_t>(width), static_cast<uint32_t>(height));
-	TransitionLayout(&device->API_Vulkan(), &commandPool->API_Vulkan(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	TransitionLayout(&dev, &commandPool->API_Vulkan(), imageDesc.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	CopyFromBuffer(&dev, &commandPool->API_Vulkan(), stagingBuffer.GetBuffer(), imageDesc.extent);
+	TransitionLayout(&dev, &commandPool->API_Vulkan(), imageDesc.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-	stagingBuffer.Destroy(&device->API_Vulkan());
+	stagingBuffer.Destroy(&dev);
 
-	CreateView(&device->API_Vulkan(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
-	CreateSampler(&device->API_Vulkan());
+	CreateView(&dev, vkFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+	CreateSampler(&dev);
 
 	ownsImage = true;
 }
@@ -108,18 +119,9 @@ void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter
 	VkSamplerCreateInfo samplerInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-		// Can be VK_FILTER_NEAREST
 		.magFilter = VK_FILTER_LINEAR,
 		.minFilter = VK_FILTER_LINEAR,
-
 		.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-
-		// UVW -> Convension for texture space coordinates
-		// VK_SAMPLER_ADDRESS_MODE_REPEAT: Repeat the texture when going beyond the image dimensions.
-		// VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT: Like repeat, but inverts the coordinates to mirror the image when going beyond the dimensions.
-		// VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : Take the color of the edge closest to the coordinate beyond the image dimensions.
-		// VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE : Like clamp to edge, but instead uses the edge opposite to the closest edge.
-		// VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER : Return a solid color when sampling beyond the dimensions of the image.
 
 		// X
 		.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
@@ -155,7 +157,7 @@ void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter
 }
 
 
-void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, VkImageLayout oldLayout, VkImageLayout newLayout)
+void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, EImageFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
 	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device);
 
@@ -181,7 +183,7 @@ void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanComman
 	{
 		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-		if (VulkanPhysicalDevice::HasStencilComponent(format))
+		if (VulkanPhysicalDevice::HasStencilComponent(Utilities::ToVulkanFormat(format)))
 			imageMemoryBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	}
 	else
@@ -231,7 +233,7 @@ void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanComman
 	commandPool->EndSingleTimeCommands(device, commandBuffer);
 }
 
-void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* commandPool, VkBuffer buffer, uint32_t width, uint32_t height)
+void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* commandPool, VkBuffer buffer, Extent3D extent)
 {
 	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device);
 
@@ -242,7 +244,7 @@ void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandP
 		.bufferRowLength = 0,
 		.bufferImageHeight = 0,
 		.imageOffset = { 0, 0, 0 },
-		.imageExtent = {width ,height ,1},
+		.imageExtent = {extent.width, extent.height, extent.depth} ,
 	};
 
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;

@@ -19,7 +19,8 @@ namespace EnigmaRHI
         void WaitIdle() override;
 
         IBuffer* CreateBuffer(size_t size, uint32_t usage, size_t properties) override;
-        IImage* CreateImage(uint32_t width, uint32_t height, EImageFormat format, bool isTexture = false) override;
+        IImage* CreateImage(ImageDesc imageDesc) override;
+        IImage* CreateImageTexture(ICommandPool* commandPool, ImageDesc imageDesc) override;
         void DeleteBuffer(IBuffer* buffer) override;
         void DeleteImage(IImage* image) override;
 

@@ -87,10 +87,17 @@ namespace EnigmaRHI
         return buffer;
     }
 
-    IImage* VulkanDevice::CreateImage(uint32_t w, uint32_t h, EImageFormat format, bool isTexture)
+    IImage* VulkanDevice::CreateImage(ImageDesc imageDesc)
     {
         IImage* image = new VulkanImage();
-        image->Create(this, w, h, format, isTexture);
+        image->Create(this, imageDesc);
+        return image;
+    }
+
+    IImage* VulkanDevice::CreateImageTexture(ICommandPool* commandPool, ImageDesc imageDesc)
+    {
+        IImage* image = new VulkanImage();
+        image->CreateTextureImage(this, commandPool, imageDesc);
         return image;
     }
 

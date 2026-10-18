@@ -136,29 +136,14 @@ VkImageUsageFlags EnigmaRHI::Utilities::ToVulkanImageUsage(EImageUsage imageUsag
 {
     VkImageUsageFlags result = 0;
 
-    if ((imageUsage & EImageUsage::TRANSFER_SRC) != EImageUsage::NONE)
-        result |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-
-    if ((imageUsage & EImageUsage::TRANSFER_DST) != EImageUsage::NONE)
-        result |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-    if ((imageUsage & EImageUsage::SAMPLED) != EImageUsage::NONE)
-        result |= VK_IMAGE_USAGE_SAMPLED_BIT;
-
-    if ((imageUsage & EImageUsage::STORAGE) != EImageUsage::NONE)
-        result |= VK_IMAGE_USAGE_STORAGE_BIT;
-
-    if ((imageUsage & EImageUsage::COLOR_ATTACHMENT) != EImageUsage::NONE)
-        result |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-    if ((imageUsage & EImageUsage::DEPTH_STENCIL_ATTACHMENT) != EImageUsage::NONE)
-        result |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
-    if ((imageUsage & EImageUsage::TRANSIENT_ATTACHMENT) != EImageUsage::NONE)
-        result |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
-
-    if ((imageUsage & EImageUsage::INPUT_ATTACHMENT) != EImageUsage::NONE)
-        result |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    if (HasFlag(imageUsage, EImageUsage::TRANSFER_SRC))             result |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    if (HasFlag(imageUsage, EImageUsage::TRANSFER_DST))             result |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    if (HasFlag(imageUsage, EImageUsage::SAMPLED))                  result |= VK_IMAGE_USAGE_SAMPLED_BIT;
+    if (HasFlag(imageUsage, EImageUsage::STORAGE))                  result |= VK_IMAGE_USAGE_STORAGE_BIT;
+    if (HasFlag(imageUsage, EImageUsage::COLOR_ATTACHMENT))         result |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    if (HasFlag(imageUsage, EImageUsage::DEPTH_STENCIL_ATTACHMENT)) result |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    if (HasFlag(imageUsage, EImageUsage::TRANSIENT_ATTACHMENT))     result |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+    if (HasFlag(imageUsage, EImageUsage::INPUT_ATTACHMENT))         result |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 
     return result;
 }
@@ -269,4 +254,66 @@ EnigmaRHI::EImageFormat EnigmaRHI::Utilities::FormatFromVulkan(VkFormat format)
     default:
         return EImageFormat::UNDEFINED;
     }
+}
+
+uint32_t EnigmaRHI::Utilities::BytesPerPixel(EImageFormat format)
+{
+    switch (format)
+    {
+        // 8 bits / canal
+    case EImageFormat::R8_UNORM:
+    case EImageFormat::R8_SRGB:
+    case EImageFormat::R8_UINT:
+        return 1;
+
+    case EImageFormat::RG8_UNORM:
+    case EImageFormat::RG8_UINT:
+        return 2;
+
+    case EImageFormat::RGB8_UNORM:
+    case EImageFormat::RGB8_UINT:
+        return 3;
+
+    case EImageFormat::RGBA8_UNORM:
+    case EImageFormat::RGBA8_SRGB:
+    case EImageFormat::RGBA8_UINT:
+        return 4;
+
+        // 16 bits / canal (float)
+    case EImageFormat::R16_SFLOAT:
+        return 2;
+    case EImageFormat::RG16_SFLOAT:
+        return 4;
+    case EImageFormat::RGB16_SFLOAT:
+        return 6;
+    case EImageFormat::RGBA16_SFLOAT:
+        return 8;
+
+        // 32 bits / canal (float)
+    case EImageFormat::R32_SFLOAT:
+        return 4;
+    case EImageFormat::RG32_SFLOAT:
+        return 8;
+    case EImageFormat::RGB32_SFLOAT:
+        return 12;
+    case EImageFormat::RGBA32_SFLOAT:
+        return 16;
+
+        // Depth (non uploadables depuis la CPU, voir remarque)
+    case EImageFormat::D16_UNORM:
+        return 2;
+    case EImageFormat::D32_SFLOAT:
+        return 4;
+
+    case EImageFormat::D24_UNORM_S8_UINT:
+    case EImageFormat::D32_SFLOAT_S8_UINT:
+    case EImageFormat::UNDEFINED:
+    default:
+        return 0;
+    }
+}
+
+bool EnigmaRHI::Utilities::HasFlag(EImageUsage value, EImageUsage flag)
+{
+    return (value & flag) != EImageUsage::NONE;
 }

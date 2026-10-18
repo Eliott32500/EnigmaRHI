@@ -77,8 +77,17 @@ void Application::InitAPI()
 	
 	Texture texture{};
 	texture.LoadTexture(TEXTURE_PATH);
-	roomTexture = device->CreateImage(texture.GetWidth(), texture.GetHeight(), texture.GetImageFormat());
-	roomTexture->CreateTextureImage(texture.GetData(), device, commandPool, texture.GetWidth(), texture.GetHeight(), texture.GetImageFormat());
+
+	EnigmaRHI::ImageDesc imageDesc
+	{
+		.type = EnigmaRHI::EImageType::TYPE_2D,
+		.format = texture.GetImageFormat(),
+		.usage = EnigmaRHI::EImageUsage::SAMPLED | EnigmaRHI::EImageUsage::TRANSFER_DST,
+		.extent = {texture.GetWidth(), texture.GetHeight(), 1},
+		.data = texture.GetData(),
+	};
+
+	roomTexture = device->CreateImageTexture(commandPool, imageDesc);
 	texture.FreeTextureData();
 
 	model = new Model();

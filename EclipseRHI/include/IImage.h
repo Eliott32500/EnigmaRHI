@@ -32,7 +32,7 @@ namespace EnigmaRHI
 		virtual ~IImage() = default;
 
 		virtual void Create(IDevice* device, ImageDesc imageDesc) = 0;
-		virtual void CreateTextureImage(const void* data, IDevice* device, ICommandPool* commandPool, uint32_t width, uint32_t height, EImageFormat format) = 0;
+		virtual void CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc imageDesc) = 0;
 		virtual void Destroy(IDevice* device) = 0;
 
 		virtual VulkanImage& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanImage"); }

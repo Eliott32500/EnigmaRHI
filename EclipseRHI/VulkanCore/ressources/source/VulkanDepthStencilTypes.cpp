@@ -1,6 +1,6 @@
 #include "VulkanDepthStencilTypes.h"
 
-VkCompareOp EnigmaRHI::ToVulkanCompareOp(ECompareOp compareOp)
+VkCompareOp EnigmaRHI::Utilities::ToVulkanCompareOp(ECompareOp compareOp)
 {
 	switch (compareOp)
 	{
@@ -30,5 +30,5 @@ VkCompareOp EnigmaRHI::ToVulkanCompareOp(ECompareOp compareOp)
 
 	default:
 		return VK_COMPARE_OP_ALWAYS;
-	}
+	};
 }

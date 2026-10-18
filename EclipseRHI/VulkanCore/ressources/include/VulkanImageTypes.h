@@ -14,4 +14,8 @@ namespace EnigmaRHI::Utilities
 	VkBorderColor ToVulkanBorderColor(EBorderColor borderColor);
 
 	EImageFormat FormatFromVulkan(VkFormat format);
+
+	uint32_t BytesPerPixel(EImageFormat format);
+
+	bool HasFlag(EImageUsage value, EImageUsage flag);
 }

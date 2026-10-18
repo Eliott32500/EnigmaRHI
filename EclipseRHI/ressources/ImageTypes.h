@@ -71,7 +71,7 @@ namespace EnigmaRHI
         MIRROR_CLAMP_TO_EDGE,
     };
 
-    enum EImageUsage : uint8_t
+    enum class EImageUsage : uint8_t
     {
         NONE = 0,
         TRANSFER_SRC = 1 << 0,
@@ -84,7 +84,17 @@ namespace EnigmaRHI
         INPUT_ATTACHMENT = 1 << 7,
     };
 
-    enum EBorderColor
+    constexpr EnigmaRHI::EImageUsage operator|(EnigmaRHI::EImageUsage lhs, EnigmaRHI::EImageUsage rhs)
+    {
+        return static_cast<EnigmaRHI::EImageUsage>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+    }
+
+    constexpr EnigmaRHI::EImageUsage operator&(EnigmaRHI::EImageUsage lhs, EnigmaRHI::EImageUsage rhs)
+    {
+        return static_cast<EnigmaRHI::EImageUsage>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
+    }
+
+    enum class EBorderColor
     {
         OPAQUE_INT_BLACK,
         OPAQUE_FLOAT_BLACK,

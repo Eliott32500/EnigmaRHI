@@ -140,7 +140,7 @@ void EnigmaRHI::VulkanSwapChain::RecreateSwapChain(VulkanDevice* device, VulkanC
 
 	Destroy(device);
 
-	Create(device, surface, commandPool, Extent2D{ (unsigned int)width, (unsigned int)height });
+	Create(device, surface, commandPool, Extent2D{ (uint32_t)width, (uint32_t)height });
 	CreateSwapChainFramebuffers(device, renderPass);
 }
 
@@ -197,7 +197,19 @@ void EnigmaRHI::VulkanSwapChain::CreateSwapChainDepthResources(VulkanDevice* dev
 {
 	VulkanImage temp;
 
-	temp.Create(device, swapChainExtent.width, swapChainExtent.height, device->FindDepthFormat());
+	ImageDesc desc
+	{
+		.type = EImageType::TYPE_2D,
+		.format = device->FindDepthFormat(),
+		.usage = EImageUsage::DEPTH_STENCIL_ATTACHMENT,
+		.extent = {swapChainExtent.width, swapChainExtent.height, 1} ,
+		.mipLevels = 1,
+		.arrayLayers = 1,
+		.sampleCount = 1,
+		.data = nullptr,
+	};
+
+	temp.Create(device, desc);
 	temp.CreateView(device, Utilities::ToVulkanFormat(device->FindDepthFormat()), VK_IMAGE_ASPECT_DEPTH_BIT);
 
 	depthImage = temp.GetImage();
