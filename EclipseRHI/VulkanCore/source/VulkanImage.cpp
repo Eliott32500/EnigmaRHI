@@ -1,33 +1,32 @@
 #include "VulkanImage.h"
 #include "RHILog.h"
+#include "VulkanCommonTypes.h"
 #include <assert.h>
+#include <algorithm>
 
-void EnigmaRHI::VulkanImage::Create(IDevice* device, uint32_t width, uint32_t height, EImageFormat format, bool isTexture)
+void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc imageDesc)
 {
-	VkImageUsageFlags usage = 0;
-
-	if(!isTexture)
-		usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	else
-		 usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	//VkImageUsageFlags usage = 0;
+	//
+	//if(!isTexture)
+	//	usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	//else
+	//	 usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
 	VkImageCreateInfo imageInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-		.imageType = VK_IMAGE_TYPE_2D,
-		.format = Utilities::ToVulkanFormat(format),
-		.mipLevels = 1,
-		.arrayLayers = 1,
-		.samples = VK_SAMPLE_COUNT_1_BIT,
+		.imageType = Utilities::ToVulkanImageType(imageDesc.type),
+		.format = Utilities::ToVulkanFormat(imageDesc.format),
+		.extent = Utilities::ToVulkanExtent(imageDesc.extent),
+		.mipLevels = imageDesc.mipLevels,
+		.arrayLayers = imageDesc.arrayLayers,
+		.samples = std::clamp(imageInfo.samples, static_cast<VkSampleCountFlagBits>(imageDesc.sampleCount), device->API_Vulkan().GetPhysicalDevice().GetLimits().framebufferColorSampleCounts),
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
-		.usage = usage,
+		.usage = Utilities::ToVulkanImageUsage(imageDesc.usage),
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
-
-	imageInfo.extent.width = width;
-	imageInfo.extent.height = height;
-	imageInfo.extent.depth = 1;
 
 	if (vkCreateImage(device->API_Vulkan().GetDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS)
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create image !");
@@ -55,17 +54,10 @@ void EnigmaRHI::VulkanImage::CreateTextureImage(const void* textureData, IDevice
 	VkDeviceSize imageSize = width * height * 4;
 	VulkanBuffer stagingBuffer;
 
-	stagingBuffer.Create(&device->API_Vulkan(), imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	stagingBuffer.Create(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	stagingBuffer.UploadData(device, 0, imageSize, textureData, 0);
 
-	stagingBuffer.UploadData(&device->API_Vulkan(), 0, imageSize, textureData, 0);
-
-
-	Create(
-		device,
-		width, height,
-		format,
-		true
-	);
+	Create(device, width, height, format, true);
 
 	TransitionLayout(&device->API_Vulkan(), &commandPool->API_Vulkan(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	CopyFromBuffer(&device->API_Vulkan(), &commandPool->API_Vulkan(), stagingBuffer.GetBuffer(), static_cast<uint32_t>(width), static_cast<uint32_t>(height));
@@ -140,6 +132,7 @@ void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter
 
 		// Anisotropic filter
 		.anisotropyEnable = VK_TRUE,
+		.maxAnisotropy = device->GetPhysicalDevice().GetLimits().maxSamplerAnisotropy,
 
 		.compareEnable = VK_FALSE,
 		.compareOp = VK_COMPARE_OP_ALWAYS,
@@ -150,7 +143,6 @@ void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter
 		// Field specifies which color is returned when sampling beyond the image with clamp to border addressing mode
 		.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
 		.unnormalizedCoordinates = VK_FALSE,
-
 	};
 
 	VkPhysicalDeviceProperties properties{};

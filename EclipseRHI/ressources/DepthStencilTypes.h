@@ -2,7 +2,7 @@
 
 namespace EnigmaRHI
 {
-    enum class EDepthCompareOp
+    enum class ECompareOp
     {
         NEVER,
         LESS,

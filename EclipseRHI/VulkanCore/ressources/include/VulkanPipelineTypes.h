@@ -12,5 +12,4 @@ namespace EnigmaRHI::Utilities
     VkFrontFace ToVulkanFrontFace(EFrontFaceMode mode);
     VkBlendFactor ToVulkanBlendFactor(EBlendFactor factor);
     VkBlendOp ToVulkanBlendOp(EBlendOp operation);
-    VkCompareOp ToVulkanCompareOp(EDepthCompareOp operation);
 }

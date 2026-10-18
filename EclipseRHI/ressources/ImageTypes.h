@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace EnigmaRHI
 {
     enum class EImageFormat
@@ -46,8 +48,6 @@ namespace EnigmaRHI
         TYPE_1D,
         TYPE_2D,
         TYPE_3D,
-        TYPE_2D_ARRAY,
-        TYPE_CUBE_MAP,
     };
 
     enum class EFilter
@@ -69,5 +69,28 @@ namespace EnigmaRHI
         CLAMP_TO_BORDER,
         MIRRORED_REPEAT,
         MIRROR_CLAMP_TO_EDGE,
+    };
+
+    enum EImageUsage : uint8_t
+    {
+        NONE = 0,
+        TRANSFER_SRC = 1 << 0,
+        TRANSFER_DST = 1 << 1,
+        SAMPLED = 1 << 2,
+        STORAGE = 1 << 3,
+        COLOR_ATTACHMENT = 1 << 4,
+        DEPTH_STENCIL_ATTACHMENT = 1 << 5,
+        TRANSIENT_ATTACHMENT = 1 << 6,
+        INPUT_ATTACHMENT = 1 << 7,
+    };
+
+    enum EBorderColor
+    {
+        OPAQUE_INT_BLACK,
+        OPAQUE_FLOAT_BLACK,
+        OPAQUE_INT_WHITE,
+        OPAQUE_FLOAT_WHITE,
+        TRANSPARENT_INT_BLACK,
+        TRANSPARENT_FLOAT_BLACK
     };
 }

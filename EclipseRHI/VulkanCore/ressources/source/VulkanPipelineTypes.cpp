@@ -70,26 +70,3 @@ VkBlendOp EnigmaRHI::Utilities::ToVulkanBlendOp(EBlendOp operation)
 			return VK_BLEND_OP_MAX;
 	}
 }
-
-VkCompareOp EnigmaRHI::Utilities::ToVulkanCompareOp(EDepthCompareOp operation)
-{
-	switch (operation)
-	{
-		case EDepthCompareOp::NEVER:
-			return VK_COMPARE_OP_NEVER;
-		case EDepthCompareOp::LESS:
-			return VK_COMPARE_OP_LESS;
-		case EDepthCompareOp::EQUAL:
-			return VK_COMPARE_OP_EQUAL;
-		case EDepthCompareOp::LESS_OR_EQUAL:
-			return VK_COMPARE_OP_LESS_OR_EQUAL;
-		case EDepthCompareOp::GREATER:
-			return VK_COMPARE_OP_GREATER;
-		case EDepthCompareOp::GREATER_OR_EQUAL:
-			return VK_COMPARE_OP_GREATER_OR_EQUAL;
-		case EDepthCompareOp::NOT_EQUAL:
-			return VK_COMPARE_OP_NOT_EQUAL;
-		case EDepthCompareOp::ALWAYS:
-			return VK_COMPARE_OP_ALWAYS;
-	}
-}

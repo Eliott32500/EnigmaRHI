@@ -10,6 +10,8 @@ namespace EnigmaRHI::Utilities
 	VkFilter ToVulkanFilter(EFilter mode);
 	VkSamplerMipmapMode ToVulkanMipmapMode(EMipmapMode mode);
 	VkSamplerAddressMode ToVulkanWrapMode(EWrappingMode mode);
+	VkImageUsageFlags ToVulkanImageUsage(EImageUsage imageUsage);
+	VkBorderColor ToVulkanBorderColor(EBorderColor borderColor);
 
 	EImageFormat FormatFromVulkan(VkFormat format);
 }

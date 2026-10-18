@@ -4,6 +4,7 @@
 #include "IBuffer.h"
 #include "ImageTypes.h"
 #include "IImage.h"
+#include "DeviceCapabilities.h"
 #include <iostream>
 
 
@@ -28,6 +29,12 @@ namespace EnigmaRHI
 
 		virtual EImageFormat FindDepthFormat() = 0;
 
+		DeviceSpecifications GetCapabilities() const { return capabilities; }
+
 		virtual VulkanDevice& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanDevice"); }
+
+	private:
+		
+		DeviceSpecifications capabilities;
 	};
 }

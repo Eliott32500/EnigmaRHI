@@ -27,9 +27,9 @@ namespace EnigmaRHI
 
 	private:
 
-		VkBuffer buffer;
-		VkDeviceMemory bufferMemory;
+		VkBuffer buffer = VK_NULL_HANDLE;
+		VkDeviceMemory bufferMemory = VK_NULL_HANDLE;
 
-		void* data;
+		void* data = nullptr;
 	};
 }

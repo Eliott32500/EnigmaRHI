@@ -56,10 +56,13 @@ VkFormat EnigmaRHI::Utilities::ToVulkanFormat(EImageFormat format)
         //UINT
     case EImageFormat::R8_UINT:
         return VK_FORMAT_R8_UINT;
+
     case EImageFormat::RG8_UINT:
         return VK_FORMAT_R8G8_UINT;
+
     case EImageFormat::RGB8_UINT:
         return VK_FORMAT_R8G8B8_UINT;
+
     case EImageFormat::RGBA8_UINT:
         return VK_FORMAT_R8G8B8A8_UINT;
 
@@ -90,36 +93,19 @@ VkImageType EnigmaRHI::Utilities::ToVulkanImageType(EImageType type)
         case EImageType::TYPE_3D:
             return VK_IMAGE_TYPE_3D;
 
-        case EImageType::TYPE_2D_ARRAY:
+        default:
             return VK_IMAGE_TYPE_2D;
-
-        case EImageType::TYPE_CUBE_MAP:
-			return VK_IMAGE_TYPE_2D;
     }
 }
 
 VkFilter EnigmaRHI::Utilities::ToVulkanFilter(EFilter mode)
 {
-    switch (mode)
-    {
-        case EFilter::LINEAR:
-            return VK_FILTER_LINEAR;
-
-        case EFilter::NEAREST:
-            return VK_FILTER_NEAREST;
-	}
+    return mode == EFilter::NEAREST ? VK_FILTER_NEAREST : VK_FILTER_NEAREST;
 }
 
 VkSamplerMipmapMode EnigmaRHI::Utilities::ToVulkanMipmapMode(EMipmapMode mode)
 {
-    switch (mode)
-    {
-    case EMipmapMode::LINEAR:
-        return VK_SAMPLER_MIPMAP_MODE_LINEAR;
-
-    case EMipmapMode::NEAREST:
-        return VK_SAMPLER_MIPMAP_MODE_NEAREST;
-    }
+    return mode == EMipmapMode::NEAREST ? VK_SAMPLER_MIPMAP_MODE_NEAREST : VK_SAMPLER_MIPMAP_MODE_LINEAR;
 }
 
 VkSamplerAddressMode EnigmaRHI::Utilities::ToVulkanWrapMode(EWrappingMode mode)
@@ -140,9 +126,68 @@ VkSamplerAddressMode EnigmaRHI::Utilities::ToVulkanWrapMode(EWrappingMode mode)
 
     case EWrappingMode::MIRROR_CLAMP_TO_EDGE:
         return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
-    }
 
-    return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    default:
+        return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    }
+}
+
+VkImageUsageFlags EnigmaRHI::Utilities::ToVulkanImageUsage(EImageUsage imageUsage)
+{
+    VkImageUsageFlags result = 0;
+
+    if ((imageUsage & EImageUsage::TRANSFER_SRC) != EImageUsage::NONE)
+        result |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+    if ((imageUsage & EImageUsage::TRANSFER_DST) != EImageUsage::NONE)
+        result |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+    if ((imageUsage & EImageUsage::SAMPLED) != EImageUsage::NONE)
+        result |= VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    if ((imageUsage & EImageUsage::STORAGE) != EImageUsage::NONE)
+        result |= VK_IMAGE_USAGE_STORAGE_BIT;
+
+    if ((imageUsage & EImageUsage::COLOR_ATTACHMENT) != EImageUsage::NONE)
+        result |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    if ((imageUsage & EImageUsage::DEPTH_STENCIL_ATTACHMENT) != EImageUsage::NONE)
+        result |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    if ((imageUsage & EImageUsage::TRANSIENT_ATTACHMENT) != EImageUsage::NONE)
+        result |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+
+    if ((imageUsage & EImageUsage::INPUT_ATTACHMENT) != EImageUsage::NONE)
+        result |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+
+    return result;
+}
+
+VkBorderColor EnigmaRHI::Utilities::ToVulkanBorderColor(EBorderColor borderColor)
+{
+    switch (borderColor)
+    {
+    case EBorderColor::OPAQUE_INT_BLACK:
+        return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+    case EBorderColor::OPAQUE_FLOAT_BLACK:
+        return VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+
+    case EBorderColor::OPAQUE_INT_WHITE:
+        return VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+
+    case EBorderColor::OPAQUE_FLOAT_WHITE:
+        return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+
+    case EBorderColor::TRANSPARENT_INT_BLACK:
+        return VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
+
+    case EBorderColor::TRANSPARENT_FLOAT_BLACK:
+        return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+
+    default:
+        return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    }
 }
 
 EnigmaRHI::EImageFormat EnigmaRHI::Utilities::FormatFromVulkan(VkFormat format)
