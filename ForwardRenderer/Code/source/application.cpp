@@ -1,5 +1,6 @@
 #include "../include/application.h"
 #include <thread>
+#include "VulkanImageTypes.h"
 
 void Application::Run()
 {
@@ -19,8 +20,6 @@ void Application::InitWindow()
 	mainWindow = glfwCreateWindow(WIDTH, HEIGHT, "EnigmaRHI", nullptr, nullptr);
 	glfwSetWindowUserPointer(mainWindow, this);
 	glfwSetCursorPosCallback(mainWindow, InputManager::MouseCallback);
-
-	glfwSwapInterval(1);
 }
 
 void Application::InitAPI()
@@ -120,6 +119,8 @@ void Application::MainLoop()
 		glfwPollEvents();
 		DrawFrame();
 	}
+
+	device->WaitIdle();
 }
 
 void Application::CleanUp()
@@ -161,7 +162,10 @@ void Application::DrawFrame()
 {
 	uint32_t imageIndex = 0;
 	
-	syncronizer->AquireNextImage(device, swapChain, commandPool, surface, renderPass, mainWindow, &imageIndex);
+	bool aquireSucceded = syncronizer->AquireNextImage(device, swapChain, commandPool, surface, renderPass, mainWindow, &imageIndex);
+
+	if (!aquireSucceded)
+		return;
 	
 	cam->UpdateCameraDataBuffer(syncronizer->GetCurrentFrame(), swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height, mainWindow);
 	

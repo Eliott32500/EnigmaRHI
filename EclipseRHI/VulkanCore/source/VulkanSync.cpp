@@ -38,7 +38,7 @@ void EnigmaRHI::VulkanSync::Destroy(IDevice* device)
 	}
 }
 
-void EnigmaRHI::VulkanSync::AquireNextImage(IDevice* device, ISwapChain* swapChain, ICommandPool* commandPool, ISurface* surface, IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
+bool EnigmaRHI::VulkanSync::AquireNextImage(IDevice* device, ISwapChain* swapChain, ICommandPool* commandPool, ISurface* surface, IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
 {
 	vkWaitForFences(device->API_Vulkan().GetDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -49,7 +49,7 @@ void EnigmaRHI::VulkanSync::AquireNextImage(IDevice* device, ISwapChain* swapCha
 	if (nextImage == VK_ERROR_OUT_OF_DATE_KHR)
 	{
 		swapChain->API_Vulkan().RecreateSwapChain(&device->API_Vulkan(), &commandPool->API_Vulkan(), &surface->API_Vulkan(), renderPass->API_Vulkan().GetRenderPass(), window);
-		return;
+		return false;
 	}
 	else if (nextImage != VK_SUCCESS && nextImage != VK_SUBOPTIMAL_KHR)
 	{
@@ -57,6 +57,7 @@ void EnigmaRHI::VulkanSync::AquireNextImage(IDevice* device, ISwapChain* swapCha
 	}
 
 	vkResetFences(device->API_Vulkan().GetDevice(), 1, &inFlightFences[currentFrame]);
+	return true;
 }
 
 void EnigmaRHI::VulkanSync::PresentFrame(IDevice* device, ISwapChain* swapChain, ICommandPool* commandPool, ISurface* surface, IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex)
@@ -105,6 +106,4 @@ void EnigmaRHI::VulkanSync::PresentFrame(IDevice* device, ISwapChain* swapChain,
 	{
 		throw std::runtime_error("failed to present swap chain image!");
 	}
-
-	vkQueueWaitIdle(device->API_Vulkan().GetPresentQueue().Handle());
 }
