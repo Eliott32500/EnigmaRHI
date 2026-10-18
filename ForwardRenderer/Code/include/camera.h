@@ -35,7 +35,7 @@ private:
 	glm::vec3 orientation;
 
 	float speed = 2.f;
-	float mouseSensitivity = 70.f;
+	float mouseSensitivity = 0.1f;
 	float mouseWheelSensitivity = 5.f;
 
 	float deltaTime;

@@ -3,7 +3,7 @@
 Camera::Camera(float width, float height)
 	: width(width), height(height)
 {
-    SetCamera(45.f, width / height, 0.1f, 100.f, glm::vec3(-1.f, 2.4f, 1.4f));
+    SetCamera(60.f, width / height, 0.1f, 100.f, glm::vec3(-1.f, 2.4f, 1.4f));
 }
 
 void Camera::CreateCameraDataBuffer(EnigmaRHI::IDevice* device)
@@ -23,7 +23,9 @@ void Camera::CreateCameraDataBuffer(EnigmaRHI::IDevice* device)
 
 void Camera::UpdateCameraDataBuffer(uint32_t currentImage, float width, float height, GLFWwindow* mainWindow)
 {
-	glm::mat4 proj = glm::perspective(45.f, (float)width / (float)height, 0.1f, 100.f);
+    GetInputs(mainWindow);
+
+	glm::mat4 proj = glm::perspective(glm::radians(60.f), (float)width / (float)height, 0.1f, 100.f);
 	glm::mat4 view = glm::lookAt(position, position + orientation, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	proj[1][1] *= -1;
@@ -31,8 +33,6 @@ void Camera::UpdateCameraDataBuffer(uint32_t currentImage, float width, float he
 	CameraData ubo{ proj * view };
 
 	cameraDataBuffers[currentImage]->CopyData(&ubo, sizeof(ubo));
-
-    GetInputs(mainWindow);
 }
 
 void Camera::SetCamera(float fov, float aspectRatio, float zNear, float zFar, glm::vec3 _position)
@@ -99,8 +99,8 @@ void Camera::MouseCallback(GLFWwindow* window)
     {
         useCamera = true;
 
-        xoffset *= mouseSensitivity * deltaTime;
-        yoffset *= mouseSensitivity * deltaTime;
+        xoffset *= mouseSensitivity;
+        yoffset *= mouseSensitivity;
 
         yaw += xoffset;
         pitch += yoffset;
