@@ -18,5 +18,8 @@ namespace EnigmaRHI::Utilities
 
 	uint32_t BytesPerPixel(EImageFormat format);
 
+	bool HasStencilComponent(EImageFormat format);
+	bool HasDepthComponent(EImageFormat format);
+
 	bool HasFlag(EImageUsage value, EImageUsage flag);
 }

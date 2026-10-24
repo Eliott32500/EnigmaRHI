@@ -73,21 +73,39 @@ void Application::InitAPI()
 
 	pipeline->Create(vertShader, fragShader, device, swapChain, renderPass, descriptor);
 
-	
-	Texture texture{};
-	texture.LoadTexture(TEXTURE_PATH);
+	TextureLoadOptions opts;
+	opts.colorSpace = ETextureColorSpace::SRGB;   // Linear pour normal/roughness/metallic...
+
+	TextureData tex = LoadTexture(TEXTURE_PATH, opts);
+	if (!tex.IsValid())
+		return;
+
+	EnigmaRHI::ImageSampler sampler
+	{
+		.minFilter = EnigmaRHI::EFilter::LINEAR,
+		.magFilter = EnigmaRHI::EFilter::LINEAR,
+		.mipMapMode = EnigmaRHI::EMipmapMode::LINEAR,
+		.wrapU = EnigmaRHI::EWrappingMode::REPEAT,
+		.wrapV = EnigmaRHI::EWrappingMode::REPEAT,
+		.wrapW = EnigmaRHI::EWrappingMode::REPEAT,
+		.borderColor = EnigmaRHI::EBorderColor::OPAQUE_INT_BLACK,
+		.maxAnisotropy = 1.0f,
+		.compareEnable = false,
+		.compareOp = EnigmaRHI::ECompareOp::ALWAYS,
+	};
 
 	EnigmaRHI::ImageDesc imageDesc
 	{
 		.type = EnigmaRHI::EImageType::TYPE_2D,
-		.format = texture.GetImageFormat(),
+		.viewType = EnigmaRHI::EImageViewType::VIEW_2D,
+		.format = tex.format,
 		.usage = EnigmaRHI::EImageUsage::SAMPLED | EnigmaRHI::EImageUsage::TRANSFER_DST,
-		.extent = {texture.GetWidth(), texture.GetHeight(), 1},
-		.data = texture.GetData(),
+		.sampler = sampler,
+		.extent = {tex.width, tex.height, 1},
+		.data = tex.pixels,
 	};
 
 	roomTexture = device->CreateImageTexture(commandPool, imageDesc);
-	texture.FreeTextureData();
 
 	model = new Model();
 	model->LoadModel(MODEL_PATH);

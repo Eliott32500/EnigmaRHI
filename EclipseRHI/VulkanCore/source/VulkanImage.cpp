@@ -1,14 +1,55 @@
 #include "VulkanImage.h"
 #include "RHILog.h"
 #include "VulkanCommonTypes.h"
+#include "VulkanDepthStencilTypes.h"
 #include <assert.h>
 #include <algorithm>
 
 void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc imageDesc)
 {
+	const DeviceLimits& limits = device->GetCapabilities().limits;
+
+	uint32_t maxDim = 0;
+	switch (imageDesc.type)
+	{
+	case EImageType::TYPE_1D: maxDim = limits.maxImageDimension1D; break;
+	case EImageType::TYPE_2D: maxDim = limits.maxImageDimension2D; break;
+	case EImageType::TYPE_3D: maxDim = limits.maxImageDimension3D; break;
+	}
+
+	if (imageDesc.extent.width > maxDim || imageDesc.extent.height > maxDim)
+	{
+		LOG_ERROR(LogCategory::Vulkan, "Image extent exceeds device limit (" + std::to_string(maxDim) + ")");
+		return;
+	}
+
+	if (imageDesc.arrayLayers > limits.maxImageArrayLayers)
+	{
+		LOG_ERROR(LogCategory::Vulkan, "arrayLayers exceeds device limit");
+		return;
+	}
+
+	const bool isDepth = Utilities::HasDepthComponent(imageDesc.format);
+	const uint32_t maxSamples = isDepth ? limits.maxDepthSampleCount : limits.maxColorSampleCount;
+
+	if (imageDesc.sampleCount > maxSamples)
+	{
+		LOG_WARNING(LogCategory::Vulkan, "sampleCount clamped to " + std::to_string(maxSamples));
+		imageDesc.sampleCount = maxSamples;
+	}
+
+	VkImageCreateFlags flags = 0;
+
+	if (imageDesc.viewType == EImageViewType::VIEW_CUBE ||
+		imageDesc.viewType == EImageViewType::VIEW_CUBE_ARRAY)
+	{
+		flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+	}
+
 	VkImageCreateInfo imageInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+		.flags = flags,
 		.imageType = Utilities::ToVulkanImageType(imageDesc.type),
 		.format = Utilities::ToVulkanFormat(imageDesc.format),
 		.extent = Utilities::ToVulkanExtent(imageDesc.extent),
@@ -21,25 +62,34 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc imageDesc)
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 
-	if (vkCreateImage(device->API_Vulkan().GetDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS)
+	const VulkanDevice& myDevice = device->API_Vulkan();
+	VkDevice vulkanDevice = myDevice.GetDevice();
+
+	if (vkCreateImage(vulkanDevice, &imageInfo, nullptr, &image) != VK_SUCCESS)
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create image !");
 
+	AllocateImageMemory(myDevice, image);
+
+	ownsImage = true;
+}
+
+
+void EnigmaRHI::VulkanImage::AllocateImageMemory(const VulkanDevice& device, const VkImage& image)
+{
 	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(device->API_Vulkan().GetDevice(), image, &memRequirements);
+	vkGetImageMemoryRequirements(device.GetDevice(), image, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 		.allocationSize = memRequirements.size,
-		.memoryTypeIndex = device->API_Vulkan().GetPhysicalDevice().FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
+		.memoryTypeIndex = device.GetPhysicalDevice().FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
 	};
 
-	if (vkAllocateMemory(device->API_Vulkan().GetDevice(), &allocInfo, nullptr, &memory) != VK_SUCCESS)
+	if (vkAllocateMemory(device.GetDevice(), &allocInfo, nullptr, &memory) != VK_SUCCESS)
 		LOG_ERROR(LogCategory::Vulkan, "Failed to allocate image memory!");
 
-	vkBindImageMemory(device->API_Vulkan().GetDevice(), image, memory, 0);
-
-	ownsImage = true;
+	vkBindImageMemory(device.GetDevice(), image, memory, 0);
 }
 
 void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc imageDesc)
@@ -49,10 +99,9 @@ void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* c
 		LOG_ERROR(LogCategory::Vulkan, "Try to create a textureimage without data inside !");
 
 		VulkanDevice& dev = device->API_Vulkan();
-		VkFormat vkFormat = Utilities::ToVulkanFormat(imageDesc.format);
 		Create(device, imageDesc);
-		CreateView(&dev, vkFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-		CreateSampler(&dev);
+		CreateView(&dev, imageDesc, VK_IMAGE_ASPECT_COLOR_BIT);
+		CreateSampler(&dev, imageDesc.sampler);
 
 		ownsImage = true;
 
@@ -60,7 +109,6 @@ void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* c
 	}
 
 	VulkanDevice& dev = device->API_Vulkan();
-	VkFormat vkFormat = Utilities::ToVulkanFormat(imageDesc.format);
 	VkDeviceSize imageSize = static_cast<VkDeviceSize>(imageDesc.extent.width) * imageDesc.extent.height * Utilities::BytesPerPixel(imageDesc.format);
 
 	VulkanBuffer stagingBuffer;
@@ -68,6 +116,7 @@ void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* c
 	stagingBuffer.Create(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	stagingBuffer.UploadData(device, 0, imageSize, imageDesc.data, 0);
 
+	imageDesc.usage |= EImageUsage::SAMPLED | EImageUsage::TRANSFER_DST;
 	Create(device, imageDesc);
 
 	TransitionLayout(&dev, &commandPool->API_Vulkan(), imageDesc.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -76,8 +125,8 @@ void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* c
 
 	stagingBuffer.Destroy(&dev);
 
-	CreateView(&dev, vkFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-	CreateSampler(&dev);
+	CreateView(&dev, imageDesc, VK_IMAGE_ASPECT_COLOR_BIT);
+	CreateSampler(&dev, imageDesc.sampler);
 
 	ownsImage = true;
 }
@@ -114,43 +163,65 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, V
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create image view!");
 }
 
-void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, VkFilter filter)
+void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, ImageDesc imageDesc, VkImageAspectFlags aspect)
 {
+	VkImageViewCreateInfo viewInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+		.image = image,
+		.viewType = Utilities::ToVulkanImageViewType(imageDesc.viewType),
+		.format = Utilities::ToVulkanFormat(imageDesc.format),
+	};
+
+	viewInfo.subresourceRange.aspectMask = aspect;
+	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.layerCount = imageDesc.arrayLayers;
+
+	if (vkCreateImageView(device->GetDevice(), &viewInfo, nullptr, &view) != VK_SUCCESS)
+		LOG_ERROR(LogCategory::Vulkan, "Failed to create image view!");
+}
+
+void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, ImageSampler imageSampler)
+{
+	const float deviceMax = device->GetCapabilities().limits.maxSamplerAnisotropy;
+	const float requested = imageSampler.maxAnisotropy;
+
+	const bool  useAniso = requested > 0.f;
+	const float aniso = (requested == 1.f) ? deviceMax : (std::min)(requested, deviceMax);
+
+
 	VkSamplerCreateInfo samplerInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-		.magFilter = VK_FILTER_LINEAR,
-		.minFilter = VK_FILTER_LINEAR,
-		.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+		.magFilter = Utilities::ToVulkanFilter(imageSampler.magFilter),
+		.minFilter = Utilities::ToVulkanFilter(imageSampler.minFilter),
+		.mipmapMode = Utilities::ToVulkanMipmapMode(imageSampler.mipMapMode),
 
 		// X
-		.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+		.addressModeU = Utilities::ToVulkanWrapMode(imageSampler.wrapU),
 		// Y
-		.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+		.addressModeV = Utilities::ToVulkanWrapMode(imageSampler.wrapV),
 		// Z
-		.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+		.addressModeW = Utilities::ToVulkanWrapMode(imageSampler.wrapW),
 
-		.mipLodBias = 0.0f,
+		.mipLodBias = imageSampler.mipLodBias,
 
 		// Anisotropic filter
-		.anisotropyEnable = VK_TRUE,
-		.maxAnisotropy = device->GetPhysicalDevice().GetLimits().maxSamplerAnisotropy,
+		.anisotropyEnable = useAniso ? VK_TRUE : VK_FALSE,
+		.maxAnisotropy = useAniso ? aniso : 1.0f,
 
-		.compareEnable = VK_FALSE,
-		.compareOp = VK_COMPARE_OP_ALWAYS,
+		.compareEnable = imageSampler.compareEnable,
+		.compareOp = Utilities::ToVulkanCompareOp(imageSampler.compareOp),
 
-		.minLod = 0.f,
-		.maxLod = 0.f,
+		.minLod = imageSampler.minLod,
+		.maxLod = imageSampler.maxLod,
 
 		// Field specifies which color is returned when sampling beyond the image with clamp to border addressing mode
-		.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+		.borderColor = Utilities::ToVulkanBorderColor(imageSampler.borderColor),
 		.unnormalizedCoordinates = VK_FALSE,
 	};
-
-	VkPhysicalDeviceProperties properties{};
-	vkGetPhysicalDeviceProperties(device->GetPhysicalDevice().Handle(), &properties);
-
-	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
 
 	if (vkCreateSampler(device->GetDevice(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create texture sampler!");
@@ -183,7 +254,7 @@ void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanComman
 	{
 		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-		if (VulkanPhysicalDevice::HasStencilComponent(Utilities::ToVulkanFormat(format)))
+		if (Utilities::HasStencilComponent(format))
 			imageMemoryBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	}
 	else
@@ -295,3 +366,4 @@ void EnigmaRHI::VulkanImage::Destroy(IDevice* device)
 
 	ownsImage = false;
 }
+

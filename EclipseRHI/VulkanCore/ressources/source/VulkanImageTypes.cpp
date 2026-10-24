@@ -329,7 +329,6 @@ uint32_t EnigmaRHI::Utilities::BytesPerPixel(EImageFormat format)
     case EImageFormat::RGBA32_SFLOAT:
         return 16;
 
-        // Depth (non uploadables depuis la CPU, voir remarque)
     case EImageFormat::D16_UNORM:
         return 2;
     case EImageFormat::D32_SFLOAT:
@@ -341,6 +340,17 @@ uint32_t EnigmaRHI::Utilities::BytesPerPixel(EImageFormat format)
     default:
         return 0;
     }
+}
+
+bool EnigmaRHI::Utilities::HasStencilComponent(EImageFormat format)
+{
+    return format == EImageFormat::D24_UNORM_S8_UINT || format == EImageFormat::D32_SFLOAT_S8_UINT;
+}
+
+bool EnigmaRHI::Utilities::HasDepthComponent(EImageFormat format)
+{
+    return HasStencilComponent(format) || 
+        format == EImageFormat::D16_UNORM || format == EImageFormat::D32_SFLOAT;
 }
 
 bool EnigmaRHI::Utilities::HasFlag(EImageUsage value, EImageUsage flag)

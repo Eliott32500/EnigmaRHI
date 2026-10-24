@@ -40,7 +40,6 @@ namespace EnigmaRHI
         EImageFormat FindDepthFormat() const;
         EImageFormat FindSupportedFormat(const std::vector<EImageFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
-        static bool HasStencilComponent(VkFormat format);
         static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
         static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
 

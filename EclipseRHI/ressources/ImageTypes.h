@@ -107,6 +107,12 @@ namespace EnigmaRHI
         return static_cast<EnigmaRHI::EImageUsage>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
     }
 
+    constexpr EnigmaRHI::EImageUsage& operator|=(EnigmaRHI::EImageUsage& lhs, EnigmaRHI::EImageUsage rhs)
+    {
+        lhs = lhs | rhs;
+        return lhs;
+    }
+
     enum class EBorderColor
     {
         OPAQUE_INT_BLACK,
