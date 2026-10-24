@@ -30,7 +30,7 @@ namespace EnigmaRHI
 
         // Vulkan access
         VkDevice GetDevice() const { return logicalDevice; }
-        VulkanPhysicalDevice GetPhysicalDevice() const { return physicalVulkanDevice; }
+        const VulkanPhysicalDevice& GetPhysicalDevice() const { return physicalVulkanDevice; }
         VulkanQueue& GetGraphicsQueue() { return graphicsQueue; }
         VulkanQueue& GetPresentQueue() { return presentQueue; }
 

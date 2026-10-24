@@ -71,43 +71,47 @@ namespace EnigmaRHI
         if (props.apiVersion < VK_API_VERSION_1_3) 
             return false;
 
-        DeviceFeatures requiredFeatures{};
+        const DeviceFeatures requiredFeatures = GetRequiredFeatures();
 
         return indices.isComplete() && extensionsSupported && swapChainAdequate
             && SupportsRequiredFeatures(device, requiredFeatures);
     }
 
-    bool VulkanPhysicalDevice::SupportsRequiredFeatures(
-        VkPhysicalDevice device,
-        const DeviceFeatures& required)
+    bool VulkanPhysicalDevice::SupportsRequiredFeatures(VkPhysicalDevice device, const DeviceFeatures& required)
     {
-        VkPhysicalDeviceVulkan11Features f11
+        VkPhysicalDeviceVulkan13Features f13
         {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
         };
 
         VkPhysicalDeviceVulkan12Features f12
         {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-            .pNext = &f11,
+            .pNext = &f13,
         };
 
-        VkPhysicalDeviceVulkan13Features f13
+        VkPhysicalDeviceFeatures2 f2
         {
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-            .pNext = &f12
-        };
-
-        VkPhysicalDeviceFeatures2 f2{
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-            .pNext = &f13
+            .pNext = &f12,
         };
 
         vkGetPhysicalDeviceFeatures2(device, &f2);
 
-        return (!required.samplerAnisotropy || f2.features.samplerAnisotropy)
-            && (!required.dynamicRendering || f13.dynamicRendering)
-            && (!required.synchronization2 || f13.synchronization2);
+        auto Check = [](bool needed, VkBool32 supported, const char* name)
+            {
+                if (needed && !supported)
+                {
+                    LOG_WARNING(LogCategory::Vulkan, std::string("Missing required feature: ") + name);
+                    return false;
+                }
+                return true;
+            };
+
+        return Check(required.samplerAnisotropy, f2.features.samplerAnisotropy, "samplerAnisotropy")
+            && Check(required.dynamicRendering, f13.dynamicRendering, "dynamicRendering")
+            && Check(required.synchronization2, f13.synchronization2, "synchronization2")
+            && Check(required.timelineSemaphore, f12.timelineSemaphore, "timelineSemaphore");
     }
 
     bool VulkanPhysicalDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device)
@@ -188,11 +192,6 @@ namespace EnigmaRHI
         }
         LOG_FATAL(LogCategory::Vulkan, "Failed to find supported format!");
         return candidates.front();
-    }
-
-    bool VulkanPhysicalDevice::HasStencilComponent(VkFormat format)
-    {
-        return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
 
     EnigmaRHI::SwapChainSupportDetails VulkanPhysicalDevice::QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)

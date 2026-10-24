@@ -34,7 +34,6 @@ namespace EnigmaRHI
         VkPhysicalDevice Handle() const { return handle; }
         const QueueFamilyIndices& Queues() const { return queueFamilies; }
 
-        VkPhysicalDeviceProperties GetProperties() const { return properties; }
         VkPhysicalDeviceLimits GetLimits() const { return properties.limits; }
 
         uint32_t     FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;

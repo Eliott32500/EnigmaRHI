@@ -34,7 +34,7 @@ namespace EnigmaRHI
 
 		virtual VulkanDevice& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanDevice"); }
 
-	private:
+	protected:
 		
 		DeviceSpecifications capabilities;
 	};
