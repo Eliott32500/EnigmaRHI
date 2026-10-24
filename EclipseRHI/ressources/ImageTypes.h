@@ -50,6 +50,19 @@ namespace EnigmaRHI
         TYPE_3D,
     };
 
+    enum class EImageViewType
+    {
+        VIEW_1D,
+        VIEW_2D,
+        VIEW_3D,
+
+        VIEW_1D_ARRAY,
+        VIEW_2D_ARRAY,
+
+        VIEW_CUBE,
+        VIEW_CUBE_ARRAY,
+    };
+
     enum class EFilter
     {
         NEAREST,

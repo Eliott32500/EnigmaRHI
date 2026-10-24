@@ -7,6 +7,7 @@ namespace EnigmaRHI::Utilities
 {
 	VkFormat ToVulkanFormat(EImageFormat format);
 	VkImageType ToVulkanImageType(EImageType type);
+	VkImageViewType ToVulkanImageViewType(EImageViewType viewType);
 	VkFilter ToVulkanFilter(EFilter mode);
 	VkSamplerMipmapMode ToVulkanMipmapMode(EMipmapMode mode);
 	VkSamplerAddressMode ToVulkanWrapMode(EWrappingMode mode);

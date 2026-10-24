@@ -15,6 +15,7 @@ namespace EnigmaRHI
 	struct ImageDesc
 	{
 		EImageType type = EImageType::TYPE_2D;
+		EImageViewType viewType = EImageViewType::VIEW_2D;
 		EImageFormat format;
 		EImageUsage usage;
 		ImageSampler sampler;

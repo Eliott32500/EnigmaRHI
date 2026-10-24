@@ -98,6 +98,36 @@ VkImageType EnigmaRHI::Utilities::ToVulkanImageType(EImageType type)
     }
 }
 
+VkImageViewType EnigmaRHI::Utilities::ToVulkanImageViewType(EImageViewType viewType)
+{
+    switch (viewType)
+    {
+    case EImageViewType::VIEW_1D:
+        return VK_IMAGE_VIEW_TYPE_1D;
+
+    case EImageViewType::VIEW_2D:
+        return VK_IMAGE_VIEW_TYPE_2D;
+
+    case EImageViewType::VIEW_3D:
+        return VK_IMAGE_VIEW_TYPE_3D;
+
+    case EImageViewType::VIEW_1D_ARRAY:
+        return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+
+    case EImageViewType::VIEW_2D_ARRAY:
+        return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+
+    case EImageViewType::VIEW_CUBE:
+        return VK_IMAGE_VIEW_TYPE_CUBE;
+
+    case EImageViewType::VIEW_CUBE_ARRAY:
+        return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+
+    default:
+        return VK_IMAGE_VIEW_TYPE_2D;
+    }
+}
+
 VkFilter EnigmaRHI::Utilities::ToVulkanFilter(EFilter mode)
 {
     return mode == EFilter::NEAREST ? VK_FILTER_NEAREST : VK_FILTER_NEAREST;
