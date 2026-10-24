@@ -1,29 +1,52 @@
 #pragma once
 
+#include <cstdint>
+#include <string>
 #include "ImageTypes.h"
-#include <iostream>
 
-class Texture
+enum class ETextureColorSpace
+{
+    SRGB,
+    LINEAR
+};
+
+struct TextureLoadOptions
+{
+    ETextureColorSpace colorSpace = ETextureColorSpace::SRGB;
+    bool flipVertically = false;
+    bool hdr = false;
+};
+
+class TextureData
 {
 public:
+    TextureData() = default;
+    ~TextureData() { Free(); }
 
-	Texture() = default;
+    TextureData(const TextureData&) = delete;
+    TextureData& operator=(const TextureData&) = delete;
 
-	void LoadTexture(const char* filePath);
+    TextureData(TextureData&& o) noexcept { *this = std::move(o); }
+    TextureData& operator=(TextureData&& o) noexcept
+    {
+        if (this != &o)
+        {
+            Free();
+            pixels = o.pixels;  width = o.width;  height = o.height;
+            format = o.format;  sourceChannels = o.sourceChannels;
+            o.pixels = nullptr;
+        }
+        return *this;
+    }
 
-	void FreeTextureData();
+    bool IsValid() const { return pixels != nullptr; }
+    void Free();
 
-	uint32_t GetWidth() const { return static_cast<uint32_t>(width); }
-	uint32_t GetHeight() const { return static_cast<uint32_t>(height); }
-	uint32_t GetChannels() const { return static_cast<uint32_t>(channels); }
-	EnigmaRHI::EImageFormat GetImageFormat() const { return imageFormat; }
-	unsigned char* GetData() const { return data; }
-
-private:
-
-	int width = 0;
-	int height = 0;
-	int channels = 0;
-	EnigmaRHI::EImageFormat imageFormat = EnigmaRHI::EImageFormat::UNDEFINED;
-	unsigned char* data = nullptr;
+    void* pixels = nullptr;
+    uint32_t     width = 0;
+    uint32_t     height = 0;
+    uint32_t     sourceChannels = 0;
+    EnigmaRHI::EImageFormat format = EnigmaRHI::EImageFormat::UNDEFINED;
 };
+
+TextureData LoadTexture(const std::string& path, const TextureLoadOptions& options = {});
