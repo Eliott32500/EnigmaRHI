@@ -4,6 +4,7 @@
 #include "RasterizationTypes.h"
 #include "BlendTypes.h"
 #include "DepthStencilTypes.h"
+#include "PipelineDynamicState.h"
 
 namespace EnigmaRHI::Utilities
 {
@@ -12,4 +13,5 @@ namespace EnigmaRHI::Utilities
     VkFrontFace ToVulkanFrontFace(EFrontFaceMode mode);
     VkBlendFactor ToVulkanBlendFactor(EBlendFactor factor);
     VkBlendOp ToVulkanBlendOp(EBlendOp operation);
+    VkDynamicState ToVulkanDynamicState(EDynamicState dynamicState);
 }

@@ -30,13 +30,7 @@ VkPolygonMode EnigmaRHI::Utilities::ToVulkanPolygonMode(EPolygonMode mode)
 
 VkFrontFace EnigmaRHI::Utilities::ToVulkanFrontFace(EFrontFaceMode mode)
 {
-	switch (mode)
-	{
-		case EFrontFaceMode::CLOCKWISE:
-			return VK_FRONT_FACE_CLOCKWISE;
-		case EFrontFaceMode::COUNTER_CLOCKWISE:
-			return VK_FRONT_FACE_COUNTER_CLOCKWISE;
-	}
+	return mode == EFrontFaceMode::CLOCKWISE ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
 }
 
 VkBlendFactor EnigmaRHI::Utilities::ToVulkanBlendFactor(EBlendFactor factor)
@@ -68,5 +62,71 @@ VkBlendOp EnigmaRHI::Utilities::ToVulkanBlendOp(EBlendOp operation)
 			return VK_BLEND_OP_MIN;
 		case EBlendOp::MAX:
 			return VK_BLEND_OP_MAX;
+	}
+}
+
+VkDynamicState EnigmaRHI::Utilities::ToVulkanDynamicState(EDynamicState dynamicState)
+{
+	switch (dynamicState)
+	{
+		case EDynamicState::VIEWPORT:
+			return VK_DYNAMIC_STATE_VIEWPORT;
+
+		case EDynamicState::SCISSOR:
+			return VK_DYNAMIC_STATE_SCISSOR;
+
+		case EDynamicState::LINE_WIDTH:
+			return VK_DYNAMIC_STATE_LINE_WIDTH;
+
+		case EDynamicState::DEPTH_BIAS:
+			return VK_DYNAMIC_STATE_DEPTH_BIAS;
+
+		case EDynamicState::BLEND_CONSTANTS:
+			return VK_DYNAMIC_STATE_BLEND_CONSTANTS;
+
+		case EDynamicState::DEPTH_BOUNDS:
+			return VK_DYNAMIC_STATE_DEPTH_BOUNDS;
+
+		case EDynamicState::STENCIL_COMPARE_MASK:
+			return VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK;
+
+		case EDynamicState::STENCIL_WRITE_MASK:
+			return VK_DYNAMIC_STATE_STENCIL_WRITE_MASK;
+
+		case EDynamicState::STENCIL_REFERENCE:
+			return VK_DYNAMIC_STATE_STENCIL_REFERENCE;
+
+		case EDynamicState::CULL_MODE:
+			return VK_DYNAMIC_STATE_CULL_MODE;
+
+		case EDynamicState::FRONT_FACE:
+			return VK_DYNAMIC_STATE_FRONT_FACE;
+
+		case EDynamicState::PRIMITIVE_TOPOLOGY:
+			return VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY;
+
+		case EDynamicState::DEPTH_TEST_ENABLE:
+			return VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE;
+
+		case EDynamicState::DEPTH_WRITE_ENABLE:
+			return VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE;
+
+		case EDynamicState::DEPTH_COMPARE_OP:
+			return VK_DYNAMIC_STATE_DEPTH_COMPARE_OP;
+
+		case EDynamicState::DEPTH_BOUNDS_TEST_ENABLE:
+			return VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE;
+
+		case EDynamicState::STENCIL_TEST_ENABLE:
+			return VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE;
+
+		case EDynamicState::STENCIL_OP:
+			return VK_DYNAMIC_STATE_STENCIL_OP;
+
+		case EDynamicState::RASTERIZER_DISCARD_ENABLE:
+			return VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE;
+
+		case EDynamicState::DEPTH_BIAS_ENABLE:
+			return VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE;
 	}
 }
