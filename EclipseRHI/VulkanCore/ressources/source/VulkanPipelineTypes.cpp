@@ -4,19 +4,19 @@
 #include "RHIBitMask.h"
 #include "VulkanDeviceCapabilities.h"
 #include "VulkanDepthStencilTypes.h"
+#include "RHILog.h"
 
 VkCullModeFlags EnigmaRHI::Utilities::ToVulkanCullMode(ECullMode mode)
 {
 	switch (mode)
 	{
-		case ECullMode::NONE:
-			return VK_CULL_MODE_NONE;
-		case ECullMode::FRONT:
-			return VK_CULL_MODE_FRONT_BIT;
-		case ECullMode::BACK:
-			return VK_CULL_MODE_BACK_BIT;
-		case ECullMode::FRONT_AND_BACK:
-			return VK_CULL_MODE_FRONT_AND_BACK;
+		using E = ECullMode;
+
+		case E::NONE:				return VK_CULL_MODE_NONE;
+		case E::FRONT:				return VK_CULL_MODE_FRONT_BIT;
+		case E::BACK:				return VK_CULL_MODE_BACK_BIT;
+		case E::FRONT_AND_BACK:     return VK_CULL_MODE_FRONT_AND_BACK;
+		default:					LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan cull mode !");
 	}
 }
 
@@ -24,12 +24,12 @@ VkPolygonMode EnigmaRHI::Utilities::ToVulkanPolygonMode(EPolygonMode mode)
 {
 	switch (mode)
 	{
-		case EPolygonMode::FILL:
-			return VK_POLYGON_MODE_FILL;
-		case EPolygonMode::LINE:
-			return VK_POLYGON_MODE_LINE;
-		case EPolygonMode::POINT:
-			return VK_POLYGON_MODE_POINT;
+		using E = EPolygonMode;
+
+		case E::FILL:		return VK_POLYGON_MODE_FILL;
+		case E::LINE:		return VK_POLYGON_MODE_LINE;
+		case E::POINT:		return VK_POLYGON_MODE_POINT;
+		default:			LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan polygon mode !");
 	}
 }
 
@@ -37,18 +37,14 @@ VkPrimitiveTopology EnigmaRHI::Utilities::ToVulkanTopology(EPrimitiveTopologyMod
 {
 	switch (mode)
 	{
-	case EPrimitiveTopologyMode::POINT_LIST:
-		return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-	case EPrimitiveTopologyMode::LINE_LIST:
-		return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-	case EPrimitiveTopologyMode::LINE_STRIP:
-		return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-	case EPrimitiveTopologyMode::TRIANGLE_LIST:
-		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	case EPrimitiveTopologyMode::TRIANGLE_STRIP:
-		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-	default:
-		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		using E = EPrimitiveTopologyMode;
+
+		case E::POINT_LIST:			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		case E::LINE_LIST:			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+		case E::LINE_STRIP:			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+		case E::TRIANGLE_LIST:		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		case E::TRIANGLE_STRIP:		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+		default:					LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan topology !");
 	}
 }
 
@@ -61,14 +57,13 @@ VkBlendFactor EnigmaRHI::Utilities::ToVulkanBlendFactor(EBlendFactor factor)
 {
 	switch (factor)
 	{
-		case EBlendFactor::ZERO:
-			return VK_BLEND_FACTOR_ZERO;
-		case EBlendFactor::ONE:
-			return VK_BLEND_FACTOR_ONE;
-		case EBlendFactor::SRC_ALPHA:
-			return VK_BLEND_FACTOR_SRC_ALPHA;
-		case EBlendFactor::ONE_MINUS_SRC_ALPHA:
-			return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		using E = EBlendFactor;
+
+		case E::ZERO:					return VK_BLEND_FACTOR_ZERO;
+		case E::ONE:					return VK_BLEND_FACTOR_ONE;
+		case E::SRC_ALPHA:				return VK_BLEND_FACTOR_SRC_ALPHA;
+		case E::ONE_MINUS_SRC_ALPHA:	return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		default:						LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan blend factor !");
 	}
 }
 
@@ -76,16 +71,14 @@ VkBlendOp EnigmaRHI::Utilities::ToVulkanBlendOp(EBlendOp operation)
 {
 	switch (operation)
 	{
-		case EBlendOp::ADD:
-			return VK_BLEND_OP_ADD;
-		case EBlendOp::SUBTRACT:
-			return VK_BLEND_OP_SUBTRACT;
-		case EBlendOp::REVERSE_SUBTRACT:
-			return VK_BLEND_OP_REVERSE_SUBTRACT;
-		case EBlendOp::MIN:
-			return VK_BLEND_OP_MIN;
-		case EBlendOp::MAX:
-			return VK_BLEND_OP_MAX;
+		using E = EBlendOp;
+
+		case E::ADD:					return VK_BLEND_OP_ADD;
+		case E::SUBTRACT:				return VK_BLEND_OP_SUBTRACT;
+		case E::REVERSE_SUBTRACT:		return VK_BLEND_OP_REVERSE_SUBTRACT;
+		case E::MIN:					return VK_BLEND_OP_MIN;
+		case E::MAX:					return VK_BLEND_OP_MAX;
+		default:						LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan blend operation !");
 	}
 }
 
