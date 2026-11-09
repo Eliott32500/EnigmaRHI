@@ -6,6 +6,11 @@ void EnigmaRHI::VulkanShaderModule::Create(IDevice* device, const std::string& f
 	module = CreateShaderModule(device->API_Vulkan().GetDevice());
 }
 
+void EnigmaRHI::VulkanShaderModule::Destroy(IDevice* device)
+{
+	vkDestroyShaderModule(device->API_Vulkan().GetDevice(), module, nullptr);
+}
+
 VkShaderModule EnigmaRHI::VulkanShaderModule::CreateShaderModule(VkDevice vulkanDevice)
 {
 	VkShaderModuleCreateInfo createInfo
