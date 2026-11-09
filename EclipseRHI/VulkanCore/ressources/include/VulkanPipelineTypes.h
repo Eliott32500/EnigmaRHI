@@ -5,6 +5,7 @@
 #include "BlendTypes.h"
 #include "DepthStencilTypes.h"
 #include "PipelineDynamicState.h"
+#include <vector>
 
 namespace EnigmaRHI::Utilities
 {
@@ -15,4 +16,5 @@ namespace EnigmaRHI::Utilities
     VkBlendFactor ToVulkanBlendFactor(EBlendFactor factor);
     VkBlendOp ToVulkanBlendOp(EBlendOp operation);
     VkDynamicState ToVulkanDynamicState(EDynamicState dynamicState);
+    std::vector<VkDynamicState> ToVulkanDynamicStates(std::vector<EDynamicState> dynamicStates);
 }

@@ -35,6 +35,9 @@ namespace EnigmaRHI
         // Divers
         uint32_t maxMemoryAllocationCount = 0;
         uint32_t maxColorAttachments = 0;
+
+        //Line
+        float lineWidthLimits[2];
     };
 
     struct DeviceFeatures

@@ -5,6 +5,7 @@
 #include "VulkanRenderPass.h"
 #include "IPipeline.h"
 #include "VulkanVertex.h"
+#include <vector>
 
 namespace EnigmaRHI
 {
@@ -14,7 +15,7 @@ namespace EnigmaRHI
 
 		VulkanPipeline() = default;
 
-		void Create(IShaderModule* vertShader, IShaderModule* fragShader, IDevice* device, ISwapChain* swapchain, IRenderPass* renderPass, IDescriptor* descriptor) override;
+		void Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, ISwapChain* swapchain, IRenderPass* renderPass, IDescriptor* descriptor) override;
 		void Destroy(IDevice* device) override;
 
 		VkPipeline GetGraphicsPipeline() const { return graphicsPipeline; }
@@ -26,5 +27,7 @@ namespace EnigmaRHI
 
 		VkPipeline graphicsPipeline;
 		VkPipelineLayout pipelineLayout;
+
+		std::vector<VkPipelineShaderStageCreateInfo> CreateShaderInfo(const Shader& shader);
 	};
 }

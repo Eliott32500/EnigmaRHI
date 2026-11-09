@@ -5,7 +5,8 @@
 #include "IDevice.h"
 #include "IRenderPass.h"
 #include "IDescriptor.h"
-#include "IShaderModule.h"
+#include "IGraphicsPipeline.h"
+#include "IShader.h"
 
 
 namespace EnigmaRHI
@@ -17,7 +18,7 @@ namespace EnigmaRHI
 	public:
 
 		virtual ~IPipeline() = default;
-		virtual void Create(IShaderModule* vertShader, IShaderModule* fragShader, IDevice* device, ISwapChain* swapchain, IRenderPass* renderPass, IDescriptor* descriptor) = 0;
+		virtual void Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, ISwapChain* swapchain, IRenderPass* renderPass, IDescriptor* descriptor) = 0;
 		virtual void Destroy(IDevice* device) = 0;
 
 		virtual VulkanPipeline& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanPipeline"); }

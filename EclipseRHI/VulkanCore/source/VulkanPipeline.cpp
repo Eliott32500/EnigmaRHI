@@ -1,25 +1,11 @@
 #include "VulkanPipeline.h"
+#include "VulkanPipelineTypes.h"
+#include "RHILog.h"
+#include "VulkanDeviceCapabilities.h"
 
-void EnigmaRHI::VulkanPipeline::Create(IShaderModule* vertShader, IShaderModule* fragShader, IDevice* device, ISwapChain* swapChain, IRenderPass* renderPass, IDescriptor* descriptor)
+void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, ISwapChain* swapChain, IRenderPass* renderPass, IDescriptor* descriptor)
 {
-	VkPipelineShaderStageCreateInfo vertShaderStageInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-		.stage = VK_SHADER_STAGE_VERTEX_BIT,
-		.module = vertShader->API_Vulkan().GetModule(),
-		.pName = "main",
-	};
-
-	VkPipelineShaderStageCreateInfo fragShaderStageInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-		.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-		.module = fragShader->API_Vulkan().GetModule(),
-		.pName = "main",
-	};
-
-	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages = CreateShaderInfo(shader);
 
 	//// DONE ////
 	auto bindingDescription = VulkanVertex::GetBindingDescription();
@@ -35,10 +21,7 @@ void EnigmaRHI::VulkanPipeline::Create(IShaderModule* vertShader, IShaderModule*
 	};
 	///////
 
-	std::vector<VkDynamicState> dynamicStates = {
-		VK_DYNAMIC_STATE_VIEWPORT,
-		VK_DYNAMIC_STATE_SCISSOR
-	};
+	std::vector<VkDynamicState> dynamicStates = Utilities::ToVulkanDynamicStates(gp.dynamicStates);
 
 	VkPipelineDynamicStateCreateInfo dynamicState
 	{
@@ -52,15 +35,7 @@ void EnigmaRHI::VulkanPipeline::Create(IShaderModule* vertShader, IShaderModule*
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly
 	{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-
-		//	Comment les vertex sont utilisés
-		//	VK_PRIMITIVE_TOPOLOGY_POINT_LIST: points from vertices
-		//	VK_PRIMITIVE_TOPOLOGY_LINE_LIST: line from every 2 vertices without reuse
-		//	VK_PRIMITIVE_TOPOLOGY_LINE_STRIP : the end vertex of every line is used as start vertex for the next line
-		//	VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST : triangle from every 3 vertices without reuse
-		//	VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP : the second and third vertex of every triangle are used as first two vertices of the next triangle
-		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-
+		.topology = Utilities::ToVulkanTopology(gp.topologyMode),
 		.primitiveRestartEnable = VK_FALSE,
 	};
 
@@ -133,6 +108,10 @@ void EnigmaRHI::VulkanPipeline::Create(IShaderModule* vertShader, IShaderModule*
 		.alphaToOneEnable = VK_FALSE, // Optional
 	};
 
+	uint32_t t = Utilities::HighestSampleCount(multisampling.rasterizationSamples);
+	std::cout << t << std::endl;
+	
+
 	////////////////////////////////
 
 	//////// COLOR-BLENDING ////////
@@ -183,9 +162,9 @@ void EnigmaRHI::VulkanPipeline::Create(IShaderModule* vertShader, IShaderModule*
 
 	if (vkCreatePipelineLayout(device->API_Vulkan().GetDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 	{
-		vkDestroyShaderModule(device->API_Vulkan().GetDevice(), fragShader->API_Vulkan().GetModule(), nullptr);
-		vkDestroyShaderModule(device->API_Vulkan().GetDevice(), vertShader->API_Vulkan().GetModule(), nullptr);
-		throw std::runtime_error("failed to create pipeline layout!");
+		shader.fragShader->Destroy(device);
+		shader.vertShader->Destroy(device);
+		LOG_ERROR(LogCategory::Vulkan, "Failed to create pipeline layout !");
 	}
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil
@@ -207,8 +186,8 @@ void EnigmaRHI::VulkanPipeline::Create(IShaderModule* vertShader, IShaderModule*
 		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 		// Only if the two last Optionnal parameters are non-NULL and non-equal -1 (Create a Graphics Pipeline based on another one)
 		//.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT,
-		.stageCount = 2,
-		.pStages = shaderStages,
+		.stageCount = static_cast<uint32_t>(shaderStages.size()),
+		.pStages = shaderStages.data(),
 		.pVertexInputState = &vertexInputInfo,
 		.pInputAssemblyState = &inputAssembly,
 		.pViewportState = &viewportState,
@@ -227,12 +206,71 @@ void EnigmaRHI::VulkanPipeline::Create(IShaderModule* vertShader, IShaderModule*
 	if (vkCreateGraphicsPipelines(device->API_Vulkan().GetDevice(), VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		throw std::runtime_error("failed to create graphics pipeline!");
 
-	vkDestroyShaderModule(device->API_Vulkan().GetDevice(), fragShader->API_Vulkan().GetModule(), nullptr);
-	vkDestroyShaderModule(device->API_Vulkan().GetDevice(), vertShader->API_Vulkan().GetModule(), nullptr);
+	shader.fragShader->Destroy(device);
+	shader.vertShader->Destroy(device);
 }
 
 void EnigmaRHI::VulkanPipeline::Destroy(IDevice* device)
 {
 	vkDestroyPipeline(device->API_Vulkan().GetDevice(), graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(device->API_Vulkan().GetDevice(), pipelineLayout, nullptr);
+}
+
+std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateShaderInfo(const Shader& shader)
+{
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+
+	if (shader.vertShader)
+	{
+		VkPipelineShaderStageCreateInfo vertShaderStageInfo
+		{
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.stage = VK_SHADER_STAGE_VERTEX_BIT,
+			.module = shader.vertShader->API_Vulkan().GetModule(),
+			.pName = shader.name,
+		};
+
+		shaderStages.push_back(vertShaderStageInfo);
+	}
+
+	if (shader.fragShader)
+	{
+		VkPipelineShaderStageCreateInfo fragShaderStageInfo
+		{
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+			.module = shader.fragShader->API_Vulkan().GetModule(),
+			.pName = shader.name,
+		};
+
+		shaderStages.push_back(fragShaderStageInfo);
+	}
+
+	if (shader.computeShader)
+	{
+		VkPipelineShaderStageCreateInfo compShaderStageInfo
+		{
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.stage = VK_SHADER_STAGE_COMPUTE_BIT,
+			.module = shader.computeShader->API_Vulkan().GetModule(),
+			.pName = shader.name,
+		};
+
+		shaderStages.push_back(compShaderStageInfo);
+	}
+
+	if (shader.geomShader)
+	{
+		VkPipelineShaderStageCreateInfo geomShaderStageInfo
+		{
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.stage = VK_SHADER_STAGE_GEOMETRY_BIT,
+			.module = shader.geomShader->API_Vulkan().GetModule(),
+			.pName = shader.name,
+		};
+
+		shaderStages.push_back(geomShaderStageInfo);
+	}
+
+	return shaderStages;
 }

@@ -1,6 +1,7 @@
 #include "../include/application.h"
 #include <thread>
 #include "VulkanImageTypes.h"
+#include "IGraphicsPipeline.h"
 
 void Application::Run()
 {
@@ -71,7 +72,19 @@ void Application::InitAPI()
 	vertShader->Create(device, "Assets/Shaders/vert.spv");
 	fragShader->Create(device, "Assets/Shaders/frag.spv");
 
-	pipeline->Create(vertShader, fragShader, device, swapChain, renderPass, descriptor);
+	EnigmaRHI::GraphicsPipelineDesc gp
+	{
+		.dynamicStates = {EnigmaRHI::EDynamicState::VIEWPORT, EnigmaRHI::EDynamicState::SCISSOR},
+	};
+
+	EnigmaRHI::Shader shader
+	{
+		.name = "main",
+		.vertShader = vertShader,
+		.fragShader = fragShader,
+	};
+
+	pipeline->Create(gp, shader, device, swapChain, renderPass, descriptor);
 
 	TextureLoadOptions opts;
 	opts.colorSpace = ETextureColorSpace::SRGB;   // Linear pour normal/roughness/metallic...
