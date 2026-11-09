@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "RHIBitMask.h"
 
 namespace EnigmaRHI
 {
@@ -96,22 +97,7 @@ namespace EnigmaRHI
         TRANSIENT_ATTACHMENT = 1 << 6,
         INPUT_ATTACHMENT = 1 << 7,
     };
-
-    constexpr EnigmaRHI::EImageUsage operator|(EnigmaRHI::EImageUsage lhs, EnigmaRHI::EImageUsage rhs)
-    {
-        return static_cast<EnigmaRHI::EImageUsage>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
-    }
-
-    constexpr EnigmaRHI::EImageUsage operator&(EnigmaRHI::EImageUsage lhs, EnigmaRHI::EImageUsage rhs)
-    {
-        return static_cast<EnigmaRHI::EImageUsage>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
-    }
-
-    constexpr EnigmaRHI::EImageUsage& operator|=(EnigmaRHI::EImageUsage& lhs, EnigmaRHI::EImageUsage rhs)
-    {
-        lhs = lhs | rhs;
-        return lhs;
-    }
+    ENIGMA_ENABLE_BITMASK_OPERATORS(EImageUsage);
 
     enum class EBorderColor
     {

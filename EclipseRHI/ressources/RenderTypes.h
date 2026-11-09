@@ -18,6 +18,7 @@ namespace EnigmaRHI
         STENCIL = 0x04,
         ALL = COLOR | DEPTH | STENCIL
     };
+    ENIGMA_ENABLE_BITMASK_OPERATORS(EMask);
 
     enum class EColorMask : unsigned int
     {
@@ -28,20 +29,5 @@ namespace EnigmaRHI
         COLOR_A = 1 << 3,
         COLOR_ALL = COLOR_R | COLOR_G | COLOR_B | COLOR_A
     };
-
-    constexpr EnigmaRHI::EColorMask operator|(EnigmaRHI::EColorMask lhs, EnigmaRHI::EColorMask rhs)
-    {
-        return static_cast<EnigmaRHI::EColorMask>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
-    }
-
-    constexpr EnigmaRHI::EColorMask operator&(EnigmaRHI::EColorMask lhs, EnigmaRHI::EColorMask rhs)
-    {
-        return static_cast<EnigmaRHI::EColorMask>(static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs));
-    }
-
-    constexpr EnigmaRHI::EColorMask& operator|=(EnigmaRHI::EColorMask& lhs, EnigmaRHI::EColorMask rhs)
-    {
-        lhs = lhs | rhs;
-        return lhs;
-    }
+    ENIGMA_ENABLE_BITMASK_OPERATORS(EColorMask);
 }
