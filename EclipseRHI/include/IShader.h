@@ -6,10 +6,10 @@ namespace EnigmaRHI
 {
 	struct Shader
 	{
-		const char* name;
-		IShaderModule* vertShader;
-		IShaderModule* fragShader;
-		IShaderModule* geomShader;
-		IShaderModule* computeShader;
+		IShaderModule* vertShader = nullptr;
+		IShaderModule* fragShader = nullptr;
+		IShaderModule* geomShader = nullptr;
+		IShaderModule* computeShader = nullptr;
+		const char* entryMethod = "main";
 	};
 }

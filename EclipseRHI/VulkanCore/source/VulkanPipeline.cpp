@@ -11,6 +11,40 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 	auto bindingDescription = VulkanVertex::GetBindingDescription();
 	auto attributeDescriptions = VulkanVertex::GetAttributeDescriptions();
 
+	//NEW VERSION NON IMPLEMENTED
+	
+	//std::vector<VkVertexInputBindingDescription> bindings;
+	//
+	//for (const auto& binding : gp.vertexBindings)
+	//{
+	//	bindings.push_back({
+	//		.binding = binding.binding,
+	//		.stride = binding.stride,
+	//		.inputRate = Utilities::ToVulkanVertexInputRate(binding.inputRate)
+	//		});
+	//}
+	//
+	//std::vector<VkVertexInputAttributeDescription> attributes;
+	//
+	//for (const auto& attribute : gp.vertexAttributes)
+	//{
+	//	attributes.push_back({
+	//		.location = attribute.location,
+	//		.binding = attribute.binding,
+	//		.format = Utilities::ToVulkanVertexFormat(attribute.format),
+	//		.offset = attribute.offset
+	//		});
+	//}
+	//
+	//VkPipelineVertexInputStateCreateInfo vertexInputInfo
+	//{
+	//	.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+	//	.vertexBindingDescriptionCount = static_cast<uint32_t>(bindings.size()),
+	//	.pVertexBindingDescriptions = bindings.data(),
+	//	.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size()),
+	//	.pVertexAttributeDescriptions = attributes.data()
+	//};
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -223,7 +257,7 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.stage = VK_SHADER_STAGE_VERTEX_BIT,
 			.module = shader.vertShader->API_Vulkan().GetModule(),
-			.pName = shader.name,
+			.pName = shader.entryMethod,
 		};
 
 		shaderStages.push_back(vertShaderStageInfo);
@@ -236,7 +270,7 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
 			.module = shader.fragShader->API_Vulkan().GetModule(),
-			.pName = shader.name,
+			.pName = shader.entryMethod,
 		};
 
 		shaderStages.push_back(fragShaderStageInfo);
@@ -249,7 +283,7 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.stage = VK_SHADER_STAGE_COMPUTE_BIT,
 			.module = shader.computeShader->API_Vulkan().GetModule(),
-			.pName = shader.name,
+			.pName = shader.entryMethod,
 		};
 
 		shaderStages.push_back(compShaderStageInfo);
@@ -262,7 +296,7 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.stage = VK_SHADER_STAGE_GEOMETRY_BIT,
 			.module = shader.geomShader->API_Vulkan().GetModule(),
-			.pName = shader.name,
+			.pName = shader.entryMethod,
 		};
 
 		shaderStages.push_back(geomShaderStageInfo);

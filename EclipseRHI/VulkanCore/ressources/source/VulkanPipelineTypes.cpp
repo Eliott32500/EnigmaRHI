@@ -93,65 +93,72 @@ VkDynamicState EnigmaRHI::Utilities::ToVulkanDynamicState(EDynamicState dynamicS
 {
 	switch (dynamicState)
 	{
-		case EDynamicState::VIEWPORT:
-			return VK_DYNAMIC_STATE_VIEWPORT;
+		using E = EDynamicState;
 
-		case EDynamicState::SCISSOR:
-			return VK_DYNAMIC_STATE_SCISSOR;
+		case E::VIEWPORT:						return VK_DYNAMIC_STATE_VIEWPORT;
+		case E::SCISSOR:						return VK_DYNAMIC_STATE_SCISSOR;
+		case E::LINE_WIDTH:						return VK_DYNAMIC_STATE_LINE_WIDTH;
+		case E::DEPTH_BIAS:						return VK_DYNAMIC_STATE_DEPTH_BIAS;
+		case E::BLEND_CONSTANTS:				return VK_DYNAMIC_STATE_BLEND_CONSTANTS;
+		case E::DEPTH_BOUNDS:					return VK_DYNAMIC_STATE_DEPTH_BOUNDS;
+		case E::STENCIL_COMPARE_MASK:			return VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK;
+		case E::STENCIL_WRITE_MASK:				return VK_DYNAMIC_STATE_STENCIL_WRITE_MASK;
+		case E::STENCIL_REFERENCE:				return VK_DYNAMIC_STATE_STENCIL_REFERENCE;
+		case E::CULL_MODE:						return VK_DYNAMIC_STATE_CULL_MODE;
+		case E::FRONT_FACE:						return VK_DYNAMIC_STATE_FRONT_FACE;
+		case E::PRIMITIVE_TOPOLOGY:				return VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY;
+		case E::DEPTH_TEST_ENABLE:				return VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE;
+		case E::DEPTH_WRITE_ENABLE:				return VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE;
+		case E::DEPTH_COMPARE_OP:				return VK_DYNAMIC_STATE_DEPTH_COMPARE_OP;
+		case E::DEPTH_BOUNDS_TEST_ENABLE:		return VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE;
+		case E::STENCIL_TEST_ENABLE:			return VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE;
+		case E::STENCIL_OP:						return VK_DYNAMIC_STATE_STENCIL_OP;
+		case E::RASTERIZER_DISCARD_ENABLE:		return VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE;
+		case E::DEPTH_BIAS_ENABLE:				return VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE;
+		default:								LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan dynamic state !");
+	}
+}
 
-		case EDynamicState::LINE_WIDTH:
-			return VK_DYNAMIC_STATE_LINE_WIDTH;
+VkVertexInputRate EnigmaRHI::Utilities::ToVulkanVertexInputRate(EVertexInputRate rate)
+{
+	switch (rate)
+	{
+		using E = EVertexInputRate;
 
-		case EDynamicState::DEPTH_BIAS:
-			return VK_DYNAMIC_STATE_DEPTH_BIAS;
+		case E::VERTEX:			return VK_VERTEX_INPUT_RATE_VERTEX;
+		case E::INSTANCE:		return VK_VERTEX_INPUT_RATE_INSTANCE;
+		default:				LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan vertex input rate !");
+	}
+}
 
-		case EDynamicState::BLEND_CONSTANTS:
-			return VK_DYNAMIC_STATE_BLEND_CONSTANTS;
+VkFormat EnigmaRHI::Utilities::ToVulkanVertexFormat(EVertexFormat format)
+{
+	switch (format)
+	{
+		using E = EVertexFormat;
 
-		case EDynamicState::DEPTH_BOUNDS:
-			return VK_DYNAMIC_STATE_DEPTH_BOUNDS;
-
-		case EDynamicState::STENCIL_COMPARE_MASK:
-			return VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK;
-
-		case EDynamicState::STENCIL_WRITE_MASK:
-			return VK_DYNAMIC_STATE_STENCIL_WRITE_MASK;
-
-		case EDynamicState::STENCIL_REFERENCE:
-			return VK_DYNAMIC_STATE_STENCIL_REFERENCE;
-
-		case EDynamicState::CULL_MODE:
-			return VK_DYNAMIC_STATE_CULL_MODE;
-
-		case EDynamicState::FRONT_FACE:
-			return VK_DYNAMIC_STATE_FRONT_FACE;
-
-		case EDynamicState::PRIMITIVE_TOPOLOGY:
-			return VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY;
-
-		case EDynamicState::DEPTH_TEST_ENABLE:
-			return VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE;
-
-		case EDynamicState::DEPTH_WRITE_ENABLE:
-			return VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE;
-
-		case EDynamicState::DEPTH_COMPARE_OP:
-			return VK_DYNAMIC_STATE_DEPTH_COMPARE_OP;
-
-		case EDynamicState::DEPTH_BOUNDS_TEST_ENABLE:
-			return VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE;
-
-		case EDynamicState::STENCIL_TEST_ENABLE:
-			return VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE;
-
-		case EDynamicState::STENCIL_OP:
-			return VK_DYNAMIC_STATE_STENCIL_OP;
-
-		case EDynamicState::RASTERIZER_DISCARD_ENABLE:
-			return VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE;
-
-		case EDynamicState::DEPTH_BIAS_ENABLE:
-			return VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE;
+		//Float
+		case E::FLOAT:						return VK_FORMAT_R32_SFLOAT;
+		case E::FLOAT2:						return VK_FORMAT_R32G32_SFLOAT;
+		case E::FLOAT3:						return VK_FORMAT_R32G32B32_SFLOAT;
+		case E::FLOAT4:						return VK_FORMAT_R32G32B32A32_SFLOAT;
+		//Integer
+		case E::INT:						return VK_FORMAT_R32_SINT;
+		case E::INT2:						return VK_FORMAT_R32G32_SINT;
+		case E::INT3:						return VK_FORMAT_R32G32B32_SINT;
+		case E::INT4:						return VK_FORMAT_R32G32B32A32_SINT;
+		// Unsigned Integer
+		case EVertexFormat::UINT:			return VK_FORMAT_R32_UINT;
+		case EVertexFormat::UINT2:			return VK_FORMAT_R32G32_UINT;
+		case EVertexFormat::UINT3:			return VK_FORMAT_R32G32B32_UINT;
+		case EVertexFormat::UINT4:			return VK_FORMAT_R32G32B32A32_UINT;
+		// Signed Byte
+		case EVertexFormat::BYTE4:			return VK_FORMAT_R8G8B8A8_SINT;
+		// Unsigned Byte
+		case EVertexFormat::UBYTE4:			return VK_FORMAT_R8G8B8A8_UINT;
+		// Normalized Unsigned Byte
+		case EVertexFormat::UBYTE4_NORM:	return VK_FORMAT_R8G8B8A8_UNORM;
+		default:							LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan vertex format !");
 	}
 }
 

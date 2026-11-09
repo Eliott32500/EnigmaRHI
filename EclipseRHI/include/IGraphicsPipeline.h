@@ -5,6 +5,7 @@
 #include "RenderTypes.h"
 #include "DepthStencilTypes.h"
 #include "PipelineDynamicState.h"
+#include "VertexInputTypes.h"
 #include <vector>
 
 namespace EnigmaRHI
@@ -59,6 +60,9 @@ namespace EnigmaRHI
 	struct GraphicsPipelineDesc
 	{
 		std::vector<EDynamicState> dynamicStates = { EDynamicState::VIEWPORT, EDynamicState::SCISSOR };
+
+		std::vector<VertexBindingDesc> vertexBindings;
+		std::vector<VertexAttributeDesc> vertexAttributes;
 
 		EPrimitiveTopologyMode topologyMode = EPrimitiveTopologyMode::TRIANGLE_LIST;
 

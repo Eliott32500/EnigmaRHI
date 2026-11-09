@@ -7,6 +7,7 @@
 #include "PipelineDynamicState.h"
 #include "IGraphicsPipeline.h"
 #include "RenderTypes.h"
+#include "VertexInputTypes.h"
 #include <vector>
 
 namespace EnigmaRHI::Utilities
@@ -32,4 +33,7 @@ namespace EnigmaRHI::Utilities
     VulkanColorBlendState ToVulkanColorBlendState(const std::vector<ColorBlendAttachmentState>& colorBlendAttachmentList);
     VkPipelineMultisampleStateCreateInfo ToVulkanMultisampleState(MultisamplePipelineState multisampleState);
     VkPipelineDepthStencilStateCreateInfo ToVulkanDepthStencilPipelineState(DepthStencilPipelineState depthStencilState);
+
+    VkVertexInputRate ToVulkanVertexInputRate(EVertexInputRate rate);
+    VkFormat ToVulkanVertexFormat(EVertexFormat format);
 }
