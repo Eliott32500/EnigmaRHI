@@ -30,12 +30,12 @@ namespace EnigmaRHI
 
 		virtual EImageFormat FindDepthFormat() = 0;
 
-		DeviceSpecifications GetCapabilities() const { return capabilities; }
+		static DeviceSpecifications GetCapabilities() { return capabilities; }
 
 		virtual VulkanDevice& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanDevice"); }
 
 	protected:
 		
-		DeviceSpecifications capabilities;
+		inline static DeviceSpecifications capabilities{};
 	};
 }

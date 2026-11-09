@@ -1,4 +1,5 @@
 #pragma once
+#include "RHIBitMask.h"
 
 namespace EnigmaRHI
 {

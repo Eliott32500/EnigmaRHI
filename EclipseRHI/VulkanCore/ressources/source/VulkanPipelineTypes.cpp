@@ -1,4 +1,9 @@
 #include "VulkanPipelineTypes.h"
+#include <algorithm>
+#include "IDevice.h"
+#include "RHIBitMask.h"
+#include "VulkanDeviceCapabilities.h"
+#include "VulkanDepthStencilTypes.h"
 
 VkCullModeFlags EnigmaRHI::Utilities::ToVulkanCullMode(ECullMode mode)
 {
@@ -42,6 +47,8 @@ VkPrimitiveTopology EnigmaRHI::Utilities::ToVulkanTopology(EPrimitiveTopologyMod
 		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	case EPrimitiveTopologyMode::TRIANGLE_STRIP:
 		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+	default:
+		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	}
 }
 
@@ -156,4 +163,106 @@ std::vector<VkDynamicState> EnigmaRHI::Utilities::ToVulkanDynamicStates(std::vec
 		dS.push_back(ToVulkanDynamicState(dynamicStates[i]));
 
 	return dS;
+}
+
+VkColorComponentFlags EnigmaRHI::Utilities::ToVulkanColorComponent(EColorMask colorComponents)
+{
+	VkColorComponentFlags result = 0;
+	
+	if (HasFlag(colorComponents, EColorMask::COLOR_R))	result |= VK_COLOR_COMPONENT_R_BIT;
+	if (HasFlag(colorComponents, EColorMask::COLOR_G))	result |= VK_COLOR_COMPONENT_G_BIT;
+	if (HasFlag(colorComponents, EColorMask::COLOR_B))	result |= VK_COLOR_COMPONENT_B_BIT;
+	if (HasFlag(colorComponents, EColorMask::COLOR_A))	result |= VK_COLOR_COMPONENT_A_BIT;
+	
+	return result;
+}
+
+VkPipelineRasterizationStateCreateInfo EnigmaRHI::Utilities::ToVulkanRasterizationState(RasterizerPipelineState rasterization)
+{
+	DeviceLimits l = IDevice::GetCapabilities().limits;
+	float lineLimits[2] = { l.lineWidthLimits[0] ,l.lineWidthLimits[1] };
+	
+	return VkPipelineRasterizationStateCreateInfo{
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+		.depthClampEnable = VK_FALSE,
+		.rasterizerDiscardEnable = VK_FALSE,
+
+		.polygonMode = ToVulkanPolygonMode(rasterization.polygonMode),
+		.cullMode = ToVulkanCullMode(rasterization.cullMode),
+		.frontFace = ToVulkanFrontFace(rasterization.frontFaceMode),
+
+		.depthBiasEnable = rasterization.depthBiasEnable,
+		.depthBiasConstantFactor = rasterization.depthBiasConstantFactor,
+		.depthBiasClamp = rasterization.depthBiasClamp,
+		.depthBiasSlopeFactor = rasterization.depthBiasSlopeFactor,
+
+		.lineWidth = std::clamp(rasterization.lineWidth, lineLimits[0], lineLimits[1]),
+	};
+}
+
+VkPipelineColorBlendAttachmentState EnigmaRHI::Utilities::ToVulkanColorBlendAttachment(ColorBlendAttachmentState colorBlendAttachment)
+{
+	return VkPipelineColorBlendAttachmentState
+	{
+		.blendEnable = colorBlendAttachment.blendEnable,
+		.srcColorBlendFactor = Utilities::ToVulkanBlendFactor(colorBlendAttachment.srcColorBlendFactor),
+		.dstColorBlendFactor = Utilities::ToVulkanBlendFactor(colorBlendAttachment.dstColorBlendFactor),
+		.colorBlendOp = Utilities::ToVulkanBlendOp(colorBlendAttachment.colorBlendOp),
+		.srcAlphaBlendFactor = Utilities::ToVulkanBlendFactor(colorBlendAttachment.srcAlphaBlendFactor),
+		.dstAlphaBlendFactor = Utilities::ToVulkanBlendFactor(colorBlendAttachment.dstAlphaBlendFactor),
+		.alphaBlendOp = Utilities::ToVulkanBlendOp(colorBlendAttachment.alphaBlendOp),
+		.colorWriteMask = Utilities::ToVulkanColorComponent(colorBlendAttachment.colorMask)
+	};
+}
+
+EnigmaRHI::Utilities::VulkanColorBlendState EnigmaRHI::Utilities::ToVulkanColorBlendState(
+	const std::vector<ColorBlendAttachmentState>& colorBlendAttachmentList)
+{
+	EnigmaRHI::Utilities::VulkanColorBlendState result{};
+
+	for (const auto& attachment : colorBlendAttachmentList)
+		result.attachments.push_back(ToVulkanColorBlendAttachment(attachment));
+
+	result.info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	result.info.logicOpEnable = VK_FALSE;
+	result.info.logicOp = VK_LOGIC_OP_COPY;
+	result.info.attachmentCount = static_cast<uint32_t>(result.attachments.size());
+	result.info.pAttachments = result.attachments.data();
+	result.info.blendConstants[0] = 0.f;
+	result.info.blendConstants[1] = 0.f;
+	result.info.blendConstants[2] = 0.f;
+	result.info.blendConstants[3] = 0.f;
+
+	return result;
+}
+
+VkPipelineMultisampleStateCreateInfo EnigmaRHI::Utilities::ToVulkanMultisampleState(MultisamplePipelineState multisampleState)
+{
+	return VkPipelineMultisampleStateCreateInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+		.rasterizationSamples = ToVulkanSampleCount(multisampleState.sampleCount),
+		.sampleShadingEnable = multisampleState.sampleShadingEnable,
+		.minSampleShading = multisampleState.minSampleShading,
+		.pSampleMask = nullptr,
+		.alphaToCoverageEnable = multisampleState.alphaToCoverageEnable,
+		.alphaToOneEnable = multisampleState.alphaToOneEnable,
+	};
+}
+
+VkPipelineDepthStencilStateCreateInfo EnigmaRHI::Utilities::ToVulkanDepthStencilPipelineState(DepthStencilPipelineState depthStencilState)
+{
+	return VkPipelineDepthStencilStateCreateInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+		.depthTestEnable = depthStencilState.depthTestEnable,
+		.depthWriteEnable = depthStencilState.depthWriteEnable,
+		.depthCompareOp = Utilities::ToVulkanCompareOp(depthStencilState.depthCompareOp),
+		.depthBoundsTestEnable = depthStencilState.depthBoundsTestEnable,
+		.stencilTestEnable = depthStencilState.stencilTestEnable,
+		.front = {}, // Optional
+		.back = {}, // Optional
+		.minDepthBounds = 0.0f, // Optional
+		.maxDepthBounds = 1.0f, // Optional
+	};
 }

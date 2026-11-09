@@ -74,7 +74,7 @@ void Application::InitAPI()
 
 	EnigmaRHI::GraphicsPipelineDesc gp
 	{
-		.dynamicStates = {EnigmaRHI::EDynamicState::VIEWPORT, EnigmaRHI::EDynamicState::SCISSOR},
+		.blendStates = {EnigmaRHI::ColorBlendAttachmentState{}},
 	};
 
 	EnigmaRHI::Shader shader

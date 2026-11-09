@@ -41,106 +41,102 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 
 	/////////////////////////////////////
 
-	VkViewport viewport
-	{
-		.x = 0.0f,
-		.y = 0.0f,
-		.width = (float)swapChain->API_Vulkan().GetSwapChainExtent().width,
-		.height = (float)swapChain->API_Vulkan().GetSwapChainExtent().height,
-		.minDepth = 0.0f,
-		.maxDepth = 1.0f,
-	};
-
-	Extent2D extent = swapChain->GetSwapChainExtent();
-
-	VkRect2D scissor
-	{
-		.offset = { 0, 0 },
-		.extent = {extent.width, extent.height},
-	};
+	//VkViewport viewport
+	//{
+	//	.x = 0.0f,
+	//	.y = 0.0f,
+	//	.width = (float)swapChain->API_Vulkan().GetSwapChainExtent().width,
+	//	.height = (float)swapChain->API_Vulkan().GetSwapChainExtent().height,
+	//	.minDepth = 0.0f,
+	//	.maxDepth = 1.0f,
+	//};
+	//
+	//Extent2D extent = swapChain->GetSwapChainExtent();
+	//
+	//VkRect2D scissor
+	//{
+	//	.offset = { 0, 0 },
+	//	.extent = {extent.width, extent.height},
+	//};
 
 	VkPipelineViewportStateCreateInfo viewportState
 	{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-		.viewportCount = 1,
-		.pViewports = &viewport,
-		.scissorCount = 1,
-		.pScissors = &scissor,
+		.viewportCount = gp.viewportCount,
+		//.pViewports = &viewport,
+		.scissorCount = gp.scissorCount,
+		//.pScissors = &scissor,
 	};
 
 	//////// PIPELINE RASTERIZATION //////// 
 
-	VkPipelineRasterizationStateCreateInfo rasterizer
-	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-		.depthClampEnable = VK_FALSE,
-		.rasterizerDiscardEnable = VK_FALSE,
+	VkPipelineRasterizationStateCreateInfo rasterizer = Utilities::ToVulkanRasterizationState(gp.rasterizerState);
+	//{
+	//	.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+	//	.depthClampEnable = VK_FALSE,
+	//	.rasterizerDiscardEnable = VK_FALSE,
 
-		//	VK_POLYGON_MODE_FILL: fill the area of the polygon with fragments
-		//	VK_POLYGON_MODE_LINE : polygon edges are drawn as lines
-		//	VK_POLYGON_MODE_POINT : polygon vertices are drawn as points
-		.polygonMode = VK_POLYGON_MODE_FILL,
-		.cullMode = VK_CULL_MODE_BACK_BIT,
-		.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+	//	//	VK_POLYGON_MODE_FILL: fill the area of the polygon with fragments
+	//	//	VK_POLYGON_MODE_LINE : polygon edges are drawn as lines
+	//	//	VK_POLYGON_MODE_POINT : polygon vertices are drawn as points
+	//	.polygonMode = VK_POLYGON_MODE_FILL,
+	//	.cullMode = VK_CULL_MODE_BACK_BIT,
+	//	.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
 
-		//Bias
-		.depthBiasEnable = VK_FALSE,
-		.depthBiasConstantFactor = 0.0f, // Optional
-		.depthBiasClamp = 0.0f, // Optional
-		.depthBiasSlopeFactor = 0.0f, // Optional
+	//	//Bias
+	//	.depthBiasEnable = VK_FALSE,
+	//	.depthBiasConstantFactor = 0.0f, // Optional
+	//	.depthBiasClamp = 0.0f, // Optional
+	//	.depthBiasSlopeFactor = 0.0f, // Optional
 
-		//Epaisseur de ligne (pour par ex mode wireframe)
-		.lineWidth = 1.0f,
-	};
+	//	//Epaisseur de ligne (pour par ex mode wireframe)
+	//	.lineWidth = 1.0f,
+	//};
 
 	///////////////////////////////////////////
 
 	//////// MULTISAMPLIG ////////
 
-	VkPipelineMultisampleStateCreateInfo multisampling
-	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-		.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-		.sampleShadingEnable = VK_FALSE,
-		.minSampleShading = 1.0f, // Optional
-		.pSampleMask = nullptr, // Optional
-		.alphaToCoverageEnable = VK_FALSE, // Optional
-		.alphaToOneEnable = VK_FALSE, // Optional
-	};
-
-	uint32_t t = Utilities::HighestSampleCount(multisampling.rasterizationSamples);
-	std::cout << t << std::endl;
-	
+	VkPipelineMultisampleStateCreateInfo multisampling = Utilities::ToVulkanMultisampleState(gp.multisampleState);
+	//{
+	//	.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+	//	.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+	//	.sampleShadingEnable = VK_FALSE,
+	//	.minSampleShading = 1.0f, // Optional
+	//	.pSampleMask = nullptr, // Optional
+	//	.alphaToCoverageEnable = VK_FALSE, // Optional
+	//	.alphaToOneEnable = VK_FALSE, // Optional
+	//};	
 
 	////////////////////////////////
 
 	//////// COLOR-BLENDING ////////
 
-	VkPipelineColorBlendAttachmentState colorBlendAttachment
-	{
-		.blendEnable = VK_TRUE,
-		.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA, // Optional
-		.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, // Optional
-		.colorBlendOp = VK_BLEND_OP_ADD, // Optional
-		.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE, // Optional
-		.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO, // Optional
-		.alphaBlendOp = VK_BLEND_OP_ADD, // Optional
-		.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
-	};
+	//VkPipelineColorBlendAttachmentState colorBlendAttachment
+	//{
+	//	.blendEnable = VK_TRUE,
+	//	.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA, // Optional
+	//	.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, // Optional
+	//	.colorBlendOp = VK_BLEND_OP_ADD, // Optional
+	//	.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE, // Optional
+	//	.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO, // Optional
+	//	.alphaBlendOp = VK_BLEND_OP_ADD, // Optional
+	//	.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+	//};
 
-	VkPipelineColorBlendStateCreateInfo colorBlending
-	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-		.logicOpEnable = VK_FALSE,
-		.logicOp = VK_LOGIC_OP_COPY, // Optional
-		.attachmentCount = 1,
-		.pAttachments = &colorBlendAttachment,
-	};
-
-	colorBlending.blendConstants[0] = 0.0f; //Optionnal
-	colorBlending.blendConstants[1] = 0.0f;	//Optionnal
-	colorBlending.blendConstants[2] = 0.0f;	//Optionnal
-	colorBlending.blendConstants[3] = 0.0f;	//Optionnal
+	EnigmaRHI::Utilities::VulkanColorBlendState colorBlending = Utilities::ToVulkanColorBlendState(gp.blendStates);
+	//{
+	//	.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+	//	.logicOpEnable = VK_FALSE,
+	//	.logicOp = VK_LOGIC_OP_COPY, // Optional
+	//	.attachmentCount = 1,
+	//	.pAttachments = &colorBlendAttachment,
+	//};
+	//
+	//colorBlending.blendConstants[0] = 0.0f; //Optionnal
+	//colorBlending.blendConstants[1] = 0.0f;	//Optionnal
+	//colorBlending.blendConstants[2] = 0.0f;	//Optionnal
+	//colorBlending.blendConstants[3] = 0.0f;	//Optionnal
 
 	////////////////////////////////
 
@@ -167,19 +163,19 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create pipeline layout !");
 	}
 
-	VkPipelineDepthStencilStateCreateInfo depthStencil
-	{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-		.depthTestEnable = VK_TRUE,
-		.depthWriteEnable = VK_TRUE,
-		.depthCompareOp = VK_COMPARE_OP_LESS,
-		.depthBoundsTestEnable = VK_FALSE,
-		.stencilTestEnable = VK_FALSE,
-		.front = {}, // Optional
-		.back = {}, // Optional
-		.minDepthBounds = 0.0f, // Optional
-		.maxDepthBounds = 1.0f, // Optional
-	};
+	VkPipelineDepthStencilStateCreateInfo depthStencil = Utilities::ToVulkanDepthStencilPipelineState(gp.depthStencilState);
+	//{
+	//	.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+	//	.depthTestEnable = VK_TRUE,
+	//	.depthWriteEnable = VK_TRUE,
+	//	.depthCompareOp = VK_COMPARE_OP_LESS,
+	//	.depthBoundsTestEnable = VK_FALSE,
+	//	.stencilTestEnable = VK_FALSE,
+	//	.front = {}, // Optional
+	//	.back = {}, // Optional
+	//	.minDepthBounds = 0.0f, // Optional
+	//	.maxDepthBounds = 1.0f, // Optional
+	//};
 
 	VkGraphicsPipelineCreateInfo graphicsPipelineInfo
 	{
@@ -194,7 +190,7 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 		.pRasterizationState = &rasterizer,
 		.pMultisampleState = &multisampling,
 		.pDepthStencilState = &depthStencil,
-		.pColorBlendState = &colorBlending,
+		.pColorBlendState = &colorBlending.info,
 		.pDynamicState = &dynamicState,
 		.layout = pipelineLayout,
 		.renderPass = renderPass->API_Vulkan().GetRenderPass(),

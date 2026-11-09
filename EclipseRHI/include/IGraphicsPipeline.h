@@ -13,7 +13,7 @@ namespace EnigmaRHI
 	{
 		EPolygonMode polygonMode = EPolygonMode::FILL;
 		ECullMode cullMode = ECullMode::BACK;
-		EFrontFaceMode frontFaceMode = EFrontFaceMode::CLOCKWISE;
+		EFrontFaceMode frontFaceMode = EFrontFaceMode::COUNTER_CLOCKWISE;
 
 		//Bias
 		bool depthBiasEnable = false;
@@ -24,7 +24,7 @@ namespace EnigmaRHI
 		float lineWidth = 1.f;
 	};
 
-	struct BlendPipelineState
+	struct ColorBlendAttachmentState
 	{
 		bool blendEnable = true;
 
@@ -43,27 +43,35 @@ namespace EnigmaRHI
 		bool depthTestEnable = true;
 		bool depthWriteEnable = true;
 		ECompareOp depthCompareOp = ECompareOp::LESS;
+		bool depthBoundsTestEnable = false;
 		bool stencilTestEnable = false;
 	};
 
-	//struct MultisamplePipelineState
-	//{
-	//	ESampleCount sampleCount = ESampleCount::X1;
-	//	bool alphaToCoverageEnable = false;
-	//};
+	struct MultisamplePipelineState
+	{
+		uint32_t sampleCount = 1;
+		bool sampleShadingEnable = false;
+		float minSampleShading = 1.0f;
+		bool alphaToCoverageEnable = false;
+		bool alphaToOneEnable = false;
+	};
 
 	struct GraphicsPipelineDesc
 	{
-		std::vector<EDynamicState> dynamicStates;
+		std::vector<EDynamicState> dynamicStates = { EDynamicState::VIEWPORT, EDynamicState::SCISSOR };
 
 		EPrimitiveTopologyMode topologyMode = EPrimitiveTopologyMode::TRIANGLE_LIST;
 
 		RasterizerPipelineState rasterizerState;
-		BlendPipelineState blendState;
 
-		bool depthTestEnable = false;
-		bool depthWriteEnable = false;
+		MultisamplePipelineState multisampleState;
 
-		ECompareOp compareMode = ECompareOp::LESS;
+		//One for each color attachment used
+		std::vector<ColorBlendAttachmentState> blendStates;
+
+		DepthStencilPipelineState depthStencilState;
+
+		uint32_t viewportCount = 1;
+		uint32_t scissorCount = 1;
 	};
 }

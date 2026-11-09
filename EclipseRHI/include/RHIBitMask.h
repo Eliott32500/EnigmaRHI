@@ -58,5 +58,11 @@ constexpr E operator^=(E& lhs, E rhs)
     return lhs;
 }
 
+template<BitMaskEnum E>
+constexpr bool HasFlag(E value, E flag)
+{
+    return (value & flag) != E{};
+}
+
 #define ENIGMA_ENABLE_BITMASK_OPERATORS(EnumType) \
     template<> struct EnableBitMaskOperators<EnumType> : std::true_type {};
