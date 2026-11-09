@@ -64,8 +64,8 @@ void Application::InitAPI()
 	swapChain->Create(device, surface, commandPool, EnigmaRHI::Extent2D{WIDTH, HEIGHT});
 	renderPass->Create(device, swapChain, device->FindDepthFormat());
 
-	descriptor->AddBufferBinding( 0, EnigmaRHI::EShaderType::VERTEX );
-	descriptor->AddBufferBinding( 1, EnigmaRHI::EShaderType::VERTEX );
+	descriptor->AddBufferBinding( 0, EnigmaRHI::EShaderType::VERTEX);
+	descriptor->AddBufferBinding( 1, EnigmaRHI::EShaderType::VERTEX);
 	descriptor->AddImageBinding(2);
 	descriptor->Create(device);
 
@@ -79,7 +79,6 @@ void Application::InitAPI()
 
 	EnigmaRHI::Shader shader
 	{
-		.name = "main",
 		.vertShader = vertShader,
 		.fragShader = fragShader,
 	};
@@ -165,6 +164,8 @@ void Application::CleanUp()
 	cam->Destroy(device);
 	syncronizer->Destroy(device);
 	commandPool->Destroy(device);
+	fragShader->Destroy(device);
+	vertShader->Destroy(device);
 	device->Destroy();
 	surface->Destroy(instance);
 	instance->Destroy();

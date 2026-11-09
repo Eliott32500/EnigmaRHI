@@ -192,9 +192,8 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 
 	if (vkCreatePipelineLayout(device->API_Vulkan().GetDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 	{
-		shader.fragShader->Destroy(device);
-		shader.vertShader->Destroy(device);
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create pipeline layout !");
+		return;
 	}
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil = Utilities::ToVulkanDepthStencilPipelineState(gp.depthStencilState);
@@ -235,9 +234,6 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 
 	if (vkCreateGraphicsPipelines(device->API_Vulkan().GetDevice(), VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		throw std::runtime_error("failed to create graphics pipeline!");
-
-	shader.fragShader->Destroy(device);
-	shader.vertShader->Destroy(device);
 }
 
 void EnigmaRHI::VulkanPipeline::Destroy(IDevice* device)
