@@ -1,6 +1,6 @@
 #include "logger.h"
 
-void Logger::Log(LogLevel level, LogCategory category, std::string message)
+[[noreturn]] void Logger::Log(LogLevel level, LogCategory category, std::string message)
 {
     std::string str = "";
 

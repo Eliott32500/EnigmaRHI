@@ -25,12 +25,7 @@ enum class LogCategory
     Memory
 };
 
-class Logger
+namespace Logger
 {
-public:
-    static void Log(
-        LogLevel level, 
-        LogCategory category, 
-        std::string message
-    );
+    [[noreturn]] void Log(LogLevel level, LogCategory category, std::string message);
 };
