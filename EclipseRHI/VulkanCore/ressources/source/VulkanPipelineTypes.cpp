@@ -28,6 +28,23 @@ VkPolygonMode EnigmaRHI::Utilities::ToVulkanPolygonMode(EPolygonMode mode)
 	}
 }
 
+VkPrimitiveTopology EnigmaRHI::Utilities::ToVulkanTopology(EPrimitiveTopologyMode mode)
+{
+	switch (mode)
+	{
+	case EPrimitiveTopologyMode::POINT_LIST:
+		return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+	case EPrimitiveTopologyMode::LINE_LIST:
+		return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+	case EPrimitiveTopologyMode::LINE_STRIP:
+		return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+	case EPrimitiveTopologyMode::TRIANGLE_LIST:
+		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	case EPrimitiveTopologyMode::TRIANGLE_STRIP:
+		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+	}
+}
+
 VkFrontFace EnigmaRHI::Utilities::ToVulkanFrontFace(EFrontFaceMode mode)
 {
 	return mode == EFrontFaceMode::CLOCKWISE ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
@@ -129,4 +146,14 @@ VkDynamicState EnigmaRHI::Utilities::ToVulkanDynamicState(EDynamicState dynamicS
 		case EDynamicState::DEPTH_BIAS_ENABLE:
 			return VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE;
 	}
+}
+
+std::vector<VkDynamicState> EnigmaRHI::Utilities::ToVulkanDynamicStates(std::vector<EDynamicState> dynamicStates)
+{
+	std::vector<VkDynamicState> dS;
+
+	for (int i = 0; i < dynamicStates.size(); i++)
+		dS.push_back(ToVulkanDynamicState(dynamicStates[i]));
+
+	return dS;
 }

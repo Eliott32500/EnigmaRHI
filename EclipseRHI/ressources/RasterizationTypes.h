@@ -22,4 +22,13 @@ namespace EnigmaRHI
         CLOCKWISE,
         COUNTER_CLOCKWISE
     };
+
+    enum class EPrimitiveTopologyMode
+    {
+        POINT_LIST,
+        LINE_LIST,
+        LINE_STRIP,
+        TRIANGLE_LIST,
+        TRIANGLE_STRIP
+    };
 }
