@@ -72,8 +72,23 @@ void Application::InitAPI()
 	vertShader->Create(device, "Assets/Shaders/vert.spv");
 	fragShader->Create(device, "Assets/Shaders/frag.spv");
 
+	EnigmaRHI::VertexBindingDesc vBinding
+	{
+		.binding = 0,
+		.stride = sizeof(Vertex),
+		.inputRate = EnigmaRHI::EVertexInputRate::VERTEX
+	};
+
+	std::vector<EnigmaRHI::VertexAttributeDesc> vAttributes;
+
+	vAttributes.push_back(EnigmaRHI::VertexAttributeDesc{ .location = 0, .binding = 0, .format = EnigmaRHI::EVertexFormat::FLOAT3, .offset = offsetof(Vertex, pos)});
+	vAttributes.push_back(EnigmaRHI::VertexAttributeDesc{ .location = 1, .binding = 0, .format = EnigmaRHI::EVertexFormat::FLOAT3, .offset = offsetof(Vertex, color)});
+	vAttributes.push_back(EnigmaRHI::VertexAttributeDesc{ .location = 2, .binding = 0, .format = EnigmaRHI::EVertexFormat::FLOAT2, .offset = offsetof(Vertex, texCoord)});
+
 	EnigmaRHI::GraphicsPipelineDesc gp
 	{
+		.vertexBindings = {vBinding},
+		.vertexAttributes = vAttributes,
 		.blendStates = {EnigmaRHI::ColorBlendAttachmentState{}},
 	};
 
@@ -83,7 +98,7 @@ void Application::InitAPI()
 		.fragShader = fragShader,
 	};
 
-	pipeline->Create(gp, shader, device, swapChain, renderPass, descriptor);
+	pipeline->Create(gp, shader, device, renderPass, descriptor);
 
 	TextureLoadOptions opts;
 	opts.colorSpace = ETextureColorSpace::SRGB;   // Linear pour normal/roughness/metallic...
