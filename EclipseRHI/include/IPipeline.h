@@ -18,7 +18,7 @@ namespace EnigmaRHI
 	public:
 
 		virtual ~IPipeline() = default;
-		virtual void Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IRenderPass* renderPass, IDescriptor* descriptor) = 0;
+		virtual void Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IRenderPass* renderPass, IDescriptor* descriptor, ISwapChain* swapChain) = 0;
 		virtual void Destroy(IDevice* device) = 0;
 
 		virtual VulkanPipeline& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanPipeline"); }

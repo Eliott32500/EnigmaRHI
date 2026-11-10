@@ -3,7 +3,7 @@
 #include "RHILog.h"
 #include "VulkanDeviceCapabilities.h"
 
-void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IRenderPass* renderPass, IDescriptor* descriptor)
+void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IRenderPass* renderPass, IDescriptor* descriptor, ISwapChain* swapChain)
 {
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages = CreateShaderInfo(shader);
 
@@ -98,9 +98,19 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil = Utilities::ToVulkanDepthStencilPipelineState(gp.depthStencilState);
 
+	VkFormat renderingFormat = Utilities::ToVulkanFormat(swapChain->GetSwapChainImageFormat());
+
+	VkPipelineRenderingCreateInfoKHR renderingPipelineInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
+		.colorAttachmentCount = 1,
+		.pColorAttachmentFormats = &renderingFormat,
+	};
+
 	VkGraphicsPipelineCreateInfo graphicsPipelineInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+		.pNext = &renderingPipelineInfo,
 		// Only if the two last Optionnal parameters are non-NULL and non-equal -1 (Create a Graphics Pipeline based on another one)
 		//.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT,
 		.stageCount = static_cast<uint32_t>(shaderStages.size()),
@@ -114,7 +124,7 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 		.pColorBlendState = &colorBlending.info,
 		.pDynamicState = &dynamicState,
 		.layout = pipelineLayout,
-		.renderPass = renderPass->API_Vulkan().GetRenderPass(),
+		.renderPass = nullptr,
 		.subpass = 0,
 		.basePipelineHandle = VK_NULL_HANDLE, // Optional
 		.basePipelineIndex = -1, // Optional

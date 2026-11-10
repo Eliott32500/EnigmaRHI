@@ -52,6 +52,13 @@ void EnigmaRHI::VulkanCommandBuffer::BeginDraw(IRenderPass* renderPass, ISwapCha
 	////// BEGIN ///////
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+	VkRenderingInfo renderingInfo
+	{
+
+	};
+
+	vkCmdBeginRendering(commandBuffer, &renderingInfo);
+
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetGraphicsPipeline());
 
 	VkViewport viewport

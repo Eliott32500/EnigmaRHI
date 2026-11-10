@@ -98,7 +98,7 @@ void Application::InitAPI()
 		.fragShader = fragShader,
 	};
 
-	pipeline->Create(gp, shader, device, renderPass, descriptor);
+	pipeline->Create(gp, shader, device, renderPass, descriptor, swapChain);
 
 	TextureLoadOptions opts;
 	opts.colorSpace = ETextureColorSpace::SRGB;   // Linear pour normal/roughness/metallic...
