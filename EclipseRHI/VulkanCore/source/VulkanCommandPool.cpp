@@ -1,22 +1,17 @@
 #include "VulkanCommandPool.h"
 #include "RHIConfig.h"
+#include "RHILog.h"
 
 void EnigmaRHI::VulkanCommandPool::Create(IDevice* device)
 {
-	CreateCommandPool(&device->API_Vulkan());
-	commandBuffers = CreateCommandBuffer(&device->API_Vulkan(), EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
-}
+	VulkanDevice* vulkanDevice = &device->API_Vulkan();
 
-std::vector<EnigmaRHI::VulkanCommandBuffer> EnigmaRHI::VulkanCommandPool::CreateCommandBuffer(VulkanDevice* device, uint32_t size)
-{
-	std::vector<EnigmaRHI::VulkanCommandBuffer> commandBuffers(size);
-	
-	for(uint32_t i = 0; i < size; i++)
-	{
-		commandBuffers[i].Create(device, this);
-	}
-	
-	return commandBuffers;
+	CreateCommandPool(vulkanDevice);
+
+	AllocateCommandBuffers(
+		vulkanDevice,
+		EnigmaRHI::MAX_FRAMES_IN_FLIGHT
+	);
 }
 
 void EnigmaRHI::VulkanCommandPool::CreateCommandPool(VulkanDevice* device)
@@ -29,10 +24,16 @@ void EnigmaRHI::VulkanCommandPool::CreateCommandPool(VulkanDevice* device)
 	};
 	
 	if (vkCreateCommandPool(device->GetDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
-		throw std::runtime_error("failed to create command pool!");
+		LOG_FATAL(LogCategory::Vulkan, "Failed to create command pool !");
 }
 
-VkCommandBuffer EnigmaRHI::VulkanCommandPool::BeginSingleTimeCommands(VulkanDevice* device)
+void EnigmaRHI::VulkanCommandPool::Reset(IDevice* device)
+{
+	if (vkResetCommandPool(device->API_Vulkan().GetDevice(), commandPool, 0) != VK_SUCCESS)
+		LOG_FATAL(LogCategory::Vulkan, "Failed to reset command pool !");
+}
+
+VkCommandBuffer EnigmaRHI::VulkanCommandPool::BeginSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer)
 {
 	VkCommandBufferAllocateInfo allocInfo
 	{
@@ -42,8 +43,8 @@ VkCommandBuffer EnigmaRHI::VulkanCommandPool::BeginSingleTimeCommands(VulkanDevi
 		.commandBufferCount = 1,
 	};
 	
-	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers(device->GetDevice(), &allocInfo, &commandBuffer);
+	if(vkAllocateCommandBuffers(device->GetDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS)
+		LOG_FATAL(LogCategory::Vulkan, "Failed to allocate command buffer !");
 	
 	VkCommandBufferBeginInfo beginInfo
 	{
@@ -54,6 +55,16 @@ VkCommandBuffer EnigmaRHI::VulkanCommandPool::BeginSingleTimeCommands(VulkanDevi
 	vkBeginCommandBuffer(commandBuffer, &beginInfo);
 	
 	return commandBuffer;
+}
+
+void EnigmaRHI::VulkanCommandPool::AllocateCommandBuffers(VulkanDevice* device, uint32_t count)
+{
+	commandBuffers.resize(count);
+
+	for (auto& commandBuffer : commandBuffers)
+	{
+		commandBuffer.Create(device, this);
+	}
 }
 
 void EnigmaRHI::VulkanCommandPool::EndSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer)
@@ -75,5 +86,11 @@ void EnigmaRHI::VulkanCommandPool::EndSingleTimeCommands(VulkanDevice* device, V
 
 void EnigmaRHI::VulkanCommandPool::Destroy(IDevice* device)
 {
+	if (commandPool == VK_NULL_HANDLE)
+		return;
+
 	vkDestroyCommandPool(device->API_Vulkan().GetDevice(), commandPool, nullptr);
+
+	commandPool = VK_NULL_HANDLE;
+	commandBuffers.clear();
 }

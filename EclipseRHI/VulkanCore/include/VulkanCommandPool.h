@@ -13,18 +13,22 @@ namespace EnigmaRHI
 		VulkanCommandPool() = default;
 
 		void Create(IDevice* device) override;
-
-		std::vector<VulkanCommandBuffer> CreateCommandBuffer(VulkanDevice* device, uint32_t size);
-		void CreateCommandPool(VulkanDevice* device);
-
-		VkCommandBuffer BeginSingleTimeCommands(VulkanDevice* device);
-		void EndSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer);
-
 		void Destroy(IDevice* device) override;
 
+		void Reset(IDevice* device) override;
+
+		void CreateCommandPool(VulkanDevice* device);
+
+		void AllocateCommandBuffers(VulkanDevice* device, uint32_t count);
+
+		VkCommandBuffer BeginSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer);
+		void EndSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer);
+
+
 		VkCommandPool GetCommandPool() const { return commandPool; }
-		ICommandBuffer* GetCommandBuffer(uint32_t frame) override { return &commandBuffers[frame]; }
-		VulkanCommandBuffer& GetVulkanCommandBuffer(uint32_t frame) { return commandBuffers[frame]; }
+		ICommandBuffer* GetCommandBuffer(uint32_t index) override { return &commandBuffers.at(index); }
+		uint32_t GetCommandBufferCount() const override { return static_cast<uint32_t>(commandBuffers.size()); }
+		VulkanCommandBuffer& GetVulkanCommandBuffer(uint32_t index) { return commandBuffers.at(index); }
 
 		VulkanCommandPool& API_Vulkan() override { return (*this); }
 

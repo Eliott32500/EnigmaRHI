@@ -16,7 +16,10 @@ namespace EnigmaRHI
 		virtual void Create(class IDevice* device) = 0;
 		virtual void Destroy(class IDevice* device) = 0;
 
+		virtual void Reset(IDevice* device) = 0;
+
 		virtual ICommandBuffer* GetCommandBuffer(uint32_t index) = 0;
+		virtual uint32_t GetCommandBufferCount() const = 0;
 
 		virtual VulkanCommandPool& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanCommandPool"); }
 	};

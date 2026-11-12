@@ -230,7 +230,7 @@ void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, ImageSampler im
 
 void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, EImageFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
-	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device);
+	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetCommandBuffer());
 
 	VkImageMemoryBarrier imageMemoryBarrier
 	{
@@ -306,7 +306,7 @@ void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanComman
 
 void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* commandPool, VkBuffer buffer, Extent3D extent)
 {
-	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device);
+	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetCommandBuffer());
 
 	// specify which part of the buffer is going to be copied to which part of the image.
 	VkBufferImageCopy region

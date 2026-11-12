@@ -38,7 +38,7 @@ void EnigmaRHI::VulkanBuffer::CreateDescriptorBufferInfo()
 
 void EnigmaRHI::VulkanBuffer::CopyBuffer(IDevice* device, ICommandPool* commandPool, IBuffer* dstBuffer, size_t size)
 {
-	VkCommandBuffer commandBuffer = commandPool->API_Vulkan().BeginSingleTimeCommands(&device->API_Vulkan());
+	VkCommandBuffer commandBuffer = commandPool->API_Vulkan().BeginSingleTimeCommands(&device->API_Vulkan(), commandPool->GetCommandBuffer(0)->API_Vulkan().GetCommandBuffer());
 
 	VkBufferCopy copyRegion{};
 	copyRegion.size = size;
