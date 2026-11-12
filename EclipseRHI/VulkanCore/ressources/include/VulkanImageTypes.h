@@ -21,5 +21,10 @@ namespace EnigmaRHI::Utilities
 	bool HasStencilComponent(EImageFormat format);
 	bool HasDepthComponent(EImageFormat format);
 
-	bool HasFlag(EImageUsage value, EImageUsage flag);
+	VkAttachmentLoadOp ToVulkanLoadOp(ELoadOp loadOp);
+	VkAttachmentStoreOp ToVulkanStoreOp(EStoreOp storeOp);
+	VkImageLayout ToVulkanImageLayout(EImageLayout imageLayout);
+
+	VkAccessFlags ToVulkanAccessFlag(EAccessFlag accessFlag);
+	VkPipelineStageFlagBits2 ToVulkanPipelineFlag(EPipelineStageFlag pipelineStateFlag);
 }

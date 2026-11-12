@@ -34,7 +34,6 @@ namespace EnigmaRHI
 
 		VkSwapchainKHR swapChain;
 
-		std::vector<VulkanImage> swapChainVulkanImages;
 		VkSurfaceFormatKHR swapChainSurfaceFormat;
 
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);

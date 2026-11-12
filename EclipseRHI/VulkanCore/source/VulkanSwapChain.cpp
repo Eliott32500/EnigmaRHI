@@ -117,12 +117,12 @@ void EnigmaRHI::VulkanSwapChain::Destroy(IDevice* device)
 		vkDestroyFramebuffer(device->API_Vulkan().GetDevice(), framebuffer, nullptr);
 	}
 
-	for (auto& image : swapChainVulkanImages)
+	for (auto& image : swapChainImages)
 	{
-		image.Destroy(&device->API_Vulkan());
+		image->Destroy(&device->API_Vulkan());
 	}
 
-	swapChainVulkanImages.clear();
+	swapChainImages.clear();
 
 	vkDestroySwapchainKHR(device->API_Vulkan().GetDevice(), swapChain, nullptr);
 }
@@ -146,7 +146,7 @@ void EnigmaRHI::VulkanSwapChain::RecreateSwapChain(VulkanDevice* device, VulkanC
 
 void EnigmaRHI::VulkanSwapChain::CreateVulkanImages(VulkanDevice* device, uint32_t imageCount)
 {
-	assert(swapChainVulkanImages.empty());
+	assert(swapChainImages.empty());
 
 	VkDevice vkDevice = device->API_Vulkan().GetDevice();
 
@@ -154,11 +154,12 @@ void EnigmaRHI::VulkanSwapChain::CreateVulkanImages(VulkanDevice* device, uint32
 	std::vector<VkImage> images(imageCount);
 	vkGetSwapchainImagesKHR(vkDevice, swapChain, &imageCount, images.data());
 
-	swapChainVulkanImages.resize(imageCount);
+	swapChainImages.resize(imageCount);
 
 	for (uint32_t i = 0; i < imageCount; i++)
 	{
-		swapChainVulkanImages[i].CreateFromExisting(
+		swapChainImages[i] = new VulkanImage();
+		swapChainImages[i]->API_Vulkan().CreateFromExisting(
 			device,
 			images[i],
 			swapChainSurfaceFormat.format,
@@ -169,12 +170,13 @@ void EnigmaRHI::VulkanSwapChain::CreateVulkanImages(VulkanDevice* device, uint32
 
 void EnigmaRHI::VulkanSwapChain::CreateSwapChainFramebuffers(VulkanDevice* device, VkRenderPass renderPass)
 {
-	swapChainFramebuffers.resize(swapChainVulkanImages.size());
+	swapChainFramebuffers.resize(swapChainImages.size());
 
-	for (size_t i = 0; i < swapChainVulkanImages.size(); i++)
+	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
-		VkImageView attachments[] = {
-			swapChainVulkanImages[i].GetImageView(),
+		VkImageView attachments[] = 
+		{
+			swapChainImages[i]->API_Vulkan().GetImageView(),
 			depthImageView
 		};
 

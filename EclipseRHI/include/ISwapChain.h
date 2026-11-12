@@ -23,11 +23,13 @@ namespace EnigmaRHI
 
 		virtual EImageFormat GetSwapChainImageFormat() = 0;
 		Extent2D GetSwapChainExtent() const { return swapChainExtent; };
+		IImage* GetImageFromFrame(uint32_t frame) const { return swapChainImages[frame];}
 
 		virtual VulkanSwapChain& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanSwapChain"); }
 
 	protected:
 
 		Extent2D swapChainExtent;
+		std::vector<IImage*> swapChainImages;
 	};
 }

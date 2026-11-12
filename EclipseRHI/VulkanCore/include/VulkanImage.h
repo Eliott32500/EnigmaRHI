@@ -35,7 +35,7 @@ namespace EnigmaRHI
         void CreateView(VulkanDevice* device, ImageDesc imageDesc, VkImageAspectFlags aspect);
         void CreateSampler(VulkanDevice* device, ImageSampler imageSampler);
         void AllocateImageMemory(const VulkanDevice& device, const VkImage& image);
-        void TransitionLayout(VulkanDevice* device, VulkanCommandPool* cmdPool, EImageFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, EImageFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
         void CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* cmdPool, VkBuffer buffer, Extent3D extent);
     };
 }

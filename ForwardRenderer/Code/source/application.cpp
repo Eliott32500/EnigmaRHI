@@ -213,23 +213,66 @@ void Application::DrawFrame()
 
 	if (!aquireSucceded)
 		return;
+
+	uint32_t frame = syncronizer->GetCurrentFrame();
 	
-	cam->UpdateCameraDataBuffer(syncronizer->GetCurrentFrame(), swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height, mainWindow);
+	cam->UpdateCameraDataBuffer(frame, swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height, mainWindow);
 	
 	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.f, 1.f, 1.f));
 	
-	model->UpdateDataBuffer(syncronizer->GetCurrentFrame(), translate, rotate, scale);
+	model->UpdateDataBuffer(frame, translate, rotate, scale);
 	
-	EnigmaRHI::ICommandBuffer* cmd = commandPool->GetCommandBuffer(syncronizer->GetCurrentFrame());
+	EnigmaRHI::ICommandBuffer* cmd = commandPool->GetCommandBuffer(frame);
+
+	cmd->Begin();
+
+	EnigmaRHI::Viewport viewport
+	{
+		.x = 0.0f,
+		.y = 0.0f,
+		.width = (float)swapChain->GetSwapChainExtent().width,
+		.height = (float)swapChain->GetSwapChainExtent().height,
+		.minDepth = 0.0f,
+		.maxDepth = 1.0f,
+	};
+
+	EnigmaRHI::Rect2D scissor
+	{
+		.offset = { 0, 0 },
+		.extent = swapChain->GetSwapChainExtent(),
+	};
+
+	EnigmaRHI::RenderingAttachment attachement
+	{
+		.image = swapChain->GetImageFromFrame(frame),
+		.clearColor = {0, 0, 0, 0},
+	};
 	
-	cmd->BeginDraw(renderPass, swapChain, pipeline, imageIndex);
+	EnigmaRHI::RenderingInfo info
+	{
+		.renderArea = {.offset = {0, 0}, .extent = swapChain->GetSwapChainExtent()},
+		.colorAttachments = {attachement},
+	};
+
+	cmd->TransitionImageLayout(swapChain->GetImageFromFrame(frame), EnigmaRHI::EImageLayout::UNDEFINED, EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL,
+		{}, EnigmaRHI::EAccessFlag::COLOR_ATTACHMENT_WRITE, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT);
+
+	cmd->BeginRendering(info);
+	cmd->BindPipeline(pipeline);
 	cmd->BindDescriptorSet(pipeline, descriptor, syncronizer);
+	cmd->SetViewport(viewport);
+	cmd->SetScissor(scissor);
 
 		model->Render(cmd);
+
+	cmd->EndRendering();
+
+	cmd->TransitionImageLayout(swapChain->GetImageFromFrame(frame), EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL, EnigmaRHI::EImageLayout::PRESENT_SRC,
+		EnigmaRHI::EAccessFlag::COLOR_ATTACHMENT_WRITE, {}, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT, EnigmaRHI::EPipelineStageFlag::BOTTOM_OF_PIPE);
 	
-	cmd->EndDraw();
+	cmd->End();
 	
 	syncronizer->PresentFrame(device, swapChain, commandPool, surface, renderPass, mainWindow, &imageIndex);
 	syncronizer->MoveToNextFrame();

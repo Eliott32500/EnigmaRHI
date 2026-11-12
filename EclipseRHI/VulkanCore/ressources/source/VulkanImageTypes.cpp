@@ -1,4 +1,9 @@
 #include "VulkanImageTypes.h"
+#include "VulkanImageTypes.h"
+#include "VulkanImageTypes.h"
+#include "VulkanImageTypes.h"
+#include "VulkanImageTypes.h"
+#include "VulkanImageTypes.h"
 
 VkFormat EnigmaRHI::Utilities::ToVulkanFormat(EImageFormat format)
 {
@@ -353,7 +358,93 @@ bool EnigmaRHI::Utilities::HasDepthComponent(EImageFormat format)
         format == EImageFormat::D16_UNORM || format == EImageFormat::D32_SFLOAT;
 }
 
-bool EnigmaRHI::Utilities::HasFlag(EImageUsage value, EImageUsage flag)
+VkAttachmentLoadOp EnigmaRHI::Utilities::ToVulkanLoadOp(ELoadOp loadOp)
 {
-    return (value & flag) != EImageUsage::NONE;
+    switch (loadOp)
+    {
+    case ELoadOp::LOAD:
+        return VK_ATTACHMENT_LOAD_OP_LOAD;
+    case ELoadOp::CLEAR:
+        return VK_ATTACHMENT_LOAD_OP_CLEAR;
+    case ELoadOp::DONT_CARE:
+        return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    default:
+        return VK_ATTACHMENT_LOAD_OP_CLEAR;
+    }
+}
+
+VkAttachmentStoreOp EnigmaRHI::Utilities::ToVulkanStoreOp(EStoreOp storeOp)
+{
+    return storeOp == EStoreOp::STORE ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+}
+
+VkImageLayout EnigmaRHI::Utilities::ToVulkanImageLayout(EImageLayout imageLayout)
+{
+    switch (imageLayout)
+    {
+    case EImageLayout::UNDEFINED:
+        return VK_IMAGE_LAYOUT_UNDEFINED;
+    case EImageLayout::GENERAL:
+        return VK_IMAGE_LAYOUT_GENERAL;
+    case EImageLayout::COLOR_ATTACHMENT_OPTIMAL:
+        return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    case EImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+        return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    case EImageLayout::DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+        return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+    case EImageLayout::SHADER_READ_ONLY_OPTIMAL:
+        return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    case EImageLayout::TRANSFER_SRC_OPTIMAL:
+        return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    case EImageLayout::TRANSFER_DST_OPTIMAL:
+        return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    case EImageLayout::PRESENT_SRC:
+        return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    default:
+        return VK_IMAGE_LAYOUT_UNDEFINED;;
+    }
+}
+
+VkAccessFlags EnigmaRHI::Utilities::ToVulkanAccessFlag(EAccessFlag accessFlag)
+{
+    VkAccessFlags result = 0;
+
+    if (HasFlag(accessFlag, EAccessFlag::NONE))                              result |= VK_ACCESS_NONE;
+    if (HasFlag(accessFlag, EAccessFlag::INDIRECT_COMMAND_READ))             result |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::INDEX_READ))                        result |= VK_ACCESS_INDEX_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::VERTEX_ATTRIBUTE_READ))             result |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::UNIFORM_READ))                      result |= VK_ACCESS_UNIFORM_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::INPUT_ATTACHMENT_READ))             result |= VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::SHADER_READ))                       result |= VK_ACCESS_SHADER_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::SHADER_WRITE))                      result |= VK_ACCESS_SHADER_WRITE_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::COLOR_ATTACHMENT_WRITE))            result |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::DEPTH_STENCIL_ATTACHMENT_READ))     result |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE))    result |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::TRANSFER_READ))                     result |= VK_ACCESS_TRANSFER_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::TRANSFER_WRITE))                    result |= VK_ACCESS_TRANSFER_WRITE_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::HOST_READ))                         result |= VK_ACCESS_HOST_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::HOST_WRITE))                        result |= VK_ACCESS_HOST_WRITE_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::MEMORY_READ))                       result |= VK_ACCESS_MEMORY_READ_BIT;
+    if (HasFlag(accessFlag, EAccessFlag::MEMORY_WRITE))                      result |= VK_ACCESS_MEMORY_WRITE_BIT;
+
+    return result;
+}
+
+VkPipelineStageFlagBits2 EnigmaRHI::Utilities::ToVulkanPipelineFlag(EPipelineStageFlag pipelineStateFlag)
+{
+    VkPipelineStageFlagBits2 result = 0;
+
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::NONE))                               result |= VK_PIPELINE_STAGE_2_NONE;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::TOP_OF_PIPE))                        result |= VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::VERTEX_SHADER))                      result |= VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::EARLY_FRAGMENT_TESTS))               result |= VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::FRAGMENT_SHADER))                    result |= VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::LATE_FRAGMENT_TESTS))                result |= VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT))            result |= VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::COMPUTE_SHADER))                     result |= VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::TRANSFER))                           result |= VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::BOTTOM_OF_PIPE))                     result |= VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::ALL_COMMANDS))                       result |= VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+
+    return result;
 }

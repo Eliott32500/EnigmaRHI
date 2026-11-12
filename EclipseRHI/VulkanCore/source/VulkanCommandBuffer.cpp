@@ -1,8 +1,9 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanCommandPool.h"
 #include "VulkanPipeline.h"
-
+#include "RHILog.h"
 #include "ISync.h"
+#include "CommonTypes.h"
 
 void EnigmaRHI::VulkanCommandBuffer::Create(IDevice* device, ICommandPool* commandPool)
 {
@@ -15,79 +16,104 @@ void EnigmaRHI::VulkanCommandBuffer::Create(IDevice* device, ICommandPool* comma
 	};
 
 	if (vkAllocateCommandBuffers(device->API_Vulkan().GetDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS)
-		throw std::runtime_error("failed to allocate command buffers!");
+		LOG_FATAL(LogCategory::Vulkan, "Failed to allocate command buffers !");
 }
 
-void EnigmaRHI::VulkanCommandBuffer::BeginDraw(IRenderPass* renderPass, ISwapChain* swapChain, IPipeline* pipeline, uint32_t imageIndex)
+void EnigmaRHI::VulkanCommandBuffer::Begin()
 {
-	vkResetCommandBuffer(commandBuffer, 0);
-
 	VkCommandBufferBeginInfo beginInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		.flags = 0, // Optional
-		.pInheritanceInfo = nullptr, // Optional
+		.flags = 0,
+		.pInheritanceInfo = nullptr,
 	};
 
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-		throw std::runtime_error("failed to begin recording command buffer!");
-
-	std::array<VkClearValue, 2> clearValues{};
-	clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-	clearValues[1].depthStencil = { 1.0f, 0 };
-
-	VkRenderPassBeginInfo renderPassInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-		.renderPass = renderPass->API_Vulkan().GetRenderPass(),
-		.framebuffer = swapChain->API_Vulkan().GetSwapChainFramebuffers()[imageIndex],
-		.clearValueCount = static_cast<uint32_t>(clearValues.size()),
-		.pClearValues = clearValues.data(),
-	};
-
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	Extent2D extent = swapChain->GetSwapChainExtent();
-	renderPassInfo.renderArea.extent = { extent.width, extent.height };
-
-	////// BEGIN ///////
-	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-	VkRenderingInfo renderingInfo
-	{
-
-	};
-
-	vkCmdBeginRendering(commandBuffer, &renderingInfo);
-
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetGraphicsPipeline());
-
-	VkViewport viewport
-	{
-		.x = 0.0f,
-		.y = 0.0f,
-		.width = static_cast<float>(swapChain->API_Vulkan().GetSwapChainExtent().width),
-		.height = static_cast<float>(swapChain->API_Vulkan().GetSwapChainExtent().height),
-		.minDepth = 0.0f,
-		.maxDepth = 1.0f,
-	};
-	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-	VkRect2D scissor
-	{
-		.offset = { 0, 0 },
-		.extent = { extent.width, extent.height },
-	};
-	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+		LOG_FATAL(LogCategory::Vulkan, "Failed to begin command buffer!");
 }
 
-void EnigmaRHI::VulkanCommandBuffer::EndDraw()
+void EnigmaRHI::VulkanCommandBuffer::End()
 {
-	vkCmdEndRenderPass(commandBuffer);
-
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-		throw std::runtime_error("failed to record command buffer!");
+		LOG_FATAL(LogCategory::Vulkan, "Failed to end command buffer!");
 }
 
+void EnigmaRHI::VulkanCommandBuffer::Reset()
+{
+	if (vkResetCommandBuffer(commandBuffer, 0) != VK_SUCCESS)
+		LOG_FATAL(LogCategory::Vulkan, "Failed to reset command buffer!");
+}
+
+void EnigmaRHI::VulkanCommandBuffer::BeginRendering(
+    const RenderingInfo& renderingInfo)
+{
+    std::vector<VkRenderingAttachmentInfo> colorAttachments;
+
+    for (const auto& attachment : renderingInfo.colorAttachments)
+    {
+        VkRenderingAttachmentInfo colorAttachment
+        {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .imageView = attachment.image->API_Vulkan().GetImageView(),
+            .imageLayout = Utilities::ToVulkanImageLayout(attachment.imageLayout),
+            .resolveMode = VK_RESOLVE_MODE_NONE,
+            .resolveImageView = VK_NULL_HANDLE,
+            .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .loadOp = Utilities::ToVulkanLoadOp(attachment.loadOp),
+            .storeOp = Utilities::ToVulkanStoreOp(attachment.storeOp),
+            .clearValue = {
+                .color = {
+                    {
+                        attachment.clearColor.r,
+                        attachment.clearColor.g,
+                        attachment.clearColor.b,
+                        attachment.clearColor.a
+                    }
+                }
+            }
+        };
+
+        colorAttachments.push_back(colorAttachment);
+    }
+
+    VkRenderingInfo info
+    {
+        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+        .renderArea =
+        {
+            .offset =
+            {
+                renderingInfo.renderArea.offset.x,
+                renderingInfo.renderArea.offset.y
+            },
+            .extent =
+            {
+                renderingInfo.renderArea.extent.width,
+                renderingInfo.renderArea.extent.height
+            }
+        },
+        .layerCount = 1,
+        .viewMask = 0,
+        .colorAttachmentCount = static_cast<uint32_t>(
+            colorAttachments.size()
+        ),
+        .pColorAttachments = colorAttachments.data(),
+        .pDepthAttachment = nullptr,
+        .pStencilAttachment = nullptr
+    };
+
+    vkCmdBeginRendering(commandBuffer, &info);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::EndRendering()
+{
+    vkCmdEndRendering(commandBuffer);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::BindPipeline(IPipeline* pipeline)
+{
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetGraphicsPipeline());
+}
 
 void EnigmaRHI::VulkanCommandBuffer::BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, ISync* sync)
 {
@@ -96,17 +122,111 @@ void EnigmaRHI::VulkanCommandBuffer::BindDescriptorSet(IPipeline* pipeline, IDes
 
 void EnigmaRHI::VulkanCommandBuffer::BindVertexBuffer(IBuffer* buffer)
 {
-	VkBuffer vertexBuffers[] = { buffer->API_Vulkan().GetBuffer()};
-	VkDeviceSize offsets[] = { buffer->API_Vulkan().bufferInfo.offset};
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    VkBuffer vertexBuffer = buffer->API_Vulkan().GetBuffer();
+    VkDeviceSize offset = buffer->API_Vulkan().bufferInfo.offset;
+
+    vkCmdBindVertexBuffers(
+        commandBuffer,
+        0,
+        1,
+        &vertexBuffer,
+        &offset
+    );
 }
 
 void EnigmaRHI::VulkanCommandBuffer::BindIndexBuffer(IBuffer* buffer)
 {
-	vkCmdBindIndexBuffer(commandBuffer, buffer->API_Vulkan().GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(
+        commandBuffer,
+        buffer->API_Vulkan().GetBuffer(),
+        0,
+        VK_INDEX_TYPE_UINT32
+    );
 }
 
-void EnigmaRHI::VulkanCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount)
+void EnigmaRHI::VulkanCommandBuffer::DrawIndexed(
+    uint32_t indexCount,
+    uint32_t instanceCount)
 {
-	vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, 0, 0, 0);
+    vkCmdDrawIndexed(
+        commandBuffer,
+        indexCount,
+        instanceCount,
+        0,
+        0,
+        0
+    );
+}
+
+void EnigmaRHI::VulkanCommandBuffer::Draw(uint32_t vertexCount, uint32_t instanceCount)
+{
+    vkCmdDraw(commandBuffer, vertexCount, instanceCount, 0, 0);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::TransitionImageLayout(IImage* image, EImageLayout oldLayout, EImageLayout newLayout,
+    EAccessFlag srcAccessMask, EAccessFlag destAccessMask, EPipelineStageFlag srcStageMask,
+    EPipelineStageFlag dstStageMask)
+{
+    VkImageMemoryBarrier2 barrier
+    {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+        .srcStageMask = Utilities::ToVulkanPipelineFlag(srcStageMask),
+        .srcAccessMask = Utilities::ToVulkanAccessFlag(srcAccessMask),
+        .dstStageMask = Utilities::ToVulkanPipelineFlag(dstStageMask),
+        .dstAccessMask = Utilities::ToVulkanAccessFlag(destAccessMask),
+        .oldLayout = Utilities::ToVulkanImageLayout(oldLayout),
+        .newLayout = Utilities::ToVulkanImageLayout(newLayout),
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = image->API_Vulkan().GetImage(),
+        .subresourceRange = {
+               .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+               .baseMipLevel = 0,
+               .levelCount = 1,
+               .baseArrayLayer = 0,
+               .layerCount = 1} 
+    };
+
+    VkDependencyInfo dependencyInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &barrier
+    };
+
+    vkCmdPipelineBarrier2(commandBuffer, &dependencyInfo);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetViewport(const Viewport& viewport)
+{
+    VkViewport vkViewport
+    {
+        .x = viewport.x,
+        .y = viewport.y,
+        .width = viewport.width,
+        .height = viewport.height,
+        .minDepth = viewport.minDepth,
+        .maxDepth = viewport.maxDepth
+    };
+
+    vkCmdSetViewport(commandBuffer, 0, 1, &vkViewport);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetScissor(const Rect2D& scissor)
+{
+    VkRect2D vkScissor
+    {
+        .offset =
+        {
+            scissor.offset.x,
+            scissor.offset.y
+        },
+        .extent =
+        {
+            scissor.extent.width,
+            scissor.extent.height
+        }
+    };
+
+    vkCmdSetScissor(commandBuffer, 0, 1, &vkScissor);
 }
