@@ -21,7 +21,7 @@ namespace EnigmaRHI
 
 		VulkanInstance& API_Vulkan() override { return (*this); }
 
-		VkInstance GetInstance() const { return instance; }
+		VkInstance GetHandle() const { return instance; }
 		VkDebugUtilsMessengerEXT GetDebugMessenger() const { return debugMessenger; }
 
 	private:

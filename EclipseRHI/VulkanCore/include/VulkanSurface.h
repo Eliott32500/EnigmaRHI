@@ -12,7 +12,7 @@ namespace EnigmaRHI
 		void Create(IInstance* instance, WindowInfo windowInfo) override;
 		void Destroy(IInstance* instance) override;
 
-		VkSurfaceKHR GetSurface() const { return surface; }
+		VkSurfaceKHR GetHandle() const { return surface; }
 
 		VulkanSurface& API_Vulkan() override { return (*this); }
 

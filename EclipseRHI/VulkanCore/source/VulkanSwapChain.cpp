@@ -54,7 +54,7 @@ uint32_t EnigmaRHI::VulkanSwapChain::ChooseSwapMinImageCount(const VkSurfaceCapa
 
 void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICommandPool* commandPool, Extent2D windowExtent)
 {
-	SwapChainSupportDetails swapChainSupport = VulkanPhysicalDevice::QuerySwapChainSupport(device->API_Vulkan().GetPhysicalDevice().Handle(), surface->API_Vulkan().GetSurface());
+	SwapChainSupportDetails swapChainSupport = VulkanPhysicalDevice::QuerySwapChainSupport(device->API_Vulkan().GetPhysicalDevice().Handle(), surface->API_Vulkan().GetHandle());
 
 	swapChainSurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
 	VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
@@ -64,7 +64,7 @@ void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICom
 	VkSwapchainCreateInfoKHR createInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-		.surface = surface->API_Vulkan().GetSurface(),
+		.surface = surface->API_Vulkan().GetHandle(),
 		.minImageCount = imageCount,
 		.imageFormat = swapChainSurfaceFormat.format,
 		.imageColorSpace = swapChainSurfaceFormat.colorSpace,
@@ -96,7 +96,7 @@ void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICom
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = nullptr;
 
-	if (vkCreateSwapchainKHR(device->API_Vulkan().GetDevice(), &createInfo, nullptr, &swapChain) != VK_SUCCESS)
+	if (vkCreateSwapchainKHR(device->API_Vulkan().GetHandle(), &createInfo, nullptr, &swapChain) != VK_SUCCESS)
 		throw std::runtime_error("failed to create swap chain!");
 
 	/*swapChainImages.resize(imageCount);
@@ -108,13 +108,13 @@ void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICom
 
 void EnigmaRHI::VulkanSwapChain::Destroy(IDevice* device)
 {
-	vkDestroyImageView(device->API_Vulkan().GetDevice(), depthImageView, nullptr);
-	vkDestroyImage(device->API_Vulkan().GetDevice(), depthImage, nullptr);
-	vkFreeMemory(device->API_Vulkan().GetDevice(), depthImageMemory, nullptr);
+	vkDestroyImageView(device->API_Vulkan().GetHandle(), depthImageView, nullptr);
+	vkDestroyImage(device->API_Vulkan().GetHandle(), depthImage, nullptr);
+	vkFreeMemory(device->API_Vulkan().GetHandle(), depthImageMemory, nullptr);
 
 	for (auto framebuffer : swapChainFramebuffers)
 	{
-		vkDestroyFramebuffer(device->API_Vulkan().GetDevice(), framebuffer, nullptr);
+		vkDestroyFramebuffer(device->API_Vulkan().GetHandle(), framebuffer, nullptr);
 	}
 
 	for (auto& image : swapChainImages)
@@ -124,7 +124,7 @@ void EnigmaRHI::VulkanSwapChain::Destroy(IDevice* device)
 
 	swapChainImages.clear();
 
-	vkDestroySwapchainKHR(device->API_Vulkan().GetDevice(), swapChain, nullptr);
+	vkDestroySwapchainKHR(device->API_Vulkan().GetHandle(), swapChain, nullptr);
 }
 
 void EnigmaRHI::VulkanSwapChain::RecreateSwapChain(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanSurface* surface, VkRenderPass renderPass, GLFWwindow* window)
@@ -136,7 +136,7 @@ void EnigmaRHI::VulkanSwapChain::RecreateSwapChain(VulkanDevice* device, VulkanC
 		glfwGetFramebufferSize(window, &width, &height);
 		glfwWaitEvents();
 	}
-	vkDeviceWaitIdle(device->GetDevice());
+	vkDeviceWaitIdle(device->GetHandle());
 
 	Destroy(device);
 
@@ -148,7 +148,7 @@ void EnigmaRHI::VulkanSwapChain::CreateVulkanImages(VulkanDevice* device, uint32
 {
 	assert(swapChainImages.empty());
 
-	VkDevice vkDevice = device->API_Vulkan().GetDevice();
+	VkDevice vkDevice = device->API_Vulkan().GetHandle();
 
 	vkGetSwapchainImagesKHR(vkDevice, swapChain, &imageCount, nullptr);
 	std::vector<VkImage> images(imageCount);
@@ -189,7 +189,7 @@ void EnigmaRHI::VulkanSwapChain::CreateSwapChainFramebuffers(VulkanDevice* devic
 		framebufferInfo.height = swapChainExtent.height;
 		framebufferInfo.layers = 1;
 
-		if (vkCreateFramebuffer(device->API_Vulkan().GetDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(device->API_Vulkan().GetHandle(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create framebuffer!");
 		}
 	}

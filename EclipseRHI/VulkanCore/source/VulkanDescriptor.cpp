@@ -49,7 +49,7 @@ void EnigmaRHI::VulkanDescriptor::Create(IDevice* device)
 		.pBindings = bindings.data(),
 	};
 
-	if (vkCreateDescriptorSetLayout(device->API_Vulkan().GetDevice(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
+	if (vkCreateDescriptorSetLayout(device->API_Vulkan().GetHandle(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
 		throw std::runtime_error("failed to create descriptor set layout!");
 
 	CreateDescriptorPool(&device->API_Vulkan());
@@ -57,8 +57,8 @@ void EnigmaRHI::VulkanDescriptor::Create(IDevice* device)
 
 void EnigmaRHI::VulkanDescriptor::Destroy(IDevice* device)
 {
-	vkDestroyDescriptorPool(device->API_Vulkan().GetDevice(), descriptorPool, nullptr);
-	vkDestroyDescriptorSetLayout(device->API_Vulkan().GetDevice(), descriptorSetLayout, nullptr);
+	vkDestroyDescriptorPool(device->API_Vulkan().GetHandle(), descriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(device->API_Vulkan().GetHandle(), descriptorSetLayout, nullptr);
 }
 
 void EnigmaRHI::VulkanDescriptor::CreateDescriptorPool(VulkanDevice* device)
@@ -80,7 +80,7 @@ void EnigmaRHI::VulkanDescriptor::CreateDescriptorPool(VulkanDevice* device)
 		.pPoolSizes = poolSizes.data(),
 	};
 
-	if (vkCreateDescriptorPool(device->GetDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
+	if (vkCreateDescriptorPool(device->GetHandle(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 		throw std::runtime_error("failed to create descriptor pool!");
 }
 
@@ -98,7 +98,7 @@ void EnigmaRHI::VulkanDescriptor::CreateDescriptorSets(IDevice* device, std::vec
 	
 	descriptorSets.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 
-	if (vkAllocateDescriptorSets(device->API_Vulkan().GetDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS)
+	if (vkAllocateDescriptorSets(device->API_Vulkan().GetHandle(), &allocInfo, descriptorSets.data()) != VK_SUCCESS)
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	
 	for (size_t frame = 0; frame < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; frame++)
@@ -126,7 +126,7 @@ void EnigmaRHI::VulkanDescriptor::CreateDescriptorSets(IDevice* device, std::vec
 				VkDescriptorBufferInfo* buffer = new VkDescriptorBufferInfo();
 				bufferInfo.push_back(buffer);
 
-				bufferInfo[bufferIndex]->buffer = bufferInfos[frame].buffers[bufferIndex].buffer->API_Vulkan().GetBuffer();
+				bufferInfo[bufferIndex]->buffer = bufferInfos[frame].buffers[bufferIndex].buffer->API_Vulkan().GetHandle();
 				bufferInfo[bufferIndex]->offset = bufferInfos[frame].buffers[bufferIndex].offset;
 				bufferInfo[bufferIndex]->range = bufferInfos[frame].buffers[bufferIndex].range;
 
@@ -140,7 +140,7 @@ void EnigmaRHI::VulkanDescriptor::CreateDescriptorSets(IDevice* device, std::vec
 			descriptorWrites.push_back(write);
 		}
 	
-		vkUpdateDescriptorSets(device->API_Vulkan().GetDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		vkUpdateDescriptorSets(device->API_Vulkan().GetHandle(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 
 		for (auto& buffer : bufferInfo)
 			delete buffer;

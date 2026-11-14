@@ -25,7 +25,7 @@ namespace EnigmaRHI
 		void EndSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer);
 
 
-		VkCommandPool GetCommandPool() const { return commandPool; }
+		VkCommandPool GetHandle() const { return commandPool; }
 		ICommandBuffer* GetCommandBuffer(uint32_t index) override { return &commandBuffers.at(index); }
 		uint32_t GetCommandBufferCount() const override { return static_cast<uint32_t>(commandBuffers.size()); }
 		VulkanCommandBuffer& GetVulkanCommandBuffer(uint32_t index) { return commandBuffers.at(index); }

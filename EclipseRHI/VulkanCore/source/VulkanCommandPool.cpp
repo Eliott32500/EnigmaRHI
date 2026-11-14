@@ -23,13 +23,13 @@ void EnigmaRHI::VulkanCommandPool::CreateCommandPool(VulkanDevice* device)
 		.queueFamilyIndex = device->GetGraphicsQueue().FamilyIndex(),
 	};
 	
-	if (vkCreateCommandPool(device->GetDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
+	if (vkCreateCommandPool(device->GetHandle(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
 		LOG_FATAL(LogCategory::Vulkan, "Failed to create command pool !");
 }
 
 void EnigmaRHI::VulkanCommandPool::Reset(IDevice* device)
 {
-	if (vkResetCommandPool(device->API_Vulkan().GetDevice(), commandPool, 0) != VK_SUCCESS)
+	if (vkResetCommandPool(device->API_Vulkan().GetHandle(), commandPool, 0) != VK_SUCCESS)
 		LOG_FATAL(LogCategory::Vulkan, "Failed to reset command pool !");
 }
 
@@ -43,7 +43,7 @@ VkCommandBuffer EnigmaRHI::VulkanCommandPool::BeginSingleTimeCommands(VulkanDevi
 		.commandBufferCount = 1,
 	};
 	
-	if(vkAllocateCommandBuffers(device->GetDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS)
+	if(vkAllocateCommandBuffers(device->GetHandle(), &allocInfo, &commandBuffer) != VK_SUCCESS)
 		LOG_FATAL(LogCategory::Vulkan, "Failed to allocate command buffer !");
 	
 	VkCommandBufferBeginInfo beginInfo
@@ -81,7 +81,7 @@ void EnigmaRHI::VulkanCommandPool::EndSingleTimeCommands(VulkanDevice* device, V
 	vkQueueSubmit(device->GetGraphicsQueue().Handle(), 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(device->GetGraphicsQueue().Handle());
 	
-	vkFreeCommandBuffers(device->GetDevice(), commandPool, 1, &commandBuffer);
+	vkFreeCommandBuffers(device->GetHandle(), commandPool, 1, &commandBuffer);
 }
 
 void EnigmaRHI::VulkanCommandPool::Destroy(IDevice* device)
@@ -89,7 +89,7 @@ void EnigmaRHI::VulkanCommandPool::Destroy(IDevice* device)
 	if (commandPool == VK_NULL_HANDLE)
 		return;
 
-	vkDestroyCommandPool(device->API_Vulkan().GetDevice(), commandPool, nullptr);
+	vkDestroyCommandPool(device->API_Vulkan().GetHandle(), commandPool, nullptr);
 
 	commandPool = VK_NULL_HANDLE;
 	commandBuffers.clear();

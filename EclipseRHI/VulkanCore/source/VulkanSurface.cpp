@@ -9,11 +9,11 @@ void EnigmaRHI::VulkanSurface::Create(IInstance* instance, WindowInfo windowInfo
 		.hwnd = windowInfo.hwnd,
 	};
 
-	if(vkCreateWin32SurfaceKHR(instance->API_Vulkan().GetInstance(), &createInfo, nullptr, &surface) != VK_SUCCESS)
+	if(vkCreateWin32SurfaceKHR(instance->API_Vulkan().GetHandle(), &createInfo, nullptr, &surface) != VK_SUCCESS)
 		throw std::runtime_error("failed to create window surface!");
 }
 
 void EnigmaRHI::VulkanSurface::Destroy(IInstance* instance)
 {
-	vkDestroySurfaceKHR(instance->API_Vulkan().GetInstance(), surface, nullptr);
+	vkDestroySurfaceKHR(instance->API_Vulkan().GetHandle(), surface, nullptr);
 }

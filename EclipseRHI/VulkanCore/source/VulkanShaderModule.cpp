@@ -3,12 +3,12 @@
 void EnigmaRHI::VulkanShaderModule::Create(IDevice* device, const std::string& filename)
 {
 	code = ReadShader(filename);
-	module = CreateShaderModule(device->API_Vulkan().GetDevice());
+	module = CreateShaderModule(device->API_Vulkan().GetHandle());
 }
 
 void EnigmaRHI::VulkanShaderModule::Destroy(IDevice* device)
 {
-	vkDestroyShaderModule(device->API_Vulkan().GetDevice(), module, nullptr);
+	vkDestroyShaderModule(device->API_Vulkan().GetHandle(), module, nullptr);
 }
 
 VkShaderModule EnigmaRHI::VulkanShaderModule::CreateShaderModule(VkDevice vulkanDevice)

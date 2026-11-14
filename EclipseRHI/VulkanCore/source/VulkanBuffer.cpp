@@ -10,11 +10,11 @@ void EnigmaRHI::VulkanBuffer::Create(IDevice* device, size_t size, uint32_t usag
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 	};
 
-	if (vkCreateBuffer(device->API_Vulkan().GetDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+	if (vkCreateBuffer(device->API_Vulkan().GetHandle(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
 		throw std::runtime_error("failed to create buffer!");
 
 	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(device->API_Vulkan().GetDevice(), buffer, &memRequirements);
+	vkGetBufferMemoryRequirements(device->API_Vulkan().GetHandle(), buffer, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo
 	{
@@ -23,10 +23,10 @@ void EnigmaRHI::VulkanBuffer::Create(IDevice* device, size_t size, uint32_t usag
 		.memoryTypeIndex = device->API_Vulkan().GetPhysicalDevice().FindMemoryType(memRequirements.memoryTypeBits, static_cast<VkMemoryPropertyFlags>(properties)),
 	};
 
-	if (vkAllocateMemory(device->API_Vulkan().GetDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+	if (vkAllocateMemory(device->API_Vulkan().GetHandle(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
 		throw std::runtime_error("failed to allocate buffer memory!");
 
-	vkBindBufferMemory(device->API_Vulkan().GetDevice(), buffer, bufferMemory, 0);
+	vkBindBufferMemory(device->API_Vulkan().GetHandle(), buffer, bufferMemory, 0);
 }
 
 void EnigmaRHI::VulkanBuffer::CreateDescriptorBufferInfo()
@@ -38,11 +38,11 @@ void EnigmaRHI::VulkanBuffer::CreateDescriptorBufferInfo()
 
 void EnigmaRHI::VulkanBuffer::CopyBuffer(IDevice* device, ICommandPool* commandPool, IBuffer* dstBuffer, size_t size)
 {
-	VkCommandBuffer commandBuffer = commandPool->API_Vulkan().BeginSingleTimeCommands(&device->API_Vulkan(), commandPool->GetCommandBuffer(0)->API_Vulkan().GetCommandBuffer());
+	VkCommandBuffer commandBuffer = commandPool->API_Vulkan().BeginSingleTimeCommands(&device->API_Vulkan(), commandPool->GetCommandBuffer(0)->API_Vulkan().GetHandle());
 
 	VkBufferCopy copyRegion{};
 	copyRegion.size = size;
-	vkCmdCopyBuffer(commandBuffer, this->buffer, dstBuffer->API_Vulkan().GetBuffer(), 1, &copyRegion);
+	vkCmdCopyBuffer(commandBuffer, this->buffer, dstBuffer->API_Vulkan().GetHandle(), 1, &copyRegion);
 
 	commandPool->API_Vulkan().EndSingleTimeCommands(&device->API_Vulkan(), commandBuffer);
 }
@@ -56,13 +56,13 @@ void EnigmaRHI::VulkanBuffer::UploadData(IDevice* device, size_t offset, size_t 
 
 void EnigmaRHI::VulkanBuffer::Destroy(IDevice* device)
 {
-	vkDestroyBuffer(device->API_Vulkan().GetDevice(), buffer, nullptr);
-	vkFreeMemory(device->API_Vulkan().GetDevice(), bufferMemory, nullptr);
+	vkDestroyBuffer(device->API_Vulkan().GetHandle(), buffer, nullptr);
+	vkFreeMemory(device->API_Vulkan().GetHandle(), bufferMemory, nullptr);
 }
 
 void EnigmaRHI::VulkanBuffer::MapMemory(IDevice* device, size_t offset, size_t size, uint32_t flags)
 {
-	vkMapMemory(device->API_Vulkan().GetDevice(), bufferMemory, offset, size, flags, &data);
+	vkMapMemory(device->API_Vulkan().GetHandle(), bufferMemory, offset, size, flags, &data);
 }
 
 void EnigmaRHI::VulkanBuffer::CopyData(const void* src, size_t size)
@@ -72,5 +72,5 @@ void EnigmaRHI::VulkanBuffer::CopyData(const void* src, size_t size)
 
 void EnigmaRHI::VulkanBuffer::UnMapMemory(IDevice* device)
 {
-	vkUnmapMemory(device->API_Vulkan().GetDevice(), bufferMemory);
+	vkUnmapMemory(device->API_Vulkan().GetHandle(), bufferMemory);
 }

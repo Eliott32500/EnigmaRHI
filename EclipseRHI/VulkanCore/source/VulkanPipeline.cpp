@@ -90,7 +90,7 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 		.pPushConstantRanges = nullptr, // Optional
 	};
 
-	if (vkCreatePipelineLayout(device->API_Vulkan().GetDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+	if (vkCreatePipelineLayout(device->API_Vulkan().GetHandle(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 	{
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create pipeline layout !");
 		return;
@@ -130,14 +130,14 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 		.basePipelineIndex = -1, // Optional
 	};
 
-	if (vkCreateGraphicsPipelines(device->API_Vulkan().GetDevice(), VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(device->API_Vulkan().GetHandle(), VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		throw std::runtime_error("failed to create graphics pipeline!");
 }
 
 void EnigmaRHI::VulkanPipeline::Destroy(IDevice* device)
 {
-	vkDestroyPipeline(device->API_Vulkan().GetDevice(), graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(device->API_Vulkan().GetDevice(), pipelineLayout, nullptr);
+	vkDestroyPipeline(device->API_Vulkan().GetHandle(), graphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(device->API_Vulkan().GetHandle(), pipelineLayout, nullptr);
 }
 
 std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateShaderInfo(const Shader& shader)
@@ -150,7 +150,7 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.stage = VK_SHADER_STAGE_VERTEX_BIT,
-			.module = shader.vertShader->API_Vulkan().GetModule(),
+			.module = shader.vertShader->API_Vulkan().GetHandle(),
 			.pName = shader.entryMethod,
 		};
 
@@ -163,7 +163,7 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-			.module = shader.fragShader->API_Vulkan().GetModule(),
+			.module = shader.fragShader->API_Vulkan().GetHandle(),
 			.pName = shader.entryMethod,
 		};
 
@@ -176,7 +176,7 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.stage = VK_SHADER_STAGE_COMPUTE_BIT,
-			.module = shader.computeShader->API_Vulkan().GetModule(),
+			.module = shader.computeShader->API_Vulkan().GetHandle(),
 			.pName = shader.entryMethod,
 		};
 
@@ -189,7 +189,7 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			.stage = VK_SHADER_STAGE_GEOMETRY_BIT,
-			.module = shader.geomShader->API_Vulkan().GetModule(),
+			.module = shader.geomShader->API_Vulkan().GetHandle(),
 			.pName = shader.entryMethod,
 		};
 

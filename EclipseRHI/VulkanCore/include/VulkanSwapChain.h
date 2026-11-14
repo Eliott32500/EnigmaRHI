@@ -26,7 +26,7 @@ namespace EnigmaRHI
 		std::vector<VkFramebuffer> GetSwapChainFramebuffers() const { return swapChainFramebuffers; };
 		//
 
-		VkSwapchainKHR GetSwapChain() const { return swapChain; };
+		VkSwapchainKHR GetHandle() const { return swapChain; };
 
 		VulkanSwapChain& API_Vulkan() override { return (*this); }
 

@@ -63,7 +63,7 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc imageDesc)
 	};
 
 	const VulkanDevice& myDevice = device->API_Vulkan();
-	VkDevice vulkanDevice = myDevice.GetDevice();
+	VkDevice vulkanDevice = myDevice.GetHandle();
 
 	if (vkCreateImage(vulkanDevice, &imageInfo, nullptr, &image) != VK_SUCCESS)
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create image !");
@@ -77,7 +77,7 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc imageDesc)
 void EnigmaRHI::VulkanImage::AllocateImageMemory(const VulkanDevice& device, const VkImage& image)
 {
 	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(device.GetDevice(), image, &memRequirements);
+	vkGetImageMemoryRequirements(device.GetHandle(), image, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo
 	{
@@ -86,10 +86,10 @@ void EnigmaRHI::VulkanImage::AllocateImageMemory(const VulkanDevice& device, con
 		.memoryTypeIndex = device.GetPhysicalDevice().FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
 	};
 
-	if (vkAllocateMemory(device.GetDevice(), &allocInfo, nullptr, &memory) != VK_SUCCESS)
+	if (vkAllocateMemory(device.GetHandle(), &allocInfo, nullptr, &memory) != VK_SUCCESS)
 		LOG_ERROR(LogCategory::Vulkan, "Failed to allocate image memory!");
 
-	vkBindImageMemory(device.GetDevice(), image, memory, 0);
+	vkBindImageMemory(device.GetHandle(), image, memory, 0);
 }
 
 void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc imageDesc)
@@ -120,7 +120,7 @@ void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* c
 	Create(device, imageDesc);
 
 	TransitionLayout(&dev, &commandPool->API_Vulkan(), imageDesc.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	CopyFromBuffer(&dev, &commandPool->API_Vulkan(), stagingBuffer.GetBuffer(), imageDesc.extent);
+	CopyFromBuffer(&dev, &commandPool->API_Vulkan(), stagingBuffer.GetHandle(), imageDesc.extent);
 	TransitionLayout(&dev, &commandPool->API_Vulkan(), imageDesc.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	stagingBuffer.Destroy(&dev);
@@ -159,7 +159,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, V
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = 1;
 
-	if (vkCreateImageView(device->GetDevice(), &viewInfo, nullptr, &view) != VK_SUCCESS)
+	if (vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &view) != VK_SUCCESS)
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create image view!");
 }
 
@@ -179,7 +179,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, ImageDesc imageDes
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = imageDesc.arrayLayers;
 
-	if (vkCreateImageView(device->GetDevice(), &viewInfo, nullptr, &view) != VK_SUCCESS)
+	if (vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &view) != VK_SUCCESS)
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create image view!");
 }
 
@@ -223,14 +223,14 @@ void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, ImageSampler im
 		.unnormalizedCoordinates = VK_FALSE,
 	};
 
-	if (vkCreateSampler(device->GetDevice(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
+	if (vkCreateSampler(device->GetHandle(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create texture sampler!");
 }
 
 
 void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, EImageFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
-	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetCommandBuffer());
+	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetHandle());
 
 	VkImageMemoryBarrier imageMemoryBarrier
 	{
@@ -306,7 +306,7 @@ void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanComman
 
 void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* commandPool, VkBuffer buffer, Extent3D extent)
 {
-	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetCommandBuffer());
+	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetHandle());
 
 	// specify which part of the buffer is going to be copied to which part of the image.
 	VkBufferImageCopy region
@@ -331,7 +331,7 @@ void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandP
 
 void EnigmaRHI::VulkanImage::Destroy(IDevice* device)
 {
-	VkDevice vkDevice = device->API_Vulkan().GetDevice();
+	VkDevice vkDevice = device->API_Vulkan().GetHandle();
 
 	if (sampler != VK_NULL_HANDLE)
 	{

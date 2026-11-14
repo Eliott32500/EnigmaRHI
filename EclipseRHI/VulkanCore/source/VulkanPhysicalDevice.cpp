@@ -13,16 +13,16 @@ namespace EnigmaRHI
     void VulkanPhysicalDevice::Pick(VulkanInstance* instance, VulkanSurface* surface)
     {
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(instance->GetInstance(), &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(instance->GetHandle(), &deviceCount, nullptr);
         if (deviceCount == 0)
             LOG_FATAL(LogCategory::Vulkan, "Failed to find GPUs with Vulkan support !");
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(instance->GetInstance(), &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(instance->GetHandle(), &deviceCount, devices.data());
 
         std::multimap<int, VkPhysicalDevice> candidates;
         for (VkPhysicalDevice device : devices)
-            candidates.emplace(RateDeviceSuitability(device, surface->GetSurface()), device);
+            candidates.emplace(RateDeviceSuitability(device, surface->GetHandle()), device);
 
         if (candidates.rbegin()->first <= 0)
             LOG_FATAL(LogCategory::Vulkan, "Failed to find a suitable GPU !");
@@ -33,7 +33,7 @@ namespace EnigmaRHI
         LOG_INFO(LogCategory::RHI, "Selected GPU : " + std::string(properties.deviceName));
 
         vkGetPhysicalDeviceMemoryProperties(handle, &memoryProperties);
-        queueFamilies = FindQueueFamilies(handle, surface->GetSurface());
+        queueFamilies = FindQueueFamilies(handle, surface->GetHandle());
     }
 
     int VulkanPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface)

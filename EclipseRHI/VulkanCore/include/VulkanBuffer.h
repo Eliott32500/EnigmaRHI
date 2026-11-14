@@ -20,7 +20,7 @@ namespace EnigmaRHI
 		void UploadData(IDevice* device, size_t offset, size_t size, const void* src, uint32_t flags) override;
 		void Destroy(IDevice* vulkanDevice) override;
 
-		VkBuffer GetBuffer() const { return buffer; };
+		VkBuffer GetHandle() const { return buffer; };
 		VkDeviceMemory GetBufferMemory() const { return bufferMemory; };
 
 		VulkanBuffer& API_Vulkan() override { return (*this); }

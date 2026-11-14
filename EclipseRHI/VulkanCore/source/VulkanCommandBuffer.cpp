@@ -10,12 +10,12 @@ void EnigmaRHI::VulkanCommandBuffer::Create(IDevice* device, ICommandPool* comma
 	VkCommandBufferAllocateInfo allocInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = commandPool->API_Vulkan().GetCommandPool(),
+		.commandPool = commandPool->API_Vulkan().GetHandle(),
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1,
 	};
 
-	if (vkAllocateCommandBuffers(device->API_Vulkan().GetDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS)
+	if (vkAllocateCommandBuffers(device->API_Vulkan().GetHandle(), &allocInfo, &commandBuffer) != VK_SUCCESS)
 		LOG_FATAL(LogCategory::Vulkan, "Failed to allocate command buffers !");
 }
 
@@ -112,7 +112,7 @@ void EnigmaRHI::VulkanCommandBuffer::EndRendering()
 
 void EnigmaRHI::VulkanCommandBuffer::BindPipeline(IPipeline* pipeline)
 {
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetGraphicsPipeline());
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetHandle());
 }
 
 void EnigmaRHI::VulkanCommandBuffer::BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, ISync* sync)
@@ -122,7 +122,7 @@ void EnigmaRHI::VulkanCommandBuffer::BindDescriptorSet(IPipeline* pipeline, IDes
 
 void EnigmaRHI::VulkanCommandBuffer::BindVertexBuffer(IBuffer* buffer)
 {
-    VkBuffer vertexBuffer = buffer->API_Vulkan().GetBuffer();
+    VkBuffer vertexBuffer = buffer->API_Vulkan().GetHandle();
     VkDeviceSize offset = buffer->API_Vulkan().bufferInfo.offset;
 
     vkCmdBindVertexBuffers(
@@ -138,7 +138,7 @@ void EnigmaRHI::VulkanCommandBuffer::BindIndexBuffer(IBuffer* buffer)
 {
     vkCmdBindIndexBuffer(
         commandBuffer,
-        buffer->API_Vulkan().GetBuffer(),
+        buffer->API_Vulkan().GetHandle(),
         0,
         VK_INDEX_TYPE_UINT32
     );

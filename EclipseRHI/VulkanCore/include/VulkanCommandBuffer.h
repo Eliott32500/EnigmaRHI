@@ -38,7 +38,7 @@ namespace EnigmaRHI
             EAccessFlag srcAccessMask, EAccessFlag destAccessMask, EPipelineStageFlag srcStageMask,
             EPipelineStageFlag dstStageMask) override;
 
-        VkCommandBuffer GetCommandBuffer() const { return commandBuffer; }
+        VkCommandBuffer GetHandle() const { return commandBuffer; }
 
         VulkanCommandBuffer& API_Vulkan() override { return *this; }
 
