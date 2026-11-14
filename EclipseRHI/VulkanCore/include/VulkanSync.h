@@ -21,9 +21,9 @@ namespace EnigmaRHI
 		VulkanSync& API_Vulkan() override { return (*this); }
 
 	private:
-		std::vector<VkSemaphore> imageAvailableSemaphores;
+		std::vector<VkSemaphore> presentCompleteSemaphore;
 		std::vector<VkSemaphore> renderFinishedSemaphores;
-		std::vector<VkFence> inFlightFences;
+		std::vector<VkFence> drawFences;
 
 		VkResult nextImage;
 	};

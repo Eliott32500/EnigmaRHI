@@ -141,16 +141,16 @@ VkFormat EnigmaRHI::Utilities::ToVulkanVertexFormat(EVertexFormat format)
 		case E::INT3:						return VK_FORMAT_R32G32B32_SINT;
 		case E::INT4:						return VK_FORMAT_R32G32B32A32_SINT;
 		// Unsigned Integer
-		case EVertexFormat::UINT:			return VK_FORMAT_R32_UINT;
-		case EVertexFormat::UINT2:			return VK_FORMAT_R32G32_UINT;
-		case EVertexFormat::UINT3:			return VK_FORMAT_R32G32B32_UINT;
-		case EVertexFormat::UINT4:			return VK_FORMAT_R32G32B32A32_UINT;
+		case E::UINT:						return VK_FORMAT_R32_UINT;
+		case E::UINT2:						return VK_FORMAT_R32G32_UINT;
+		case E::UINT3:						return VK_FORMAT_R32G32B32_UINT;
+		case E::UINT4:						return VK_FORMAT_R32G32B32A32_UINT;
 		// Signed Byte
-		case EVertexFormat::BYTE4:			return VK_FORMAT_R8G8B8A8_SINT;
+		case E::BYTE4:						return VK_FORMAT_R8G8B8A8_SINT;
 		// Unsigned Byte
-		case EVertexFormat::UBYTE4:			return VK_FORMAT_R8G8B8A8_UINT;
+		case E::UBYTE4:						return VK_FORMAT_R8G8B8A8_UINT;
 		// Normalized Unsigned Byte
-		case EVertexFormat::UBYTE4_NORM:	return VK_FORMAT_R8G8B8A8_UNORM;
+		case E::UBYTE4_NORM:				return VK_FORMAT_R8G8B8A8_UNORM;
 		default:							LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan vertex format !");
 	}
 }
