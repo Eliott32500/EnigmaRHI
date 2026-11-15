@@ -4,6 +4,8 @@
 #include "VulkanBindingSet.h"
 #include "RHILog.h"
 #include "CommonTypes.h"
+#include "VulkanPipelineTypes.h"
+#include "VulkanDepthStencilTypes.h"
 
 void EnigmaRHI::VulkanCommandBuffer::Create(IDevice* device, ICommandPool* commandPool)
 {
@@ -224,4 +226,96 @@ void EnigmaRHI::VulkanCommandBuffer::SetScissor(const Rect2D& scissor)
     };
 
     vkCmdSetScissor(commandBuffer, 0, 1, &vkScissor);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetLineWidth(float width)
+{
+    vkCmdSetLineWidth(commandBuffer, width);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetDepthBias(float constantFactor, float clamp, float slopeFactor)
+{
+    vkCmdSetDepthBias(commandBuffer, constantFactor, clamp, slopeFactor);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetBlendConstants(const float constants[4])
+{
+    vkCmdSetBlendConstants(commandBuffer, constants);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetDepthBounds(float minDepth, float maxDepth)
+{
+    vkCmdSetDepthBounds(commandBuffer, minDepth, maxDepth);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetStencilCompareMask(EStencilFace face, uint32_t mask)
+{
+    vkCmdSetStencilCompareMask(commandBuffer, Utilities::ToVulkanStencilFace(face), mask);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetStencilWriteMask(EStencilFace face, uint32_t mask)
+{
+    vkCmdSetStencilWriteMask(commandBuffer, Utilities::ToVulkanStencilFace(face), mask);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetStencilReference(EStencilFace face, uint32_t reference)
+{
+    vkCmdSetStencilReference(commandBuffer, Utilities::ToVulkanStencilFace(face), reference);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetCullMode(ECullMode mode)
+{
+    vkCmdSetCullMode(commandBuffer, Utilities::ToVulkanCullMode(mode));
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetFrontFace(EFrontFaceMode face)
+{
+    vkCmdSetFrontFace(commandBuffer, Utilities::ToVulkanFrontFace(face));
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetPrimitiveTopology(ETopologyMode topology)
+{
+    vkCmdSetPrimitiveTopology(commandBuffer, Utilities::ToVulkanTopology(topology));
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetDepthTestEnable(bool enable)
+{
+    vkCmdSetDepthTestEnable(commandBuffer, enable ? VK_TRUE : VK_FALSE);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetDepthWriteEnable(bool enable)
+{
+    vkCmdSetDepthWriteEnable(commandBuffer, enable ? VK_TRUE : VK_FALSE);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetDepthCompareOp(ECompareOp op)
+{
+    vkCmdSetDepthCompareOp(commandBuffer, Utilities::ToVulkanCompareOp(op));
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetDepthBoundsTestEnable(bool enable)
+{
+    vkCmdSetDepthBoundsTestEnable(commandBuffer, enable ? VK_TRUE : VK_FALSE);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetStencilTestEnable(bool enable)
+{
+    vkCmdSetStencilTestEnable(commandBuffer, enable ? VK_TRUE : VK_FALSE);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetStencilOp(EStencilFace face, EStencilOp fail, EStencilOp pass, EStencilOp depthFail, ECompareOp compare)
+{
+    vkCmdSetStencilOp(commandBuffer, Utilities::ToVulkanStencilFace(face),
+        Utilities::ToVulkanStencilOp(fail), Utilities::ToVulkanStencilOp(pass), 
+        Utilities::ToVulkanStencilOp(depthFail), Utilities::ToVulkanCompareOp(compare));
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetRasterizerDiscardEnable(bool enable)
+{
+    vkCmdSetRasterizerDiscardEnable(commandBuffer, enable ? VK_TRUE : VK_FALSE);
+}
+
+void EnigmaRHI::VulkanCommandBuffer::SetDepthBiasEnable(bool enable)
+{
+    vkCmdSetDepthBiasEnable(commandBuffer, enable ? VK_TRUE : VK_FALSE);
 }

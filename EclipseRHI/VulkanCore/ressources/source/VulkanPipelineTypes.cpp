@@ -33,11 +33,11 @@ VkPolygonMode EnigmaRHI::Utilities::ToVulkanPolygonMode(EPolygonMode mode)
 	}
 }
 
-VkPrimitiveTopology EnigmaRHI::Utilities::ToVulkanTopology(EPrimitiveTopologyMode mode)
+VkPrimitiveTopology EnigmaRHI::Utilities::ToVulkanTopology(ETopologyMode mode)
 {
 	switch (mode)
 	{
-		using E = EPrimitiveTopologyMode;
+		using E = ETopologyMode;
 
 		case E::POINT_LIST:			return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 		case E::LINE_LIST:			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;

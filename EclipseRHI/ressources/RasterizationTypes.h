@@ -23,7 +23,7 @@ namespace EnigmaRHI
         COUNTER_CLOCKWISE
     };
 
-    enum class EPrimitiveTopologyMode
+    enum class ETopologyMode
     {
         POINT_LIST,
         LINE_LIST,

@@ -64,7 +64,7 @@ namespace EnigmaRHI
 		std::vector<VertexBindingDesc> vertexBindings;
 		std::vector<VertexAttributeDesc> vertexAttributes;
 
-		EPrimitiveTopologyMode topologyMode = EPrimitiveTopologyMode::TRIANGLE_LIST;
+		ETopologyMode topologyMode = ETopologyMode::TRIANGLE_LIST;
 
 		RasterizerPipelineState rasterizerState;
 

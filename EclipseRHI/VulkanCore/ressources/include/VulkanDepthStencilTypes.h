@@ -6,4 +6,6 @@
 namespace EnigmaRHI::Utilities
 {
 	VkCompareOp ToVulkanCompareOp(ECompareOp compareOp);
+	VkStencilOp ToVulkanStencilOp(EStencilOp stencilOp);
+	VkStencilFaceFlagBits ToVulkanStencilFace(EStencilFace face);
 }
