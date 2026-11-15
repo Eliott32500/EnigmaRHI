@@ -12,9 +12,9 @@ namespace EnigmaRHI
 	class IPipeline;
     class ISync;
 	class IDescriptor;
-	class IRenderPass;
 	class ISwapChain;
 	class IBuffer;
+    class IBindingSet;
 
     class ICommandBuffer
     {

@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <algorithm>
 
-void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc imageDesc)
+void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 {
 	const DeviceLimits& limits = device->GetCapabilities().limits;
 
@@ -92,7 +92,7 @@ void EnigmaRHI::VulkanImage::AllocateImageMemory(const VulkanDevice& device, con
 	vkBindImageMemory(device.GetHandle(), image, memory, 0);
 }
 
-void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc imageDesc)
+void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc& imageDesc)
 {
 	if (!imageDesc.data)
 	{
@@ -169,7 +169,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, V
 		LOG_ERROR(LogCategory::Vulkan, "Failed to create image view!");
 }
 
-void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, ImageDesc imageDesc, VkImageAspectFlags aspect)
+void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, const ImageDesc& imageDesc, VkImageAspectFlags aspect)
 {
 	VkImageViewCreateInfo viewInfo
 	{
