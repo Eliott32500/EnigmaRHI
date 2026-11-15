@@ -4,7 +4,6 @@
 #include "VulkanCommandPool.h"
 #include "VulkanPipeline.h"
 #include "VulkanSurface.h"
-#include "VulkanSync.h"
 
 namespace EnigmaRHI
 {
@@ -22,9 +21,7 @@ namespace EnigmaRHI
 		IInstance* InstantiateInstance() override { return new VulkanInstance(); }
 		IPipeline* InstantiatePipeline() override { return new VulkanPipeline(); }
 		IShaderModule* InstantiateShaderModule() override { return new VulkanShaderModule(); }
-		IRenderPass* InstantiateRenderPass() override { return new VulkanRenderPass(); }
 		ISurface* InstantiateSurface() override { return new VulkanSurface(); }
 		ISwapChain* InstantiateSwapChain() override { return new VulkanSwapChain(); }
-		ISync* InstantiateSync() override { return new VulkanSync(); }
 	};
 }

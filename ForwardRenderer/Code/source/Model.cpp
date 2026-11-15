@@ -2,6 +2,7 @@
 #include "tiny_obj_loader.h"
 
 #include "../include/Model.h"
+#include "RHIConfig.h"
 
 void Model::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool)
 {

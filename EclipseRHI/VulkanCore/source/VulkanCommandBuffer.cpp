@@ -2,7 +2,6 @@
 #include "VulkanCommandPool.h"
 #include "VulkanPipeline.h"
 #include "RHILog.h"
-#include "ISync.h"
 #include "CommonTypes.h"
 
 void EnigmaRHI::VulkanCommandBuffer::Create(IDevice* device, ICommandPool* commandPool)

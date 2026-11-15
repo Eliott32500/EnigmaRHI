@@ -2,7 +2,6 @@
 #include "VulkanShaderModule.h"
 #include "VulkanSwapChain.h"
 #include "VulkanDescriptor.h"
-#include "VulkanRenderPass.h"
 #include "IPipeline.h"
 #include "VulkanVertex.h"
 #include <vector>
