@@ -15,7 +15,7 @@ namespace EnigmaRHI
 
 		VulkanPipeline() = default;
 
-		void Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IRenderPass* renderPass, IDescriptor* descriptor, ISwapChain* swapChain) override;
+		void Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IDescriptor* descriptor, ISwapChain* swapChain) override;
 		void Destroy(IDevice* device) override;
 
 		VkPipeline GetHandle() const { return graphicsPipeline; }

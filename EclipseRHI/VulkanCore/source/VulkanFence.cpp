@@ -1,19 +1,31 @@
 #include "VulkanFence.h"
+#include "VulkanDevice.h"
+#include "RHILog.h"
 
-void EnigmaRHI::VulkanFence::Wait(uint64_t timeout)
+void EnigmaRHI::VulkanFence::Create(IDevice* device, bool signaled)
 {
+    VkFenceCreateInfo info{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+                            .flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0u };
+    vkCreateFence(device->API_Vulkan().GetHandle(), &info, nullptr, &fence);
 }
 
-bool EnigmaRHI::VulkanFence::IsSignaled() const
+void EnigmaRHI::VulkanFence::Destroy(IDevice* device)
 {
-	return false;
+    vkDestroyFence(device->API_Vulkan().GetHandle(), fence, nullptr);
+    fence = VK_NULL_HANDLE;
 }
 
-void EnigmaRHI::VulkanFence::Reset()
+bool EnigmaRHI::VulkanFence::Wait(IDevice* device, uint64_t timeout)
 {
+    return vkWaitForFences(device->API_Vulkan().GetHandle(), 1, &fence, VK_TRUE, timeout) == VK_SUCCESS;
 }
 
-uint64_t EnigmaRHI::VulkanFence::GetValue() const
+void EnigmaRHI::VulkanFence::Reset(IDevice* device)
 {
-	return IsSignaled() ? 1 : 0;;
+    vkResetFences(device->API_Vulkan().GetHandle(), 1, &fence);
+}
+
+bool EnigmaRHI::VulkanFence::IsSignaled(IDevice* device) const
+{
+    return vkGetFenceStatus(device->API_Vulkan().GetHandle(), fence) == VK_SUCCESS;
 }

@@ -94,7 +94,7 @@ void EnigmaRHI::VulkanRenderPass::Create(IDevice* device, ISwapChain* swapChain,
 	if (vkCreateRenderPass(device->API_Vulkan().GetHandle(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 		throw std::runtime_error("failed to create render pass!");
 
-	swapChain->API_Vulkan().CreateSwapChainFramebuffers(&device->API_Vulkan(), renderPass);
+	//swapChain->API_Vulkan().CreateSwapChainFramebuffers(&device->API_Vulkan(), renderPass);
 }
 
 void EnigmaRHI::VulkanRenderPass::Destroy(IDevice* device)

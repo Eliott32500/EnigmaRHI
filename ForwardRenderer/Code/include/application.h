@@ -55,8 +55,13 @@ private:
 	const uint32_t WIDTH = 1920;
 	const uint32_t HEIGHT = 1080;
 
+	uint32_t frame = 0;
+
 	const char* TEXTURE_PATH = "Assets/Textures/viking_room.png";
 	const char* MODEL_PATH = "Assets/Meshes/viking_room.obj";
 
 	void DrawFrame();
+	void ResizeSwapChain();
+
+	std::array<EnigmaRHI::IFence*, EnigmaRHI::MAX_FRAMES_IN_FLIGHT> frameFences;
 };

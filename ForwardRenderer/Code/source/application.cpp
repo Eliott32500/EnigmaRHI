@@ -2,6 +2,7 @@
 #include <thread>
 #include "VulkanImageTypes.h"
 #include "IGraphicsPipeline.h"
+#include "RHILog.h"
 
 void Application::Run()
 {
@@ -32,10 +33,8 @@ void Application::InitAPI()
 	device = rhi->InstantiateDevice();
 	commandPool = rhi->InstantiateCommandPool();
 	swapChain = rhi->InstantiateSwapChain();
-	renderPass = rhi->InstantiateRenderPass();
 	descriptor = rhi->InstantiateDescriptor();
 	pipeline = rhi->InstantiatePipeline();
-	syncronizer = rhi->InstantiateSync();
 	vertShader = rhi->InstantiateShaderModule();
 	fragShader = rhi->InstantiateShaderModule();
 
@@ -61,8 +60,7 @@ void Application::InitAPI()
 	surface->Create(instance, windowInfo);
 	device->Create(instance, surface);
 	commandPool->Create(device);
-	swapChain->Create(device, surface, commandPool, EnigmaRHI::Extent2D{WIDTH, HEIGHT});
-	renderPass->Create(device, swapChain, device->FindDepthFormat());
+	swapChain->Create(device, surface, EnigmaRHI::Extent2D{WIDTH, HEIGHT});
 
 	descriptor->AddBufferBinding( 0, EnigmaRHI::EShaderType::VERTEX);
 	descriptor->AddBufferBinding( 1, EnigmaRHI::EShaderType::VERTEX);
@@ -98,7 +96,7 @@ void Application::InitAPI()
 		.fragShader = fragShader,
 	};
 
-	pipeline->Create(gp, shader, device, renderPass, descriptor, swapChain);
+	pipeline->Create(gp, shader, device, descriptor, swapChain);
 
 	TextureLoadOptions opts;
 	opts.colorSpace = ETextureColorSpace::SRGB;   // Linear pour normal/roughness/metallic...
@@ -154,7 +152,10 @@ void Application::InitAPI()
 	 
 	descriptor->CreateDescriptorSets(device, perFrameDescriptors);
 
-	syncronizer->Create(device);
+	for (int i = 0; i < frameFences.size(); i++)
+	{
+		frameFences[i] = device->CreateFence(true);
+	}
 }
 
 void Application::MainLoop()
@@ -173,11 +174,13 @@ void Application::CleanUp()
 	swapChain->Destroy(device);
 	pipeline->Destroy(device);
 	roomTexture->Destroy(device);
-	renderPass->Destroy(device);
 	descriptor->Destroy(device);
 	model->Destroy(device);
 	cam->Destroy(device);
-	syncronizer->Destroy(device);
+	for (int i = 0; i < frameFences.size(); i++)
+	{
+		frameFences[i]->Destroy(device);
+	}
 	commandPool->Destroy(device);
 	fragShader->Destroy(device);
 	vertShader->Destroy(device);
@@ -189,12 +192,10 @@ void Application::CleanUp()
 	rhi->DeleteShaderModule(fragShader);
 	rhi->DeleteShaderModule(vertShader);
 	rhi->DeletePipeline(pipeline);
-	rhi->DeleteRenderPass(renderPass);
 	device->DeleteImage(roomTexture);
 	rhi->DeleteDescriptor(descriptor);
 	delete model;
 	delete cam;
-	rhi->DeleteSync(syncronizer);
 	rhi->DeleteCommandPool(commandPool);
 	rhi->DeleteDevice(device);
 	rhi->DeleteSurface(surface);
@@ -207,16 +208,20 @@ void Application::CleanUp()
 
 void Application::DrawFrame()
 {
-	uint32_t imageIndex = 0;
-	
-	bool aquireSucceded = syncronizer->AquireNextImage(device, swapChain, commandPool, surface, renderPass, mainWindow, &imageIndex);
+	EnigmaRHI::IQueue& queue = device->GetQueue(ECommandQueueType::GRAPHICS);
 
-	if (!aquireSucceded)
+	if(!frameFences[frame]->Wait(device))
+		LOG_FATAL(LogCategory::Vulkan, "Failed to wait for fence!");
+
+	if (swapChain->Acquire(device, frame) == EnigmaRHI::EAcquireResult::OUT_OF_DATE)
+	{
+		ResizeSwapChain();
 		return;
+	}
 
-	uint32_t frame = syncronizer->GetCurrentFrame();
-	
-	cam->UpdateCameraDataBuffer(frame, swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height, mainWindow);
+	frameFences[frame]->Reset(device);
+
+	cam->UpdateCameraDataBuffer(frame, swapChain->GetSwapChainExtent(), mainWindow);
 	
 	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -246,7 +251,7 @@ void Application::DrawFrame()
 
 	EnigmaRHI::RenderingAttachment attachement
 	{
-		.image = swapChain->GetImageFromFrame(frame),
+		.image = swapChain->GetCurrentImage(),
 		.clearColor = {0, 0, 0, 0},
 	};
 	
@@ -256,12 +261,12 @@ void Application::DrawFrame()
 		.colorAttachments = {attachement},
 	};
 
-	cmd->TransitionImageLayout(swapChain->GetImageFromFrame(frame), EnigmaRHI::EImageLayout::UNDEFINED, EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL,
+	cmd->TransitionImageLayout(swapChain->GetCurrentImage(), EnigmaRHI::EImageLayout::UNDEFINED, EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL,
 		{}, EnigmaRHI::EAccessFlag::COLOR_ATTACHMENT_WRITE, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT);
 
 	cmd->BeginRendering(info);
 	cmd->BindPipeline(pipeline);
-	cmd->BindDescriptorSet(pipeline, descriptor, syncronizer);
+	cmd->BindDescriptorSet(pipeline, descriptor, frame);
 	cmd->SetViewport(viewport);
 	cmd->SetScissor(scissor);
 
@@ -269,11 +274,30 @@ void Application::DrawFrame()
 
 	cmd->EndRendering();
 
-	cmd->TransitionImageLayout(swapChain->GetImageFromFrame(frame), EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL, EnigmaRHI::EImageLayout::PRESENT_SRC,
+	cmd->TransitionImageLayout(swapChain->GetCurrentImage(), EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL, EnigmaRHI::EImageLayout::PRESENT_SRC,
 		EnigmaRHI::EAccessFlag::COLOR_ATTACHMENT_WRITE, {}, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT, EnigmaRHI::EPipelineStageFlag::BOTTOM_OF_PIPE);
 	
 	cmd->End();
+
+	queue.Submit(cmd, swapChain, frameFences[frame]);
 	
-	syncronizer->PresentFrame(device, swapChain, commandPool, surface, renderPass, mainWindow, &imageIndex);
-	syncronizer->MoveToNextFrame();
+	if (swapChain->Present(device, &queue) != EnigmaRHI::EPresentResult::SUCCESS)
+		ResizeSwapChain();
+
+	frame = (frame + 1) % EnigmaRHI::MAX_FRAMES_IN_FLIGHT;
+}
+
+void Application::ResizeSwapChain()
+{
+	int w = 0, h = 0;
+	glfwGetFramebufferSize(mainWindow, &w, &h);
+    while ((w == 0 || h == 0) && !glfwWindowShouldClose(mainWindow)) 
+	{
+        glfwGetFramebufferSize(mainWindow, &w, &h);
+        glfwWaitEvents();
+    }
+    if (glfwWindowShouldClose(mainWindow))
+        return;
+
+	swapChain->Resize(device, surface, EnigmaRHI::Extent2D{ (uint32_t)w, (uint32_t)h });
 }

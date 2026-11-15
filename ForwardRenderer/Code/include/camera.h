@@ -19,7 +19,7 @@ public:
 	void SetCamera(float fov, float aspectRatio, float zNear, float zFar, glm::vec3 _position);
 	void GetInputs(GLFWwindow* window);
 	void MouseCallback(GLFWwindow* window);
-	void UpdateCameraDataBuffer(uint32_t currentImage, float width, float height, GLFWwindow* mainWindow);
+	void UpdateCameraDataBuffer(uint32_t currentImage, EnigmaRHI::Extent2D extent, GLFWwindow* mainWindow);
 	void Destroy(EnigmaRHI::IDevice* device);
 
 	std::vector<EnigmaRHI::IBuffer*> GetCameraDataBuffers() { return cameraDataBuffers; }

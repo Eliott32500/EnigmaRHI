@@ -78,8 +78,8 @@ void EnigmaRHI::VulkanCommandPool::EndSingleTimeCommands(VulkanDevice* device, V
 		.pCommandBuffers = &commandBuffer,
 	};
 	
-	vkQueueSubmit(device->GetGraphicsQueue().Handle(), 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(device->GetGraphicsQueue().Handle());
+	vkQueueSubmit(device->GetGraphicsQueue().GetHandle(), 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(device->GetGraphicsQueue().GetHandle());
 	
 	vkFreeCommandBuffers(device->GetHandle(), commandPool, 1, &commandBuffer);
 }

@@ -115,9 +115,9 @@ void EnigmaRHI::VulkanCommandBuffer::BindPipeline(IPipeline* pipeline)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetHandle());
 }
 
-void EnigmaRHI::VulkanCommandBuffer::BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, ISync* sync)
+void EnigmaRHI::VulkanCommandBuffer::BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, uint32_t frame)
 {
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetPipelineLayout(), 0, 1, &descriptor->API_Vulkan().GetDescriptorSets()[sync->GetCurrentFrame()], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetPipelineLayout(), 0, 1, &descriptor->API_Vulkan().GetDescriptorSets()[frame], 0, nullptr);
 }
 
 void EnigmaRHI::VulkanCommandBuffer::BindVertexBuffer(IBuffer* buffer)

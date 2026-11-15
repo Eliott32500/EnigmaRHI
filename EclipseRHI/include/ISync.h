@@ -21,13 +21,6 @@ namespace EnigmaRHI
 		virtual bool AquireNextImage(IDevice* device, ISwapChain* swapChain, ICommandPool* commandPool, ISurface* surface, IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex) = 0;
 		virtual void PresentFrame(IDevice* device, ISwapChain* swapChain, ICommandPool* commandPool, ISurface* surface, IRenderPass* renderPass, GLFWwindow* window, uint32_t* imageIndex) = 0;
 		
-		void MoveToNextFrame() { currentFrame = (currentFrame + 1) % EnigmaRHI::MAX_FRAMES_IN_FLIGHT; }
-		uint32_t GetCurrentFrame() const { return currentFrame; }
-
 		virtual VulkanSync& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanSync"); }
-
-	protected:
-
-		uint32_t currentFrame = 0;
 	};
 }

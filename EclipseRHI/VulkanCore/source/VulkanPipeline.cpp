@@ -3,7 +3,7 @@
 #include "RHILog.h"
 #include "VulkanDeviceCapabilities.h"
 
-void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IRenderPass* renderPass, IDescriptor* descriptor, ISwapChain* swapChain)
+void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IDescriptor* descriptor, ISwapChain* swapChain)
 {
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages = CreateShaderInfo(shader);
 

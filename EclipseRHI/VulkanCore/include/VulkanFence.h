@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IFence.h"
+#include <vulkan/vulkan.h>
 
 namespace EnigmaRHI
 {
@@ -8,12 +9,18 @@ namespace EnigmaRHI
 	{
 	public:
 
-		void Wait(uint64_t timeout = UINT64_MAX) override;
-		bool IsSignaled() const override;
-		void Reset() override;
+		void Create(IDevice* device, bool signaled = false) override;
+		void Destroy(IDevice* device) override;
+		bool Wait(IDevice* device, uint64_t timeout = UINT64_MAX) override;
+		void Reset(IDevice* device) override;
+		bool IsSignaled(IDevice* device) const override;
 
-		uint64_t GetValue() const override;
+		VkFence GetHandle() const { return fence; }
 
-		IFence& API_Vulkan() override { return *this; };
+		VulkanFence& API_Vulkan() override { return *this; };
+
+	private:
+
+		VkFence fence = VK_NULL_HANDLE;
 	};
 }

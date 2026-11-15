@@ -21,11 +21,11 @@ void Camera::CreateCameraDataBuffer(EnigmaRHI::IDevice* device)
 	}
 }
 
-void Camera::UpdateCameraDataBuffer(uint32_t currentImage, float width, float height, GLFWwindow* mainWindow)
+void Camera::UpdateCameraDataBuffer(uint32_t currentImage, EnigmaRHI::Extent2D extent, GLFWwindow* mainWindow)
 {
     GetInputs(mainWindow);
 
-	glm::mat4 proj = glm::perspective(glm::radians(60.f), (float)width / (float)height, 0.1f, 100.f);
+	glm::mat4 proj = glm::perspective(glm::radians(60.f), (float)extent.width / (float)extent.height, 0.1f, 100.f);
 	glm::mat4 view = glm::lookAt(position, position + orientation, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	proj[1][1] *= -1;

@@ -5,6 +5,8 @@
 #include "ImageTypes.h"
 #include "IImage.h"
 #include "DeviceCapabilities.h"
+#include "IFence.h"
+#include "IQueue.h"
 #include <iostream>
 
 
@@ -21,16 +23,20 @@ namespace EnigmaRHI
 		virtual void Destroy() = 0;
 
 		virtual IBuffer* CreateBuffer(size_t size, uint32_t usage, size_t properties) = 0;
+		virtual void DeleteBuffer(IBuffer* buffer) = 0;
 		virtual IImage* CreateImage(ImageDesc imageDesc) = 0;
 		virtual IImage* CreateImageTexture(ICommandPool* commandPool, ImageDesc imageDesc) = 0;
-		virtual void DeleteBuffer(IBuffer* buffer) = 0;
 		virtual void DeleteImage(IImage* image) = 0;
+		virtual IFence* CreateFence(bool signaled = false) = 0;
+		virtual void DeleteFence(IFence* fence) = 0;
 
 		virtual void WaitIdle() = 0;
 
 		virtual EImageFormat FindDepthFormat() = 0;
 
 		static DeviceSpecifications GetCapabilities() { return capabilities; }
+
+		virtual IQueue& GetQueue(ECommandQueueType type) = 0;
 
 		virtual VulkanDevice& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanDevice"); }
 

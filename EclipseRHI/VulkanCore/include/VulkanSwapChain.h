@@ -11,45 +11,41 @@ namespace EnigmaRHI
 	{
 	public:
 
-		void Create(IDevice* device, ISurface* surface, ICommandPool* commandPool, Extent2D windowExtent) override;
+		void Create(IDevice* device, ISurface* surface, Extent2D windowExtent) override;
 		void Destroy(IDevice* device) override;
-		void CreateVulkanImages(VulkanDevice* device, uint32_t imageCount);
+		void Resize(IDevice* device, ISurface* surface, Extent2D newExtent) override;
+		EAcquireResult Acquire(IDevice* device, uint32_t frame) override;
+		EPresentResult Present(IDevice* device, IQueue* queue) override;
 
-		// A modifier impérativement
-		void RecreateSwapChain(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanSurface* surface, VkRenderPass renderPass, GLFWwindow* window);
-		//
-
-		//A supprimer plus tard
-		void CreateSwapChainFramebuffers(VulkanDevice* device, VkRenderPass renderPass);
-		void CreateSwapChainDepthResources(VulkanDevice* device, VulkanCommandPool* commandPool);
+		VkSemaphore GetImageAvailable() const { return imageAvailableSemaphores[currentFrame]; }
+		VkSemaphore GetRenderFinished() const { return renderFinishedSemaphores[currentImageIndex]; }
+		IImage* GetCurrentImage() override { return swapChainImages[currentImageIndex]; }
 		EImageFormat GetSwapChainImageFormat() override { return swapChainImageFormat; };
-		std::vector<VkFramebuffer> GetSwapChainFramebuffers() const { return swapChainFramebuffers; };
-		//
-
 		VkSwapchainKHR GetHandle() const { return swapChain; };
 
 		VulkanSwapChain& API_Vulkan() override { return (*this); }
 
 	private:
 
-		VkSwapchainKHR swapChain;
-
-		VkSurfaceFormatKHR swapChainSurfaceFormat;
+		void CreateSyncObjects(IDevice* device, uint32_t imageCount);
+		void CreateVulkanImages(VulkanDevice* device, uint32_t imageCount);
+		void DestroyResources(IDevice* device);
 
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		Extent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, Extent2D windowExtent);
 		uint32_t ChooseSwapMinImageCount(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 
-		//Old
-		VkImage depthImage;
-		VkImageView depthImageView;
-		VkDeviceMemory depthImageMemory;
+		VkSwapchainKHR swapChain;
 
-		//A supprimer plus tard
+		VkSurfaceFormatKHR swapChainSurfaceFormat;
+
 		EImageFormat swapChainImageFormat;
-		//
 
-		std::vector<VkFramebuffer> swapChainFramebuffers;
+		std::vector<VkSemaphore> imageAvailableSemaphores;
+		std::vector<VkSemaphore> renderFinishedSemaphores;
+
+		uint32_t currentFrame = 0;
+		uint32_t currentImageIndex = 0;
 	};
 }

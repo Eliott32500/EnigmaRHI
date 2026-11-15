@@ -2,6 +2,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanImage.h"
 #include "VulkanDeviceCapabilities.h"
+#include "VulkanFence.h"
 #include "RHILog.h"
 #include <set>
 
@@ -87,8 +88,8 @@ namespace EnigmaRHI
 
         volkLoadDevice(logicalDevice);
 
-        graphicsQueue.Init(logicalDevice, indices.graphicsFamily.value());
-        presentQueue.Init(logicalDevice, indices.presentFamily.value());
+        graphicsQueue.Init(GetHandle(), indices.graphicsFamily.value(), ECommandQueueType::GRAPHICS);
+        presentQueue.Init(GetHandle(), indices.presentFamily.value(), ECommandQueueType::GRAPHICS);
     }
 
     IBuffer* VulkanDevice::CreateBuffer(size_t size, uint32_t usage, size_t properties)
@@ -96,6 +97,14 @@ namespace EnigmaRHI
         IBuffer* buffer = new VulkanBuffer();
         buffer->Create(this, size, usage, properties);
         return buffer;
+    }
+
+    void VulkanDevice::DeleteBuffer(IBuffer* buffer)
+    {
+        if(buffer->API_Vulkan().GetHandle() == VK_NULL_HANDLE)
+            buffer->Destroy(this);
+
+        delete buffer;
     }
 
     IImage* VulkanDevice::CreateImage(ImageDesc imageDesc)
@@ -112,8 +121,37 @@ namespace EnigmaRHI
         return image;
     }
 
-    void VulkanDevice::DeleteBuffer(IBuffer* buffer) { delete buffer; }
-    void VulkanDevice::DeleteImage(IImage* image) { delete image; }
+    void VulkanDevice::DeleteImage(IImage* image) 
+    {
+        image->Destroy(this);
+        delete image; 
+    }
 
-    void VulkanDevice::WaitIdle() { vkDeviceWaitIdle(logicalDevice); }
+    IFence* VulkanDevice::CreateFence(bool signaled)
+    {
+        IFence* fence = new VulkanFence();
+        fence->Create(this, signaled);
+        return fence;
+    }
+
+    void VulkanDevice::DeleteFence(IFence* fence) 
+    {
+        fence->Destroy(this);
+        delete fence; 
+    }
+
+    IQueue& VulkanDevice::GetQueue(ECommandQueueType type)
+    {
+        switch (type)
+        {
+        case ECommandQueueType::GRAPHICS:
+        default:
+            return graphicsQueue;
+        }
+    }
+
+    void VulkanDevice::WaitIdle() 
+    { 
+        vkDeviceWaitIdle(logicalDevice); 
+    }
 }

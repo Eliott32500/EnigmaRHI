@@ -11,6 +11,37 @@
 
 #include "VulkanSwapChain.h"
 #include "VulkanImageTypes.h"
+#include "RHIConfig.h"
+#include "RHILog.h"
+
+namespace
+{
+	VkSemaphore CreateBinarySemaphore(VkDevice device)
+	{
+		VkSemaphoreCreateInfo info{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
+		VkSemaphore semaphore = VK_NULL_HANDLE;
+		if (vkCreateSemaphore(device, &info, nullptr, &semaphore) != VK_SUCCESS)
+			LOG_ERROR(LogCategory::Vulkan, "Failed to create semaphore !");
+
+		return semaphore;
+	}
+}
+
+void EnigmaRHI::VulkanSwapChain::DestroyResources(IDevice* device)
+{
+	VkDevice vkDevice = device->API_Vulkan().GetHandle();
+
+	for (VkSemaphore s : renderFinishedSemaphores)
+		vkDestroySemaphore(vkDevice, s, nullptr);
+	renderFinishedSemaphores.clear();
+
+	for (auto* image : swapChainImages)
+	{
+		image->Destroy(&device->API_Vulkan());
+		delete image;
+	}
+	swapChainImages.clear();
+}
 
 VkSurfaceFormatKHR EnigmaRHI::VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
@@ -52,7 +83,7 @@ uint32_t EnigmaRHI::VulkanSwapChain::ChooseSwapMinImageCount(const VkSurfaceCapa
 	return minImageCount;
 }
 
-void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICommandPool* commandPool, Extent2D windowExtent)
+void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, Extent2D windowExtent)
 {
 	SwapChainSupportDetails swapChainSupport = VulkanPhysicalDevice::QuerySwapChainSupport(device->API_Vulkan().GetPhysicalDevice().Handle(), surface->API_Vulkan().GetHandle());
 
@@ -97,51 +128,36 @@ void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, ICom
 	createInfo.oldSwapchain = nullptr;
 
 	if (vkCreateSwapchainKHR(device->API_Vulkan().GetHandle(), &createInfo, nullptr, &swapChain) != VK_SUCCESS)
-		throw std::runtime_error("failed to create swap chain!");
-
-	/*swapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(device->API_Vulkan().GetDevice(), swapChain, &imageCount, swapChainImages.data());*/
+		LOG_ERROR(LogCategory::Vulkan, "Failed to create swap chain !");
 
 	CreateVulkanImages(&device->API_Vulkan(), imageCount);
-	CreateSwapChainDepthResources(&device->API_Vulkan(), &commandPool->API_Vulkan());
+	CreateSyncObjects(device, imageCount);
 }
 
 void EnigmaRHI::VulkanSwapChain::Destroy(IDevice* device)
 {
-	vkDestroyImageView(device->API_Vulkan().GetHandle(), depthImageView, nullptr);
-	vkDestroyImage(device->API_Vulkan().GetHandle(), depthImage, nullptr);
-	vkFreeMemory(device->API_Vulkan().GetHandle(), depthImageMemory, nullptr);
+	VkDevice vkDevice = device->API_Vulkan().GetHandle();
 
-	for (auto framebuffer : swapChainFramebuffers)
+	DestroyResources(device);
+
+	for (VkSemaphore s : imageAvailableSemaphores)
 	{
-		vkDestroyFramebuffer(device->API_Vulkan().GetHandle(), framebuffer, nullptr);
+		vkDestroySemaphore(vkDevice, s, nullptr);
 	}
 
-	for (auto& image : swapChainImages)
-	{
-		image->Destroy(&device->API_Vulkan());
-	}
+	imageAvailableSemaphores.clear();
 
-	swapChainImages.clear();
-
-	vkDestroySwapchainKHR(device->API_Vulkan().GetHandle(), swapChain, nullptr);
+	vkDestroySwapchainKHR(vkDevice, swapChain, nullptr);
 }
 
-void EnigmaRHI::VulkanSwapChain::RecreateSwapChain(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanSurface* surface, VkRenderPass renderPass, GLFWwindow* window)
+void EnigmaRHI::VulkanSwapChain::Resize(IDevice* device, ISurface* surface, Extent2D newExtent)
 {
-	int width = 0, height = 0;
-	glfwGetFramebufferSize(window, &width, &height);
-	while (width == 0 || height == 0)
-	{
-		glfwGetFramebufferSize(window, &width, &height);
-		glfwWaitEvents();
-	}
-	vkDeviceWaitIdle(device->GetHandle());
+	device->WaitIdle();
 
-	Destroy(device);
+	DestroyResources(device);
+	vkDestroySwapchainKHR(device->API_Vulkan().GetHandle(), swapChain, nullptr);
 
-	Create(device, surface, commandPool, Extent2D{ (uint32_t)width, (uint32_t)height });
-	CreateSwapChainFramebuffers(device, renderPass);
+	Create(device, surface, newExtent);
 }
 
 void EnigmaRHI::VulkanSwapChain::CreateVulkanImages(VulkanDevice* device, uint32_t imageCount)
@@ -159,62 +175,62 @@ void EnigmaRHI::VulkanSwapChain::CreateVulkanImages(VulkanDevice* device, uint32
 	for (uint32_t i = 0; i < imageCount; i++)
 	{
 		swapChainImages[i] = new VulkanImage();
-		swapChainImages[i]->API_Vulkan().CreateFromExisting(
-			device,
-			images[i],
-			swapChainSurfaceFormat.format,
-			VK_IMAGE_ASPECT_COLOR_BIT
-		);
+		swapChainImages[i]->API_Vulkan().CreateFromExisting(device, images[i], swapChainSurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 }
 
-void EnigmaRHI::VulkanSwapChain::CreateSwapChainFramebuffers(VulkanDevice* device, VkRenderPass renderPass)
+EnigmaRHI::EAcquireResult EnigmaRHI::VulkanSwapChain::Acquire(IDevice* device, uint32_t frame)
 {
-	swapChainFramebuffers.resize(swapChainImages.size());
+	currentFrame = frame;
 
-	for (size_t i = 0; i < swapChainImages.size(); i++)
+	VkResult result = vkAcquireNextImageKHR(device->API_Vulkan().GetHandle(), swapChain, UINT64_MAX, imageAvailableSemaphores[frame], VK_NULL_HANDLE, &currentImageIndex);
+
+	switch (result)
 	{
-		VkImageView attachments[] = 
+	case VK_SUCCESS:
+		return EAcquireResult::SUCCESS;
+	case VK_SUBOPTIMAL_KHR:
+		return EAcquireResult::SUBOPTIMAL;
+	case VK_ERROR_OUT_OF_DATE_KHR:
+		return EAcquireResult::OUT_OF_DATE;
+	default:
+		LOG_ERROR(LogCategory::Vulkan, "Failed to acquire swap chain image !");
+	}
+}
+
+EnigmaRHI::EPresentResult EnigmaRHI::VulkanSwapChain::Present(IDevice* device, IQueue* queue)
+{
+	VkResult result = queue->API_Vulkan().Present(swapChain, currentImageIndex, renderFinishedSemaphores[currentImageIndex]);
+
+	switch (result)
+	{
+	case VK_SUCCESS:
+		return EPresentResult::SUCCESS;
+	case VK_SUBOPTIMAL_KHR:
+		return EPresentResult::SUBOPTIMAL;
+	case VK_ERROR_OUT_OF_DATE_KHR:
+		return EPresentResult::OUT_OF_DATE;
+	default:
+		LOG_ERROR(LogCategory::Vulkan, "Failed to present swap chain image !");
+	}
+}
+
+void EnigmaRHI::VulkanSwapChain::CreateSyncObjects(IDevice* device, uint32_t imageCount)
+{
+	VkDevice vkDevice = device->API_Vulkan().GetHandle();
+
+	if (imageAvailableSemaphores.empty())
+	{
+		imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		for (auto& s : imageAvailableSemaphores)
 		{
-			swapChainImages[i]->API_Vulkan().GetImageView(),
-			depthImageView
-		};
-
-		VkFramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = renderPass;
-		framebufferInfo.attachmentCount = 2;
-		framebufferInfo.pAttachments = attachments;
-		framebufferInfo.width = swapChainExtent.width;
-		framebufferInfo.height = swapChainExtent.height;
-		framebufferInfo.layers = 1;
-
-		if (vkCreateFramebuffer(device->API_Vulkan().GetHandle(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create framebuffer!");
+			s = CreateBinarySemaphore(vkDevice);
 		}
 	}
-}
 
-void EnigmaRHI::VulkanSwapChain::CreateSwapChainDepthResources(VulkanDevice* device, VulkanCommandPool* commandPool)
-{
-	VulkanImage temp;
-
-	ImageDesc desc
+	renderFinishedSemaphores.resize(imageCount);
+	for (auto& s : renderFinishedSemaphores)
 	{
-		.type = EImageType::TYPE_2D,
-		.format = device->FindDepthFormat(),
-		.usage = EImageUsage::DEPTH_STENCIL_ATTACHMENT,
-		.extent = {swapChainExtent.width, swapChainExtent.height, 1} ,
-		.mipLevels = 1,
-		.arrayLayers = 1,
-		.sampleCount = 1,
-		.data = nullptr,
-	};
-
-	temp.Create(device, desc);
-	temp.CreateView(device, Utilities::ToVulkanFormat(device->FindDepthFormat()), VK_IMAGE_ASPECT_DEPTH_BIT);
-
-	depthImage = temp.GetImage();
-	depthImageView = temp.GetImageView();
-	depthImageMemory = temp.GetMemory();
+		s = CreateBinarySemaphore(vkDevice);
+	}
 }

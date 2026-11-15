@@ -1,34 +1,33 @@
 #pragma once
 #include "volk.h"
 #include "IQueue.h"
-#include <cstdint>
 
 namespace EnigmaRHI
 {
-    class VulkanQueue : IQueue
+    class IDevice;
+
+    class VulkanQueue : public IQueue
     {
     public:
+        void Init(VkDevice device, uint32_t familyIndex, ECommandQueueType type, uint32_t queueIndex = 0);
 
-        void Init(VkDevice device, uint32_t familyIndex, uint32_t queueIndex = 0)
-        {
-            this->familyIndex = familyIndex;
-            vkGetDeviceQueue(device, familyIndex, queueIndex, &queue);
-        }
-
-        VkQueue  Handle() const { return queue; }
+        VkQueue  GetHandle() const { return queue; }
         uint32_t FamilyIndex() const override { return familyIndex; }
-        void WaitIdle() const override { vkQueueWaitIdle(queue); };
-        ECommandQueueType GetType() const override {return type;};
-        VulkanQueue& API_Vulkan() override { return *this; }
+        ECommandQueueType GetType() const override { return type; }
+        void WaitIdle() const override { vkQueueWaitIdle(queue); }
 
-        VkResult Submit(VkCommandBuffer cmd,
-            VkSemaphore wait, VkPipelineStageFlags2 waitStage,
-            VkSemaphore signal, VkPipelineStageFlags2 signalStage,
-            VkFence fence) const;
+        void Submit(ICommandBuffer* cmd, ISwapChain* swapChain, IFence* fence) override;
+
+        VulkanQueue& API_Vulkan() override { return *this; }
 
         VkResult Present(VkSwapchainKHR swapchain, uint32_t imageIndex, VkSemaphore wait) const;
 
     private:
+        VkResult SubmitInternal(VkCommandBuffer cmd,
+            VkSemaphore wait, VkPipelineStageFlags2 waitStage,
+            VkSemaphore signal, VkPipelineStageFlags2 signalStage,
+            VkFence fence) const;
+
         VkQueue  queue = VK_NULL_HANDLE;
         uint32_t familyIndex = 0;
         ECommandQueueType type = ECommandQueueType::GRAPHICS;
