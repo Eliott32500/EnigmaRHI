@@ -8,38 +8,43 @@ void Model::Create(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandP
 {
 	size_t bufferSize = sizeof(ModelData);
 
+	EnigmaRHI::BufferDesc desc
+	{
+		.size = sizeof(ModelData),
+		.usage = EnigmaRHI::EBufferUsage::UNIFORM,
+		.access = EnigmaRHI::EMemoryAccess::CPU_TO_GPU,
+		.persistentMap = true,
+	};
+
 	modelBuffers.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 
 	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		modelBuffers[i] = device->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		modelBuffers[i]->MapMemory(device, 0, bufferSize, 0);
-		modelBuffers[i]->CreateDescriptorBufferInfo();
-		modelBuffers[i]->bufferInfo.range = sizeof(ModelData);
+		modelBuffers[i] = device->CreateBuffer(desc);
 	}
 
 	CreateVertexBuffer(device, commandPool, vertices);
 	CreateIndexBuffer(device, commandPool, indices);
 }
 
-void Model::UpdateDataBuffer(uint32_t currentImage, glm::mat4 translate, glm::mat4 rotate, glm::mat4 scale)
+void Model::UpdateDataBuffer(EnigmaRHI::IDevice* device, uint32_t currentImage, glm::mat4 translate, glm::mat4 rotate, glm::mat4 scale)
 {
 	ModelData ubo{ scale * rotate * translate };
 
-	modelBuffers[currentImage]->CopyData(&ubo, sizeof(ubo));
+	modelBuffers[currentImage]->Write(device, &ubo, sizeof(ubo));
 }
 
 void Model::Destroy(EnigmaRHI::IDevice* device)
 {
-	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		modelBuffers[i]->Destroy(device);
-		device->DeleteBuffer(modelBuffers[i]);
-	}
-	vertexBuffer->Destroy(device);
+	for (auto* buffer : modelBuffers)
+		device->DeleteBuffer(buffer);
+
+	modelBuffers.clear();
+
 	device->DeleteBuffer(vertexBuffer);
-	indexBuffer->Destroy(device);
 	device->DeleteBuffer(indexBuffer);
+	vertexBuffer = nullptr;
+	indexBuffer = nullptr;
 }
 
 void Model::Render(EnigmaRHI::ICommandBuffer* cmd)
@@ -51,34 +56,26 @@ void Model::Render(EnigmaRHI::ICommandBuffer* cmd)
 
 void Model::CreateVertexBuffer(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<Vertex> vertices)
 {
-	size_t bufferSize = sizeof(vertices[0]) * vertices.size();
+	EnigmaRHI::BufferDesc desc
+	{
+		.size = sizeof(Vertex) * vertices.size(),
+		.usage = EnigmaRHI::EBufferUsage::VERTEX,
+		.access = EnigmaRHI::EMemoryAccess::GPU_ONLY,
+	};
 
-	EnigmaRHI::IBuffer* stagingBuffer = device->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	stagingBuffer->UploadData(device, 0, bufferSize, vertices.data(), 0);
-
-	vertexBuffer = device->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	stagingBuffer->CopyBuffer(device, commandPool, vertexBuffer, bufferSize);
-
-	stagingBuffer->Destroy(device);
-	device->DeleteBuffer(stagingBuffer);
+	vertexBuffer = device->CreateBufferWithData(commandPool, desc, vertices.data());
 }
 
 void Model::CreateIndexBuffer(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool, std::vector<uint32_t> indices)
 {
-	size_t bufferSize = sizeof(indices[0]) * indices.size();
+	EnigmaRHI::BufferDesc desc
+	{
+		.size = sizeof(uint32_t) * indices.size(),
+		.usage = EnigmaRHI::EBufferUsage::INDEX,
+		.access = EnigmaRHI::EMemoryAccess::GPU_ONLY,
+	};
 
-	EnigmaRHI::IBuffer* stagingBuffer = device->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	stagingBuffer->UploadData(device, 0, bufferSize, indices.data(), 0);
-
-	indexBuffer = device->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	stagingBuffer->CopyBuffer(device, commandPool, indexBuffer, bufferSize);
-
-	stagingBuffer->Destroy(device);
-	device->DeleteBuffer(stagingBuffer);
+	indexBuffer = device->CreateBufferWithData(commandPool, desc, indices.data());
 }
 
 void Model::LoadModel(const char* filePath)

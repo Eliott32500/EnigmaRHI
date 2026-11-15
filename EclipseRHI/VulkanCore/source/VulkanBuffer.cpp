@@ -1,76 +1,94 @@
 #include "VulkanBuffer.h"
+#include "RHILog.h"
+#include "VulkanBufferTypes.h"
 
-void EnigmaRHI::VulkanBuffer::Create(IDevice* device, size_t size, uint32_t usage, size_t properties)
+void EnigmaRHI::VulkanBuffer::Create(IDevice* device, const BufferDesc& d)
 {
-	VkBufferCreateInfo bufferInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-		.size = size,
-		.usage = usage,
-		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-	};
+    VulkanDevice& dev = device->API_Vulkan();
+    VkDevice vk = dev.GetHandle();
+    desc = d;
 
-	if (vkCreateBuffer(device->API_Vulkan().GetHandle(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
-		throw std::runtime_error("failed to create buffer!");
+    VkBufferCreateInfo info
+    {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = d.size,
+        .usage = Utilities::ToVkBufferUsage(d.usage),
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+    };
 
-	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(device->API_Vulkan().GetHandle(), buffer, &memRequirements);
+    if (vkCreateBuffer(vk, &info, nullptr, &buffer) != VK_SUCCESS)
+        LOG_FATAL(LogCategory::Vulkan, "Failed to create buffer !");
 
-	VkMemoryAllocateInfo allocInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.allocationSize = memRequirements.size,
-		.memoryTypeIndex = device->API_Vulkan().GetPhysicalDevice().FindMemoryType(memRequirements.memoryTypeBits, static_cast<VkMemoryPropertyFlags>(properties)),
-	};
+    VkMemoryRequirements req;
+    vkGetBufferMemoryRequirements(vk, buffer, &req);
 
-	if (vkAllocateMemory(device->API_Vulkan().GetHandle(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
-		throw std::runtime_error("failed to allocate buffer memory!");
+    VkMemoryAllocateInfo alloc{
+        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .allocationSize = req.size,
+        // adapte au nom réel de ta fonction de recherche de memory type
+        .memoryTypeIndex = dev.GetPhysicalDevice().FindMemoryType(req.memoryTypeBits, Utilities::ToVkMemory(d.access)),
+    };
+    if (vkAllocateMemory(vk, &alloc, nullptr, &memory) != VK_SUCCESS)
+        LOG_FATAL(LogCategory::Vulkan, "Failed to allocate buffer memory !");
 
-	vkBindBufferMemory(device->API_Vulkan().GetHandle(), buffer, bufferMemory, 0);
-}
+    vkBindBufferMemory(vk, buffer, memory, 0);
 
-void EnigmaRHI::VulkanBuffer::CreateDescriptorBufferInfo()
-{
-	bufferInfo.buffer = this;
-	bufferInfo.offset = 0;
-	bufferInfo.range = sizeof(this);
-}
-
-void EnigmaRHI::VulkanBuffer::CopyBuffer(IDevice* device, ICommandPool* commandPool, IBuffer* dstBuffer, size_t size)
-{
-	VkCommandBuffer commandBuffer = commandPool->API_Vulkan().BeginSingleTimeCommands(&device->API_Vulkan(), commandPool->GetCommandBuffer(0)->API_Vulkan().GetHandle());
-
-	VkBufferCopy copyRegion{};
-	copyRegion.size = size;
-	vkCmdCopyBuffer(commandBuffer, this->buffer, dstBuffer->API_Vulkan().GetHandle(), 1, &copyRegion);
-
-	commandPool->API_Vulkan().EndSingleTimeCommands(&device->API_Vulkan(), commandBuffer);
-}
-
-void EnigmaRHI::VulkanBuffer::UploadData(IDevice* device, size_t offset, size_t size, const void* src, uint32_t flags)
-{
-	MapMemory(device, offset, size, flags);
-	CopyData(src, size);
-	UnMapMemory(device);
+    if (d.persistentMap && d.access != EMemoryAccess::GPU_ONLY)
+        vkMapMemory(vk, memory, 0, VK_WHOLE_SIZE, 0, &mapped);
 }
 
 void EnigmaRHI::VulkanBuffer::Destroy(IDevice* device)
 {
-	vkDestroyBuffer(device->API_Vulkan().GetHandle(), buffer, nullptr);
-	vkFreeMemory(device->API_Vulkan().GetHandle(), bufferMemory, nullptr);
+    if (buffer == VK_NULL_HANDLE)
+        return;                                   // idempotent : sûr si appelé deux fois
+
+    VkDevice vk = device->API_Vulkan().GetHandle();
+
+    if (mapped)
+    {
+        vkUnmapMemory(vk, memory);
+        mapped = nullptr;
+    }
+    vkDestroyBuffer(vk, buffer, nullptr);
+    vkFreeMemory(vk, memory, nullptr);
+    buffer = VK_NULL_HANDLE;
+    memory = VK_NULL_HANDLE;
 }
 
-void EnigmaRHI::VulkanBuffer::MapMemory(IDevice* device, size_t offset, size_t size, uint32_t flags)
+void* EnigmaRHI::VulkanBuffer::Map(IDevice* device)
 {
-	vkMapMemory(device->API_Vulkan().GetHandle(), bufferMemory, offset, size, flags, &data);
+    if (desc.access == EMemoryAccess::GPU_ONLY)
+        LOG_FATAL(LogCategory::Vulkan, "Cannot map a GPU_ONLY buffer !");
+
+    if (!mapped)
+        vkMapMemory(device->API_Vulkan().GetHandle(), memory, 0, VK_WHOLE_SIZE, 0, &mapped);
+    return mapped;
 }
 
-void EnigmaRHI::VulkanBuffer::CopyData(const void* src, size_t size)
+void EnigmaRHI::VulkanBuffer::Unmap(IDevice* device)
 {
-	memcpy(data, src, size);
+    if (!mapped || desc.persistentMap)            // un buffer persistent reste mappé
+        return;
+
+    vkUnmapMemory(device->API_Vulkan().GetHandle(), memory);
+    mapped = nullptr;
 }
 
-void EnigmaRHI::VulkanBuffer::UnMapMemory(IDevice* device)
+void EnigmaRHI::VulkanBuffer::Write(IDevice* device, const void* data, size_t size, size_t offset)
 {
-	vkUnmapMemory(device->API_Vulkan().GetHandle(), bufferMemory);
+    if (offset + size > desc.size)
+        LOG_FATAL(LogCategory::Vulkan, "Buffer write out of range !");
+
+    std::memcpy(static_cast<char*>(Map(device)) + offset, data, size);
+    Unmap(device);
+}
+
+void EnigmaRHI::VulkanBuffer::CopyTo(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanBuffer& dst, size_t size, size_t srcOffset, size_t dstOffset)
+{
+    VkCommandBuffer cmd = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetHandle());
+
+    VkBufferCopy region{ .srcOffset = srcOffset, .dstOffset = dstOffset, .size = size };
+    vkCmdCopyBuffer(cmd, buffer, dst.buffer, 1, &region);
+
+    commandPool->EndSingleTimeCommands(device, cmd);
 }

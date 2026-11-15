@@ -8,20 +8,21 @@ Camera::Camera(float width, float height)
 
 void Camera::CreateCameraDataBuffer(EnigmaRHI::IDevice* device)
 {
-	VkDeviceSize bufferSize = sizeof(CameraData);
+    EnigmaRHI::BufferDesc desc
+    {
+        .size = sizeof(CameraData),
+        .usage = EnigmaRHI::EBufferUsage::UNIFORM,
+        .access = EnigmaRHI::EMemoryAccess::CPU_TO_GPU,
+        .persistentMap = true,
+    };
 
-	cameraDataBuffers.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
+    cameraDataBuffers.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
 
-	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		cameraDataBuffers[i] = device->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		cameraDataBuffers[i]->MapMemory(device, 0, bufferSize, 0);
-		cameraDataBuffers[i]->CreateDescriptorBufferInfo();
-		cameraDataBuffers[i]->bufferInfo.range = sizeof(CameraData);
-	}
+    for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
+        cameraDataBuffers[i] = device->CreateBuffer(desc);
 }
 
-void Camera::UpdateCameraDataBuffer(uint32_t currentImage, EnigmaRHI::Extent2D extent, GLFWwindow* mainWindow)
+void Camera::UpdateCameraDataBuffer(EnigmaRHI::IDevice* device, uint32_t currentImage, EnigmaRHI::Extent2D extent, GLFWwindow* mainWindow)
 {
     GetInputs(mainWindow);
 
@@ -32,7 +33,7 @@ void Camera::UpdateCameraDataBuffer(uint32_t currentImage, EnigmaRHI::Extent2D e
 
 	CameraData ubo{ proj * view };
 
-	cameraDataBuffers[currentImage]->CopyData(&ubo, sizeof(ubo));
+	cameraDataBuffers[currentImage]->Write(device, &ubo, sizeof(ubo));
 }
 
 void Camera::SetCamera(float fov, float aspectRatio, float zNear, float zFar, glm::vec3 _position)
@@ -139,11 +140,9 @@ void Camera::MouseCallback(GLFWwindow* window)
 
 void Camera::Destroy(EnigmaRHI::IDevice* device)
 {
-    for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        cameraDataBuffers[i]->UnMapMemory(device);
-        cameraDataBuffers[i]->Destroy(device);
-        device->DeleteBuffer(cameraDataBuffers[i]);
-	}
+    for (auto* buffer : cameraDataBuffers)
+        device->DeleteBuffer(buffer);
+
+    cameraDataBuffers.clear();
 }
 

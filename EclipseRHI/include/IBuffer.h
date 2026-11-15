@@ -4,40 +4,45 @@
 #include <memory>
 
 #include "ICommandPool.h"
-
+#include "BufferTypes.h"
 
 namespace EnigmaRHI
 {
 	class VulkanBuffer;
 
+    struct DescriptorBufferInfo
+    {
+        IBuffer* buffer;
+        size_t offset;
+        size_t range;
+    };
+
+    struct BufferDesc
+    {
+        size_t size = 0;
+        EBufferUsage  usage = EBufferUsage::NONE;
+        EMemoryAccess access = EMemoryAccess::GPU_ONLY;
+        bool persistentMap = false;
+    };
+
 	class IBuffer
-	{
-	public:
+    {
+    public:
+        virtual ~IBuffer() = default;
 
-		struct DescriptorBufferInfo
-		{
-			IBuffer* buffer;
-			size_t offset;
-			size_t range;
-		};
+        virtual void Create(IDevice* device, const BufferDesc& desc) = 0;
+        virtual void Destroy(IDevice* device) = 0;
 
-		virtual ~IBuffer() = default;
+        virtual void* Map(IDevice* device) = 0;
+        virtual void  Unmap(IDevice* device) = 0;
+        virtual void  Write(IDevice* device, const void* data, size_t size, size_t offset = 0) = 0;
 
-		virtual void Create(IDevice* device, size_t size, uint32_t usage,size_t properties) = 0;
-		virtual void CreateDescriptorBufferInfo() = 0;
-		virtual void CopyBuffer(IDevice* device, ICommandPool* commandPool, IBuffer* dstBuffer, size_t size) = 0;
+        const BufferDesc& GetDesc() const { return desc; }
+        size_t GetSize() const { return desc.size; }
 
-		virtual void MapMemory(IDevice* device, size_t offset, size_t size, uint32_t flags) = 0;
-		virtual void CopyData(const void* src, size_t size) = 0;
-		virtual void UnMapMemory(IDevice* device) = 0;
+        virtual VulkanBuffer& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanBuffer"); }
 
-		//Combine Map, Copy, and UnMap directly
-		virtual void UploadData(IDevice* device, size_t offset, size_t size, const void* src, uint32_t flags) = 0;
-
-		virtual void Destroy(IDevice* device) = 0;
-
-		DescriptorBufferInfo bufferInfo{};
-
-		virtual VulkanBuffer& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanBuffer"); }
-	};
+    protected:
+        BufferDesc desc{};
+    };
 }

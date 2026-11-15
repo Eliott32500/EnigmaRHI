@@ -25,7 +25,7 @@ namespace EnigmaRHI
 
         void BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, uint32_t frame) override;
 
-        void BindVertexBuffer(IBuffer* buffer) override;
+        void BindVertexBuffer(IBuffer* buffer, size_t offset = 0, uint32_t binding = 0) override;
         void BindIndexBuffer(IBuffer* buffer) override;
 
         void SetViewport(const Viewport& viewport) override;

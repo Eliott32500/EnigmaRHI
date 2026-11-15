@@ -221,13 +221,13 @@ void Application::DrawFrame()
 
 	frameFences[frame]->Reset(device);
 
-	cam->UpdateCameraDataBuffer(frame, swapChain->GetSwapChainExtent(), mainWindow);
+	cam->UpdateCameraDataBuffer(device, frame, swapChain->GetSwapChainExtent(), mainWindow);
 	
 	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.f, 1.f, 1.f));
 	
-	model->UpdateDataBuffer(frame, translate, rotate, scale);
+	model->UpdateDataBuffer(device, frame, translate, rotate, scale);
 	
 	EnigmaRHI::ICommandBuffer* cmd = commandPool->GetCommandBuffer(frame);
 

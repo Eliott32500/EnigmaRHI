@@ -92,18 +92,33 @@ namespace EnigmaRHI
         presentQueue.Init(GetHandle(), indices.presentFamily.value(), ECommandQueueType::GRAPHICS);
     }
 
-    IBuffer* VulkanDevice::CreateBuffer(size_t size, uint32_t usage, size_t properties)
+    IBuffer* VulkanDevice::CreateBuffer(const BufferDesc& desc)
     {
         IBuffer* buffer = new VulkanBuffer();
-        buffer->Create(this, size, usage, properties);
+        buffer->Create(this, desc);
         return buffer;
+    }
+
+    IBuffer* VulkanDevice::CreateBufferWithData(ICommandPool* commandPool, const BufferDesc& desc, const void* data)
+    {
+        BufferDesc stagingDesc{ .size = desc.size, .usage = EBufferUsage::TRANSFER_SRC, .access = EMemoryAccess::CPU_TO_GPU };
+        IBuffer* staging = CreateBuffer(stagingDesc);
+        staging->Write(this, data, desc.size);
+
+        BufferDesc dstDesc = desc;
+        dstDesc.usage = desc.usage | EBufferUsage::TRANSFER_DST;
+        dstDesc.access = EMemoryAccess::GPU_ONLY;
+        IBuffer* dst = CreateBuffer(dstDesc);
+
+        staging->API_Vulkan().CopyTo(this, &commandPool->API_Vulkan(), dst->API_Vulkan(), desc.size);
+
+        DeleteBuffer(staging);
+        return dst;
     }
 
     void VulkanDevice::DeleteBuffer(IBuffer* buffer)
     {
-        if(buffer->API_Vulkan().GetHandle() == VK_NULL_HANDLE)
-            buffer->Destroy(this);
-
+        buffer->Destroy(this);
         delete buffer;
     }
 

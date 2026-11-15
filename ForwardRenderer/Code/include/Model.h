@@ -26,7 +26,7 @@ public:
 
 	void LoadModel(const char* filePath);
 	void Create(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPool* commandPool);
-	void UpdateDataBuffer(uint32_t currentImage, glm::mat4 translate, glm::mat4 rotate, glm::mat4 scale);
+	void UpdateDataBuffer(EnigmaRHI::IDevice* device, uint32_t currentImage, glm::mat4 translate, glm::mat4 rotate, glm::mat4 scale);
 	void Destroy(EnigmaRHI::IDevice* device);
 	void Render(EnigmaRHI::ICommandBuffer* cmd);
 

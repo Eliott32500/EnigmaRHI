@@ -119,18 +119,12 @@ void EnigmaRHI::VulkanCommandBuffer::BindDescriptorSet(IPipeline* pipeline, IDes
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetPipelineLayout(), 0, 1, &descriptor->API_Vulkan().GetDescriptorSets()[frame], 0, nullptr);
 }
 
-void EnigmaRHI::VulkanCommandBuffer::BindVertexBuffer(IBuffer* buffer)
+void EnigmaRHI::VulkanCommandBuffer::BindVertexBuffer(IBuffer* buffer, size_t offset, uint32_t binding)
 {
     VkBuffer vertexBuffer = buffer->API_Vulkan().GetHandle();
-    VkDeviceSize offset = buffer->API_Vulkan().bufferInfo.offset;
+    VkDeviceSize vkOffset = offset;
 
-    vkCmdBindVertexBuffers(
-        commandBuffer,
-        0,
-        1,
-        &vertexBuffer,
-        &offset
-    );
+    vkCmdBindVertexBuffers(commandBuffer, binding, 1, &vertexBuffer, &vkOffset);
 }
 
 void EnigmaRHI::VulkanCommandBuffer::BindIndexBuffer(IBuffer* buffer)

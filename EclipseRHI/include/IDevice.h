@@ -22,7 +22,8 @@ namespace EnigmaRHI
 		virtual void Create(IInstance* instance, ISurface* surface) = 0;
 		virtual void Destroy() = 0;
 
-		virtual IBuffer* CreateBuffer(size_t size, uint32_t usage, size_t properties) = 0;
+		virtual IBuffer* CreateBuffer(const BufferDesc& desc) = 0;
+		virtual IBuffer* CreateBufferWithData(ICommandPool* commandPool, const BufferDesc& desc, const void* data) = 0;
 		virtual void DeleteBuffer(IBuffer* buffer) = 0;
 		virtual IImage* CreateImage(ImageDesc imageDesc) = 0;
 		virtual IImage* CreateImageTexture(ICommandPool* commandPool, ImageDesc imageDesc) = 0;

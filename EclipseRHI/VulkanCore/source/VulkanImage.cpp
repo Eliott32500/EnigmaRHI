@@ -111,10 +111,16 @@ void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* c
 	VulkanDevice& dev = device->API_Vulkan();
 	VkDeviceSize imageSize = static_cast<VkDeviceSize>(imageDesc.extent.width) * imageDesc.extent.height * Utilities::BytesPerPixel(imageDesc.format);
 
-	VulkanBuffer stagingBuffer;
+	BufferDesc stagingDesc
+	{
+		.size = imageSize,
+		.usage = EBufferUsage::TRANSFER_SRC,
+		.access = EMemoryAccess::CPU_TO_GPU,
+	};
 
-	stagingBuffer.Create(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	stagingBuffer.UploadData(device, 0, imageSize, imageDesc.data, 0);
+	VulkanBuffer stagingBuffer;
+	stagingBuffer.Create(device, stagingDesc);
+	stagingBuffer.Write(device, imageDesc.data, imageSize);
 
 	imageDesc.usage |= EImageUsage::SAMPLED | EImageUsage::TRANSFER_DST;
 	Create(device, imageDesc);

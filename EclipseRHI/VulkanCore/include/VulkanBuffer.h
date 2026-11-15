@@ -6,30 +6,27 @@
 
 namespace EnigmaRHI
 {
-	class VulkanBuffer : public IBuffer
-	{
-	public:
+    class VulkanBuffer : public IBuffer
+    {
+    public:
+        void Create(IDevice* device, const BufferDesc& desc) override;
+        void Destroy(IDevice* device) override;
 
-		void Create(IDevice* device, size_t size, uint32_t usage, size_t properties) override;
-		void CreateDescriptorBufferInfo() override;
-		void CopyBuffer(IDevice* device, ICommandPool* commandPool, IBuffer* dstBuffer, size_t size) override;
-		void MapMemory(IDevice* device, size_t offset, size_t size, uint32_t flags) override;
-		void CopyData(const void* src, size_t size) override;
-		void UnMapMemory(IDevice* device) override;
-		//Combine Map, Copy, and UnMap directly
-		void UploadData(IDevice* device, size_t offset, size_t size, const void* src, uint32_t flags) override;
-		void Destroy(IDevice* vulkanDevice) override;
+        void* Map(IDevice* device) override;
+        void  Unmap(IDevice* device) override;
+        void  Write(IDevice* device, const void* data, size_t size, size_t offset = 0) override;
 
-		VkBuffer GetHandle() const { return buffer; };
-		VkDeviceMemory GetBufferMemory() const { return bufferMemory; };
+        void CopyTo(VulkanDevice* device, VulkanCommandPool* commandPool, VulkanBuffer& dst, size_t size, size_t srcOffset = 0, size_t dstOffset = 0);
 
-		VulkanBuffer& API_Vulkan() override { return (*this); }
+        VkBuffer       GetHandle() const { return buffer; }
+        VkDeviceMemory GetMemory() const { return memory; }
+        VkDescriptorBufferInfo GetDescriptorInfo() const { return { buffer, 0, desc.size }; }
 
-	private:
+        VulkanBuffer& API_Vulkan() override { return *this; }
 
-		VkBuffer buffer = VK_NULL_HANDLE;
-		VkDeviceMemory bufferMemory = VK_NULL_HANDLE;
-
-		void* data = nullptr;
-	};
+    private:
+        VkBuffer       buffer = VK_NULL_HANDLE;
+        VkDeviceMemory memory = VK_NULL_HANDLE;
+        void* mapped = nullptr;
+    };
 }
