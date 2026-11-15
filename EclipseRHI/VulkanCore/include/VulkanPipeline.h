@@ -1,7 +1,6 @@
 #pragma once
 #include "VulkanShaderModule.h"
 #include "VulkanSwapChain.h"
-#include "VulkanDescriptor.h"
 #include "IPipeline.h"
 #include "VulkanVertex.h"
 #include <vector>
@@ -14,7 +13,7 @@ namespace EnigmaRHI
 
 		VulkanPipeline() = default;
 
-		void Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IDescriptor* descriptor, ISwapChain* swapChain) override;
+		void Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IBindingLayout* layout, ISwapChain* swapChain) override;
 		void Destroy(IDevice* device) override;
 
 		VkPipeline GetHandle() const { return graphicsPipeline; }

@@ -2,8 +2,9 @@
 #include "VulkanPipelineTypes.h"
 #include "RHILog.h"
 #include "VulkanDeviceCapabilities.h"
+#include "VulkanBindingLayout.h"
 
-void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IDescriptor* descriptor, ISwapChain* swapChain)
+void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IBindingLayout* layout, ISwapChain* swapChain)
 {
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages = CreateShaderInfo(shader);
 
@@ -79,7 +80,7 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 
 	///////// PIPELINE LAYOUT ////////  (Uniform in OGL)
 
-	VkDescriptorSetLayout setLayout = descriptor->API_Vulkan().GetDescriptorSetLayout();
+	VkDescriptorSetLayout setLayout = layout->API_Vulkan().GetHandle();
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo
 	{

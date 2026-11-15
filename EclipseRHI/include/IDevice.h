@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IBindingLayout.h"
+#include "IBindingSet.h"
 #include "ISurface.h"
 #include "IBuffer.h"
 #include "ImageTypes.h"
@@ -8,7 +10,6 @@
 #include "IFence.h"
 #include "IQueue.h"
 #include <iostream>
-
 
 namespace EnigmaRHI
 {
@@ -30,6 +31,10 @@ namespace EnigmaRHI
 		virtual void DeleteImage(IImage* image) = 0;
 		virtual IFence* CreateFence(bool signaled = false) = 0;
 		virtual void DeleteFence(IFence* fence) = 0;
+		virtual IBindingLayout* CreateBindingLayout(const BindingLayoutDesc& desc) = 0;
+		virtual void DeleteBindingLayout(IBindingLayout* layout) = 0;
+		virtual IBindingSet* CreateBindingSet(IBindingLayout* layout, const BindingSetDesc& desc) = 0;
+		virtual void DeleteBindingSet(IBindingSet* set) = 0;
 
 		virtual void WaitIdle() = 0;
 

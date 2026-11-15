@@ -26,6 +26,11 @@ namespace EnigmaRHI
         void DeleteImage(IImage* image) override;
         IFence* CreateFence(bool signaled = false) override;
         void DeleteFence(IFence* fence) override;
+        IBindingLayout* CreateBindingLayout(const BindingLayoutDesc& desc) override;
+        void DeleteBindingLayout(IBindingLayout* layout) override;
+        IBindingSet* CreateBindingSet(IBindingLayout* layout, const BindingSetDesc& desc) override;
+        void DeleteBindingSet(IBindingSet* set) override;
+        VkDescriptorPool GetDescriptorPool() const { return descriptorPool; }
 
         EImageFormat FindDepthFormat() override { return physicalVulkanDevice.FindDepthFormat(); }
 
@@ -40,11 +45,14 @@ namespace EnigmaRHI
         VulkanQueue& GetPresentQueue() { return presentQueue; }
 
     private:
+
+        void CreateDescriptorPool();
         void CreateLogicalDevice();
 
-        VkDevice             logicalDevice = VK_NULL_HANDLE;
+        VkDevice logicalDevice = VK_NULL_HANDLE;
         VulkanPhysicalDevice physicalVulkanDevice;
-        VulkanQueue          graphicsQueue;
-        VulkanQueue          presentQueue;
+        VulkanQueue graphicsQueue;
+        VulkanQueue presentQueue;
+        VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
     };
 }

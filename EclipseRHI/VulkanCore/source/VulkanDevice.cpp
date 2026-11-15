@@ -3,6 +3,8 @@
 #include "VulkanImage.h"
 #include "VulkanDeviceCapabilities.h"
 #include "VulkanFence.h"
+#include "VulkanBindingLayout.h"
+#include "VulkanBindingSet.h"
 #include "RHILog.h"
 #include <set>
 
@@ -18,6 +20,8 @@ namespace EnigmaRHI
 
     void VulkanDevice::Destroy()
     {
+        vkDestroyDescriptorPool(logicalDevice, descriptorPool, nullptr);
+
         if (logicalDevice != VK_NULL_HANDLE)
         {
             vkDestroyDevice(logicalDevice, nullptr);
@@ -88,6 +92,8 @@ namespace EnigmaRHI
 
         volkLoadDevice(logicalDevice);
 
+        CreateDescriptorPool();
+
         graphicsQueue.Init(GetHandle(), indices.graphicsFamily.value(), ECommandQueueType::GRAPHICS);
         presentQueue.Init(GetHandle(), indices.presentFamily.value(), ECommandQueueType::GRAPHICS);
     }
@@ -153,6 +159,48 @@ namespace EnigmaRHI
     {
         fence->Destroy(this);
         delete fence; 
+    }
+
+    void VulkanDevice::CreateDescriptorPool()
+    {
+        VkDescriptorPoolSize sizes[] = {
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1024 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,          256 },
+            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 },
+        };
+
+        VkDescriptorPoolCreateInfo info
+        {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+            .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+            .maxSets = 1024,
+            .poolSizeCount = static_cast<uint32_t>(std::size(sizes)),
+            .pPoolSizes = sizes,
+        };
+
+        if (vkCreateDescriptorPool(logicalDevice, &info, nullptr, &descriptorPool) != VK_SUCCESS)
+            LOG_FATAL(LogCategory::Vulkan, "Failed to create descriptor pool !");
+    }
+
+    IBindingLayout* VulkanDevice::CreateBindingLayout(const BindingLayoutDesc& desc)
+    {
+        IBindingLayout* l = new VulkanBindingLayout();
+        l->Create(this, desc);
+        return l;
+    }
+    void VulkanDevice::DeleteBindingLayout(IBindingLayout* l) { l->Destroy(this); delete l; }
+
+    IBindingSet* VulkanDevice::CreateBindingSet(IBindingLayout* layout, const BindingSetDesc& desc)
+    {
+        IBindingSet* s = new VulkanBindingSet();
+        s->Create(this, layout, desc);
+        return s;
+    }
+
+    void VulkanDevice::DeleteBindingSet(IBindingSet* s) 
+    { 
+        s->Destroy(this);
+        delete s; 
     }
 
     IQueue& VulkanDevice::GetQueue(ECommandQueueType type)

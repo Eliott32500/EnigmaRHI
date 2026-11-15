@@ -2,7 +2,6 @@
 #include "IBuffer.h"
 #include "ICommandBuffer.h"
 #include "ICommandPool.h"
-#include "IDescriptor.h"
 #include "IDevice.h"
 #include "IImage.h"
 #include "IInstance.h"
@@ -36,9 +35,6 @@ namespace EnigmaRHI
 
 		virtual ICommandPool* InstantiateCommandPool() = 0;
 		virtual void DeleteCommandPool(ICommandPool* commandPool) { delete commandPool; }
-
-		virtual IDescriptor* InstantiateDescriptor() = 0;
-		virtual void DeleteDescriptor(IDescriptor* descriptor) { delete descriptor; }
 
 		virtual IDevice* InstantiateDevice() = 0;
 		virtual void DeleteDevice(IDevice* device) { delete device; }

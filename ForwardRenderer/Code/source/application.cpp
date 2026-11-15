@@ -33,7 +33,6 @@ void Application::InitAPI()
 	device = rhi->InstantiateDevice();
 	commandPool = rhi->InstantiateCommandPool();
 	swapChain = rhi->InstantiateSwapChain();
-	descriptor = rhi->InstantiateDescriptor();
 	pipeline = rhi->InstantiatePipeline();
 	vertShader = rhi->InstantiateShaderModule();
 	fragShader = rhi->InstantiateShaderModule();
@@ -62,10 +61,14 @@ void Application::InitAPI()
 	commandPool->Create(device);
 	swapChain->Create(device, surface, EnigmaRHI::Extent2D{WIDTH, HEIGHT});
 
-	descriptor->AddBufferBinding( 0, EnigmaRHI::EShaderType::VERTEX);
-	descriptor->AddBufferBinding( 1, EnigmaRHI::EShaderType::VERTEX);
-	descriptor->AddImageBinding(2);
-	descriptor->Create(device);
+	EnigmaRHI::BindingLayoutDesc layoutDesc;
+	layoutDesc.items = 
+	{
+		{ 0, EnigmaRHI::EBindingType::UNIFORM_BUFFER,         EnigmaRHI::EShaderType::VERTEX },
+		{ 1, EnigmaRHI::EBindingType::UNIFORM_BUFFER,         EnigmaRHI::EShaderType::VERTEX },
+		{ 2, EnigmaRHI::EBindingType::COMBINED_IMAGE_SAMPLER, EnigmaRHI::EShaderType::FRAGMENT },
+	};
+	bindingLayout = device->CreateBindingLayout(layoutDesc);
 
 	vertShader->Create(device, "Assets/Shaders/vert.spv");
 	fragShader->Create(device, "Assets/Shaders/frag.spv");
@@ -96,7 +99,7 @@ void Application::InitAPI()
 		.fragShader = fragShader,
 	};
 
-	pipeline->Create(gp, shader, device, descriptor, swapChain);
+	pipeline->Create(gp, shader, device, bindingLayout, swapChain);
 
 	TextureLoadOptions opts;
 	opts.colorSpace = ETextureColorSpace::SRGB;   // Linear pour normal/roughness/metallic...
@@ -139,18 +142,16 @@ void Application::InitAPI()
 	cam = new Camera(swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height);
 	cam->CreateCameraDataBuffer(device);
 
-	descriptor->AddImageInfo(roomTexture);
-
-	std::vector<EnigmaRHI::IDescriptor::FrameDescriptorInfo> perFrameDescriptors;
-	perFrameDescriptors.resize(EnigmaRHI::MAX_FRAMES_IN_FLIGHT);
-
 	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		perFrameDescriptors[i].buffers.push_back(cam->GetCameraDataBuffers()[i]->bufferInfo);
-		perFrameDescriptors[i].buffers.push_back(model->GetModelBuffers()[i]->bufferInfo);
+		EnigmaRHI::BindingSetDesc setDesc;
+		setDesc.items = {
+			EnigmaRHI::BindingSetItem::UniformBuffer(0, cam->GetCameraDataBuffers()[i]),
+			EnigmaRHI::BindingSetItem::UniformBuffer(1, model->GetModelBuffers()[i]),
+			EnigmaRHI::BindingSetItem::Texture(2, roomTexture),
+		};
+		frameSets[i] = device->CreateBindingSet(bindingLayout, setDesc);
 	}
-	 
-	descriptor->CreateDescriptorSets(device, perFrameDescriptors);
 
 	for (int i = 0; i < frameFences.size(); i++)
 	{
@@ -174,7 +175,10 @@ void Application::CleanUp()
 	swapChain->Destroy(device);
 	pipeline->Destroy(device);
 	roomTexture->Destroy(device);
-	descriptor->Destroy(device);
+
+	for (auto* s : frameSets) device->DeleteBindingSet(s);
+		device->DeleteBindingLayout(bindingLayout);
+
 	model->Destroy(device);
 	cam->Destroy(device);
 	for (int i = 0; i < frameFences.size(); i++)
@@ -193,7 +197,6 @@ void Application::CleanUp()
 	rhi->DeleteShaderModule(vertShader);
 	rhi->DeletePipeline(pipeline);
 	device->DeleteImage(roomTexture);
-	rhi->DeleteDescriptor(descriptor);
 	delete model;
 	delete cam;
 	rhi->DeleteCommandPool(commandPool);
@@ -266,7 +269,7 @@ void Application::DrawFrame()
 
 	cmd->BeginRendering(info);
 	cmd->BindPipeline(pipeline);
-	cmd->BindDescriptorSet(pipeline, descriptor, frame);
+	cmd->BindBindingSet(pipeline, frameSets[frame]);
 	cmd->SetViewport(viewport);
 	cmd->SetScissor(scissor);
 

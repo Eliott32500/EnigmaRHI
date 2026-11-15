@@ -33,8 +33,7 @@ namespace EnigmaRHI
 
         virtual void BindPipeline(IPipeline* pipeline) = 0;
 
-        virtual void BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, uint32_t frame) = 0;
-        virtual void BindVertexBuffer(IBuffer *buffer) = 0;
+        virtual void BindBindingSet(IPipeline* pipeline, IBindingSet* set, uint32_t setIndex = 0) = 0;
         virtual void BindVertexBuffer(IBuffer* buffer, size_t offset = 0, uint32_t binding = 0) = 0;
         virtual void BindIndexBuffer(IBuffer *buffer) = 0;
 

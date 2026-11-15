@@ -23,7 +23,7 @@ namespace EnigmaRHI
 
         void BindPipeline(IPipeline* pipeline) override;
 
-        void BindDescriptorSet(IPipeline* pipeline, IDescriptor* descriptor, uint32_t frame) override;
+        void BindBindingSet(IPipeline* pipeline, IBindingSet* set, uint32_t setIndex = 0) override;
 
         void BindVertexBuffer(IBuffer* buffer, size_t offset = 0, uint32_t binding = 0) override;
         void BindIndexBuffer(IBuffer* buffer) override;

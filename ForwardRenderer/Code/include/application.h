@@ -31,11 +31,11 @@ private:
 	EnigmaRHI::IDevice* device;
 	EnigmaRHI::ISwapChain* swapChain;
 	EnigmaRHI::ICommandPool* commandPool;
+	EnigmaRHI::IBindingLayout* bindingLayout;
 	EnigmaRHI::IImage* roomTexture;
 	EnigmaRHI::IDescriptor* descriptor;
 	EnigmaRHI::IPipeline* pipeline;
 	EnigmaRHI::ISurface* surface;
-	EnigmaRHI::IRenderPass* renderPass;
 	EnigmaRHI::ISync* syncronizer;
 	EnigmaRHI::IShaderModule* vertShader;
 	EnigmaRHI::IShaderModule* fragShader;
@@ -64,4 +64,5 @@ private:
 	void ResizeSwapChain();
 
 	std::array<EnigmaRHI::IFence*, EnigmaRHI::MAX_FRAMES_IN_FLIGHT> frameFences;
+	std::array<EnigmaRHI::IBindingSet*, EnigmaRHI::MAX_FRAMES_IN_FLIGHT> frameSets;
 };

@@ -16,7 +16,6 @@ namespace EnigmaRHI
 
 		ICommandBuffer* InstantiateCommandBuffer() override { return new VulkanCommandBuffer(); }
 		ICommandPool* InstantiateCommandPool() override { return new VulkanCommandPool(); }
-		IDescriptor* InstantiateDescriptor() override { return new VulkanDescriptor(); }
 		IDevice* InstantiateDevice() override { return new VulkanDevice(); }
 		IInstance* InstantiateInstance() override { return new VulkanInstance(); }
 		IPipeline* InstantiatePipeline() override { return new VulkanPipeline(); }
