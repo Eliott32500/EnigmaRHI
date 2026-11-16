@@ -1,31 +1,33 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <source_location>
 
 #define RESET    "\033[0m"
 #define RED      "\033[31m"
 #define GREEN    "\033[32m"
 #define YELLOW   "\033[33m"
 
-enum class LogLevel
+enum class ELogLevel
 {
-    Info,
-    Warning,
-    Error,
-    Fatal
+    INFO,
+    WARNING,
+    ERR,
+    FATAL
 };
 
-enum class LogCategory
+enum class ELogCategory
 {
-    Core,
+    CORE,
     RHI,
-    Vulkan,
+    VULKAN,
     DX12,
-    Shader,
-    Memory
+    SHADER,
+    MEMORY
 };
 
 namespace Logger
 {
-    [[noreturn]] void Log(LogLevel level, LogCategory category, std::string message);
-};
+    void Log(ELogLevel level, ELogCategory category, std::string message, std::source_location loc = std::source_location::current());
+    [[noreturn]] void LogFatal(ELogCategory category, std::string message,std::source_location loc = std::source_location::current());
+}
