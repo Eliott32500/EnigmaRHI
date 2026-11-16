@@ -14,10 +14,12 @@ namespace EnigmaRHI
         RG8_UNORM,
         RGB8_UNORM,
         RGBA8_UNORM,
+        BGRA8_UNORM,
 
         //SRGB
         R8_SRGB,
         RGBA8_SRGB,
+        BGRA8_SRGB,
 
         //FLOAT16
         R16_SFLOAT,
@@ -36,9 +38,11 @@ namespace EnigmaRHI
         RG8_UINT,
         RGB8_UINT,
         RGBA8_UINT,
+        BGRA8_UINT,
 
         //Depth
         D16_UNORM,
+        D16_UNORM_S8_UINT,
         D24_UNORM_S8_UINT,
         D32_SFLOAT,
         D32_SFLOAT_S8_UINT,
@@ -138,7 +142,6 @@ namespace EnigmaRHI
 
     enum class EAccessFlag
     {
-        NONE = 0,
         INDIRECT_COMMAND_READ = 0x00000001,
         INDEX_READ = 0x00000002,
         VERTEX_ATTRIBUTE_READ = 0x00000004,
@@ -161,7 +164,6 @@ namespace EnigmaRHI
 
     enum class EPipelineStageFlag
     {
-        NONE = 0,
         TOP_OF_PIPE = 1 << 0,
         VERTEX_SHADER = 1 << 1,
         EARLY_FRAGMENT_TESTS = 1 << 2,

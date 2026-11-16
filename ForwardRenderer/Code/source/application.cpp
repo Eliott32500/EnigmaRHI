@@ -236,7 +236,7 @@ void Application::DrawFrame()
 	EnigmaRHI::IQueue& queue = device->GetQueue(ECommandQueueType::GRAPHICS);
 
 	if(!frameFences[frame]->Wait(device))
-		LOG_FATAL(LogCategory::Vulkan, "Failed to wait for fence!");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to wait for fence!");
 
 	if (swapChain->Acquire(device, frame) == EnigmaRHI::EAcquireResult::OUT_OF_DATE)
 	{

@@ -5,7 +5,7 @@
 void EnigmaRHI::VulkanInstance::Create(InstanceCreateInfo instanceInfo)
 {
 	if (enableValidationLayers && !CheckValidationLayerSupport()) {
-		LOG_FATAL(LogCategory::Vulkan, "Validation layers requested, but not available!");
+		LOG_FATAL(ELogCategory::VULKAN, "Validation layers requested, but not available!");
 	}
 
 	CheckSupportedVersion();
@@ -49,7 +49,7 @@ void EnigmaRHI::VulkanInstance::Create(InstanceCreateInfo instanceInfo)
 	}
 
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
-		LOG_FATAL(LogCategory::Vulkan, "Failed to create instance!");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to create instance!");
 
 	volkLoadInstance(instance);
 
@@ -77,7 +77,7 @@ void EnigmaRHI::VulkanInstance::CheckSupportedVersion()
 		uint32_t minor = VK_API_VERSION_MINOR(requiredVulkanVersion);
 		uint32_t patch = VK_API_VERSION_PATCH(requiredVulkanVersion);
 
-		LOG_FATAL(LogCategory::Vulkan,
+		LOG_FATAL(ELogCategory::VULKAN,
 			"Vulkan " +
 			std::to_string(major) + "." +
 			std::to_string(minor) + "." +
@@ -125,7 +125,7 @@ void EnigmaRHI::VulkanInstance::CreateDebugMessenger()
 	PopulateDebugMessengerCreateInfo(createInfo);
 
 	if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
-		LOG_FATAL(LogCategory::Vulkan, "Failed to set up debug messenger!");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to set up debug messenger!");
 }
 
 void EnigmaRHI::VulkanInstance::DestroyDebugMessenger()
@@ -152,13 +152,13 @@ VKAPI_ATTR VkBool32 VKAPI_CALL EnigmaRHI::VulkanInstance::DebugCallback(
 	switch (messageSeverity)
 	{
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-			LOG_INFO(LogCategory::Vulkan, "Validation layer: " + std::string(pCallbackData->pMessage));
+			LOG_INFO(ELogCategory::VULKAN, "Validation layer: " + std::string(pCallbackData->pMessage));
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-			LOG_WARNING(LogCategory::Vulkan, "Validation layer: " + std::string(pCallbackData->pMessage));
+			LOG_WARNING(ELogCategory::VULKAN, "Validation layer: " + std::string(pCallbackData->pMessage));
 			break;
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-			LOG_ERROR(LogCategory::Vulkan, "Validation layer: " + std::string(pCallbackData->pMessage));
+			LOG_ERROR(ELogCategory::VULKAN, "Validation layer: " + std::string(pCallbackData->pMessage));
 			break;
 		default:
 			break;

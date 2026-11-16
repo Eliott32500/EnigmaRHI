@@ -23,7 +23,7 @@ void EnigmaRHI::VulkanQueue::Submit(ICommandBuffer* cmd, ISwapChain* swapChain, 
         fence->API_Vulkan().GetHandle());
 
     if (result != VK_SUCCESS)
-        LOG_FATAL(LogCategory::Vulkan, "Failed to submit command buffer !");
+        LOG_FATAL(ELogCategory::VULKAN, "Failed to submit command buffer !");
 }
 
 VkResult EnigmaRHI::VulkanQueue::SubmitInternal(VkCommandBuffer cmd,

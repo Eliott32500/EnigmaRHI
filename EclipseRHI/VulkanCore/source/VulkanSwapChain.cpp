@@ -21,7 +21,7 @@ namespace
 		VkSemaphoreCreateInfo info{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
 		VkSemaphore semaphore = VK_NULL_HANDLE;
 		if (vkCreateSemaphore(device, &info, nullptr, &semaphore) != VK_SUCCESS)
-			LOG_ERROR(LogCategory::Vulkan, "Failed to create semaphore !");
+			LOG_ERROR(ELogCategory::VULKAN, "Failed to create semaphore !");
 
 		return semaphore;
 	}
@@ -128,7 +128,7 @@ void EnigmaRHI::VulkanSwapChain::Create(IDevice* device, ISurface* surface, Exte
 	createInfo.oldSwapchain = nullptr;
 
 	if (vkCreateSwapchainKHR(device->API_Vulkan().GetHandle(), &createInfo, nullptr, &swapChain) != VK_SUCCESS)
-		LOG_ERROR(LogCategory::Vulkan, "Failed to create swap chain !");
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to create swap chain !");
 
 	CreateVulkanImages(&device->API_Vulkan(), imageCount);
 	CreateSyncObjects(device, imageCount);
@@ -194,7 +194,7 @@ EnigmaRHI::EAcquireResult EnigmaRHI::VulkanSwapChain::Acquire(IDevice* device, u
 	case VK_ERROR_OUT_OF_DATE_KHR:
 		return EAcquireResult::OUT_OF_DATE;
 	default:
-		LOG_ERROR(LogCategory::Vulkan, "Failed to acquire swap chain image !");
+		LOG_FATAL(ELogCategory::VULKAN, std::format("Failed to acquire swap chain image ! (VkResult {})", static_cast<int>(result)));
 	}
 }
 
@@ -211,7 +211,7 @@ EnigmaRHI::EPresentResult EnigmaRHI::VulkanSwapChain::Present(IDevice* device, I
 	case VK_ERROR_OUT_OF_DATE_KHR:
 		return EPresentResult::OUT_OF_DATE;
 	default:
-		LOG_ERROR(LogCategory::Vulkan, "Failed to present swap chain image !");
+		LOG_FATAL(ELogCategory::VULKAN, std::format("Failed to present swap chain image ! (VkResult {})", static_cast<int>(result)));
 	}
 }
 

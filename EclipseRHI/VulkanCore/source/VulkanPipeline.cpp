@@ -93,7 +93,7 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 
 	if (vkCreatePipelineLayout(device->API_Vulkan().GetHandle(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 	{
-		LOG_ERROR(LogCategory::Vulkan, "Failed to create pipeline layout !");
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to create pipeline layout !");
 		return;
 	}
 

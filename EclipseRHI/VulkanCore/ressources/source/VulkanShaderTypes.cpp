@@ -1,22 +1,16 @@
 #include "VulkanShaderTypes.h"
+#include "RHILog.h"
 
 VkShaderStageFlags EnigmaRHI::Utilities::ToVulkanShaderType(EShaderType type)
 {
-    switch (type)
-    {
-    case EShaderType::VERTEX:
-        return VK_SHADER_STAGE_VERTEX_BIT;
+    VkShaderStageFlags result = 0;
 
-    case EShaderType::FRAGMENT:
-        return VK_SHADER_STAGE_FRAGMENT_BIT;
+    if (HasFlag(type, EShaderType::VERTEX))                  result |= VK_SHADER_STAGE_VERTEX_BIT;
+    if (HasFlag(type, EShaderType::TESSELLATION_CONTROL))    result |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+    if (HasFlag(type, EShaderType::TESSELLATION_EVALUATION)) result |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+    if (HasFlag(type, EShaderType::GEOMETRY))                result |= VK_SHADER_STAGE_GEOMETRY_BIT;
+    if (HasFlag(type, EShaderType::FRAGMENT))                result |= VK_SHADER_STAGE_FRAGMENT_BIT;
+    if (HasFlag(type, EShaderType::COMPUTE))                 result |= VK_SHADER_STAGE_COMPUTE_BIT;
 
-    case EShaderType::COMPUTE:
-        return VK_SHADER_STAGE_COMPUTE_BIT;
-
-    case EShaderType::GEOMETRY:
-        return VK_SHADER_STAGE_GEOMETRY_BIT;
-
-    default:
-        return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
-    }
+    return result;
 }

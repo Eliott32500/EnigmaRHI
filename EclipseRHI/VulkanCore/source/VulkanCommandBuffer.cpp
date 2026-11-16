@@ -18,7 +18,7 @@ void EnigmaRHI::VulkanCommandBuffer::Create(IDevice* device, ICommandPool* comma
 	};
 
 	if (vkAllocateCommandBuffers(device->API_Vulkan().GetHandle(), &allocInfo, &commandBuffer) != VK_SUCCESS)
-		LOG_FATAL(LogCategory::Vulkan, "Failed to allocate command buffers !");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to allocate command buffers !");
 }
 
 void EnigmaRHI::VulkanCommandBuffer::Begin()
@@ -31,19 +31,19 @@ void EnigmaRHI::VulkanCommandBuffer::Begin()
 	};
 
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-		LOG_FATAL(LogCategory::Vulkan, "Failed to begin command buffer!");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to begin command buffer!");
 }
 
 void EnigmaRHI::VulkanCommandBuffer::End()
 {
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-		LOG_FATAL(LogCategory::Vulkan, "Failed to end command buffer!");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to end command buffer!");
 }
 
 void EnigmaRHI::VulkanCommandBuffer::Reset()
 {
 	if (vkResetCommandBuffer(commandBuffer, 0) != VK_SUCCESS)
-		LOG_FATAL(LogCategory::Vulkan, "Failed to reset command buffer!");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to reset command buffer!");
 }
 
 void EnigmaRHI::VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)

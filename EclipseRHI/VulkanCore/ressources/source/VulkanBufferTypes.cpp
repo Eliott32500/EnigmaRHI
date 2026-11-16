@@ -2,7 +2,6 @@
 
 VkBufferUsageFlags EnigmaRHI::Utilities::ToVkBufferUsage(EBufferUsage usage)
 {
-    using namespace EnigmaRHI;
     VkBufferUsageFlags f = 0;
     if (HasFlag(usage, EBufferUsage::VERTEX))       f |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     if (HasFlag(usage, EBufferUsage::INDEX))        f |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;

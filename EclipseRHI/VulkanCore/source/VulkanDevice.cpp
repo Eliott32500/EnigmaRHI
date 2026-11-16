@@ -86,7 +86,7 @@ namespace EnigmaRHI
         };
 
         if (vkCreateDevice(physicalVulkanDevice.Handle(), &createInfo, nullptr, &logicalDevice) != VK_SUCCESS)
-            LOG_FATAL(LogCategory::Vulkan, "Failed to create logical device !");
+            LOG_FATAL(ELogCategory::VULKAN, "Failed to create logical device !");
 
         capabilities.features = required;
 
@@ -183,7 +183,7 @@ namespace EnigmaRHI
         };
 
         if (vkCreateDescriptorPool(logicalDevice, &info, nullptr, &descriptorPool) != VK_SUCCESS)
-            LOG_FATAL(LogCategory::Vulkan, "Failed to create descriptor pool !");
+            LOG_FATAL(ELogCategory::VULKAN, "Failed to create descriptor pool !");
     }
 
     IBindingLayout* VulkanDevice::CreateBindingLayout(const BindingLayoutDesc& desc)

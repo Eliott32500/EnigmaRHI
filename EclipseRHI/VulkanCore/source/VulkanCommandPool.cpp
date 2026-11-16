@@ -24,13 +24,13 @@ void EnigmaRHI::VulkanCommandPool::CreateCommandPool(VulkanDevice* device)
 	};
 	
 	if (vkCreateCommandPool(device->GetHandle(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
-		LOG_FATAL(LogCategory::Vulkan, "Failed to create command pool !");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to create command pool !");
 }
 
 void EnigmaRHI::VulkanCommandPool::Reset(IDevice* device)
 {
 	if (vkResetCommandPool(device->API_Vulkan().GetHandle(), commandPool, 0) != VK_SUCCESS)
-		LOG_FATAL(LogCategory::Vulkan, "Failed to reset command pool !");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to reset command pool !");
 }
 
 VkCommandBuffer EnigmaRHI::VulkanCommandPool::BeginSingleTimeCommands(VulkanDevice* device, VkCommandBuffer commandBuffer)
@@ -44,7 +44,7 @@ VkCommandBuffer EnigmaRHI::VulkanCommandPool::BeginSingleTimeCommands(VulkanDevi
 	};
 	
 	if(vkAllocateCommandBuffers(device->GetHandle(), &allocInfo, &commandBuffer) != VK_SUCCESS)
-		LOG_FATAL(LogCategory::Vulkan, "Failed to allocate command buffer !");
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to allocate command buffer !");
 	
 	VkCommandBufferBeginInfo beginInfo
 	{

@@ -31,8 +31,8 @@ namespace EnigmaRHI::Utilities
 	VkAttachmentStoreOp ToVulkanStoreOp(EStoreOp storeOp);
 	VkImageLayout ToVulkanImageLayout(EImageLayout imageLayout);
 
-	VkAccessFlags ToVulkanAccessFlag(EAccessFlag accessFlag);
-	VkPipelineStageFlagBits2 ToVulkanPipelineFlag(EPipelineStageFlag pipelineStateFlag);
+	VkAccessFlags2 ToVulkanAccessFlag(EAccessFlag accessFlag);
+	VkPipelineStageFlags2 ToVulkanPipelineFlag(EPipelineStageFlag pipelineStateFlag);
 
 	LayoutSync GetLayoutSync(VkImageLayout layout, bool asSource);
 }

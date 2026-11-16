@@ -8,7 +8,6 @@ namespace EnigmaRHI::Utilities
         {
             if (flags & c) 
                 return c;
-
         }
         return 1;
     }
@@ -17,57 +16,47 @@ namespace EnigmaRHI::Utilities
     {
         switch (count)
         {
-            case 1:  
-                return VK_SAMPLE_COUNT_1_BIT;
-            case 2:  
-                return VK_SAMPLE_COUNT_2_BIT;
-            case 4:  
-                return VK_SAMPLE_COUNT_4_BIT;
-            case 8:  
-                return VK_SAMPLE_COUNT_8_BIT;
-            case 16: 
-                return VK_SAMPLE_COUNT_16_BIT;
-            case 32: 
-                return VK_SAMPLE_COUNT_32_BIT;
-            case 64: 
-                return VK_SAMPLE_COUNT_64_BIT;
-            default: 
-                return VK_SAMPLE_COUNT_1_BIT;
+        case 1:     return VK_SAMPLE_COUNT_1_BIT;
+        case 2:     return VK_SAMPLE_COUNT_2_BIT;
+        case 4:     return VK_SAMPLE_COUNT_4_BIT;
+        case 8:     return VK_SAMPLE_COUNT_8_BIT;
+        case 16:    return VK_SAMPLE_COUNT_16_BIT;
+        case 32:    return VK_SAMPLE_COUNT_32_BIT;
+        case 64:    return VK_SAMPLE_COUNT_64_BIT;
+        default:    return VK_SAMPLE_COUNT_1_BIT;
         }
     }
 
     DeviceLimits ToDeviceLimits(const VkPhysicalDeviceLimits& l)
     {
-        DeviceLimits out;
+        return DeviceLimits
+        {
+            .maxImageDimension1D = l.maxImageDimension1D,
+            .maxImageDimension2D = l.maxImageDimension2D,
+            .maxImageDimension3D = l.maxImageDimension3D,
+            .maxImageDimensionCube = l.maxImageDimensionCube,
+            .maxImageArrayLayers = l.maxImageArrayLayers,
 
-        out.maxImageDimension1D = l.maxImageDimension1D;
-        out.maxImageDimension2D = l.maxImageDimension2D;
-        out.maxImageDimension3D = l.maxImageDimension3D;
-        out.maxImageDimensionCube = l.maxImageDimensionCube;
-        out.maxImageArrayLayers = l.maxImageArrayLayers;
+            .maxSamplerAnisotropy = l.maxSamplerAnisotropy,
+            .maxSamplerLodBias = l.maxSamplerLodBias,
+            .maxSamplerAllocationCount = l.maxSamplerAllocationCount,
 
-        out.maxSamplerAnisotropy = l.maxSamplerAnisotropy;
-        out.maxSamplerLodBias = l.maxSamplerLodBias;
-        out.maxSamplerAllocationCount = l.maxSamplerAllocationCount;
+            .minUniformBufferOffsetAlignment = l.minUniformBufferOffsetAlignment,
+            .minStorageBufferOffsetAlignment = l.minStorageBufferOffsetAlignment,
+            .optimalBufferCopyOffsetAlignment = l.optimalBufferCopyOffsetAlignment,
+            .maxUniformBufferRange = l.maxUniformBufferRange,
+            .maxPushConstantsSize = l.maxPushConstantsSize,
 
-        out.minUniformBufferOffsetAlignment = l.minUniformBufferOffsetAlignment;
-        out.minStorageBufferOffsetAlignment = l.minStorageBufferOffsetAlignment;
-        out.optimalBufferCopyOffsetAlignment = l.optimalBufferCopyOffsetAlignment;
-        out.maxUniformBufferRange = l.maxUniformBufferRange;
-        out.maxPushConstantsSize = l.maxPushConstantsSize;
+            .maxBoundDescriptorSets = l.maxBoundDescriptorSets,
+            .maxPerStageDescriptorSamplers = l.maxPerStageDescriptorSamplers,
 
-        out.maxBoundDescriptorSets = l.maxBoundDescriptorSets;
-        out.maxPerStageDescriptorSamplers = l.maxPerStageDescriptorSamplers;
+            .maxColorSampleCount = HighestSampleCount(l.framebufferColorSampleCounts),
+            .maxDepthSampleCount = HighestSampleCount(l.framebufferDepthSampleCounts),
 
-        out.maxColorSampleCount = HighestSampleCount(l.framebufferColorSampleCounts);
-        out.maxDepthSampleCount = HighestSampleCount(l.framebufferDepthSampleCounts);
+            .maxMemoryAllocationCount = l.maxMemoryAllocationCount,
+            .maxColorAttachments = l.maxColorAttachments,
 
-        out.maxMemoryAllocationCount = l.maxMemoryAllocationCount;
-        out.maxColorAttachments = l.maxColorAttachments;
-
-        out.lineWidthLimits[0] = l.lineWidthRange[0];
-        out.lineWidthLimits[1] = l.lineWidthRange[1];
-
-        return out;
+            .lineWidthLimits = {l.lineWidthRange[0], l.lineWidthRange[1]},
+        };
     }
 }

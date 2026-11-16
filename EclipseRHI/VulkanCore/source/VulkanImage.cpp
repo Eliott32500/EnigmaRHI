@@ -19,13 +19,13 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 
 	if (imageDesc.extent.width > maxDim || imageDesc.extent.height > maxDim)
 	{
-		LOG_ERROR(LogCategory::Vulkan, "Image extent exceeds device limit (" + std::to_string(maxDim) + ")");
+		LOG_ERROR(ELogCategory::VULKAN, "Image extent exceeds device limit (" + std::to_string(maxDim) + ")");
 		return;
 	}
 
 	if (imageDesc.arrayLayers > limits.maxImageArrayLayers)
 	{
-		LOG_ERROR(LogCategory::Vulkan, "arrayLayers exceeds device limit");
+		LOG_ERROR(ELogCategory::VULKAN, "arrayLayers exceeds device limit");
 		return;
 	}
 
@@ -34,7 +34,7 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 
 	if (imageDesc.sampleCount > maxSamples)
 	{
-		LOG_WARNING(LogCategory::Vulkan, "sampleCount clamped to " + std::to_string(maxSamples));
+		LOG_WARNING(ELogCategory::VULKAN, "sampleCount clamped to " + std::to_string(maxSamples));
 		imageDesc.sampleCount = maxSamples;
 	}
 
@@ -68,7 +68,7 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 	VkDevice vulkanDevice = myDevice.GetHandle();
 
 	if (vkCreateImage(vulkanDevice, &imageInfo, nullptr, &image) != VK_SUCCESS)
-		LOG_ERROR(LogCategory::Vulkan, "Failed to create image !");
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to create image !");
 
 	AllocateImageMemory(myDevice, image);
 
@@ -100,7 +100,7 @@ void EnigmaRHI::VulkanImage::AllocateImageMemory(const VulkanDevice& device, con
 	};
 
 	if (vkAllocateMemory(device.GetHandle(), &allocInfo, nullptr, &memory) != VK_SUCCESS)
-		LOG_ERROR(LogCategory::Vulkan, "Failed to allocate image memory!");
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to allocate image memory!");
 
 	vkBindImageMemory(device.GetHandle(), image, memory, 0);
 }
@@ -163,7 +163,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, V
 	viewInfo.subresourceRange.layerCount = 1;
 
 	if (vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &view) != VK_SUCCESS)
-		LOG_ERROR(LogCategory::Vulkan, "Failed to create image view!");
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to create image view!");
 }
 
 void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, const ImageDesc& imageDesc, VkImageAspectFlags aspect)
@@ -189,7 +189,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, const ImageDesc& i
 	viewInfo.subresourceRange.layerCount = imageDesc.arrayLayers;
 
 	if (vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &view) != VK_SUCCESS)
-		LOG_ERROR(LogCategory::Vulkan, "Failed to create image view!");
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to create image view!");
 }
 
 void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, ImageSampler imageSampler)
@@ -239,7 +239,7 @@ void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, ImageSampler im
 	};
 
 	if (vkCreateSampler(device->GetHandle(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
-		LOG_ERROR(LogCategory::Vulkan, "Failed to create texture sampler!");
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to create texture sampler!");
 }
 
 

@@ -19,7 +19,7 @@ void EnigmaRHI::VulkanBindingSet::Create(IDevice* device, IBindingLayout* layout
 	};
 
 	if (vkAllocateDescriptorSets(dev.GetHandle(), &alloc, &set) != VK_SUCCESS)
-		LOG_ERROR(LogCategory::Vulkan, "Failed to allocate descriptor set !");
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to allocate descriptor set !");
 
 	std::vector<VkDescriptorBufferInfo> bufferInfos(desc.items.size());
 	std::vector<VkDescriptorImageInfo>  imageInfos(desc.items.size());

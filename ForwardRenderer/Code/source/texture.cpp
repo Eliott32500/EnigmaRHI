@@ -23,14 +23,14 @@ TextureData LoadTexture(const std::string& path, const TextureLoadOptions& optio
     int w = 0, h = 0, channels = 0;
     if (!stbi_info(path.c_str(), &w, &h, &channels))
     {
-        LOG_ERRORF(LogCategory::Vulkan, "LoadTexture: cannot read '{}' : {}",
+        LOG_ERRORF(ELogCategory::VULKAN, "LoadTexture: cannot read '{}' : {}",
             path.c_str(), stbi_failure_reason());
         return result;
     }
 
     if (w <= 0 || h <= 0)
     {
-        LOG_ERRORF(LogCategory::Vulkan, "LoadTexture: '{}' has invalid size {}x{}",
+        LOG_ERRORF(ELogCategory::VULKAN, "LoadTexture: '{}' has invalid size {}x{}",
             path.c_str(), w, h);
         return result;
     }
@@ -54,7 +54,7 @@ TextureData LoadTexture(const std::string& path, const TextureLoadOptions& optio
 
     if (!result.pixels)
     {
-        LOG_ERRORF(LogCategory::Vulkan, "LoadTexture: failed to decode '{}' : {}",
+        LOG_ERRORF(ELogCategory::VULKAN, "LoadTexture: failed to decode '{}' : {}",
             path.c_str(), stbi_failure_reason());
         result.format = EnigmaRHI::EImageFormat::UNDEFINED;
         return result;
@@ -64,7 +64,7 @@ TextureData LoadTexture(const std::string& path, const TextureLoadOptions& optio
     result.height = static_cast<uint32_t>(h);
     result.sourceChannels = static_cast<uint32_t>(channels);
 
-    LOG_INFOF(LogCategory::Vulkan, "Texture loaded: '{}' ({}x{}, {} ch source, {})",
+    LOG_INFOF(ELogCategory::VULKAN, "Texture loaded: '{}' ({}x{}, {} ch source, {})",
         path, w, h, channels, isHDR ? "HDR" : "LDR");
 
     return result;

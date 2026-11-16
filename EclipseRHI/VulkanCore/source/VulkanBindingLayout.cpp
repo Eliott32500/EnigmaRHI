@@ -28,7 +28,7 @@ void EnigmaRHI::VulkanBindingLayout::Create(IDevice* device, const BindingLayout
 	};
 
 	if (vkCreateDescriptorSetLayout(device->API_Vulkan().GetHandle(), &info, nullptr, &layout) != VK_SUCCESS)
-		LOG_ERROR(LogCategory::Vulkan, "Failed to create descriptor set layout !");
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to create descriptor set layout !");
 }
 
 void EnigmaRHI::VulkanBindingLayout::Destroy(IDevice* device)

@@ -17,7 +17,7 @@ void EnigmaRHI::VulkanBuffer::Create(IDevice* device, const BufferDesc& d)
     };
 
     if (vkCreateBuffer(vk, &info, nullptr, &buffer) != VK_SUCCESS)
-        LOG_FATAL(LogCategory::Vulkan, "Failed to create buffer !");
+        LOG_FATAL(ELogCategory::VULKAN, "Failed to create buffer !");
 
     VkMemoryRequirements req;
     vkGetBufferMemoryRequirements(vk, buffer, &req);
@@ -29,7 +29,7 @@ void EnigmaRHI::VulkanBuffer::Create(IDevice* device, const BufferDesc& d)
         .memoryTypeIndex = dev.GetPhysicalDevice().FindMemoryType(req.memoryTypeBits, Utilities::ToVkMemory(d.access)),
     };
     if (vkAllocateMemory(vk, &alloc, nullptr, &memory) != VK_SUCCESS)
-        LOG_FATAL(LogCategory::Vulkan, "Failed to allocate buffer memory !");
+        LOG_FATAL(ELogCategory::VULKAN, "Failed to allocate buffer memory !");
 
     vkBindBufferMemory(vk, buffer, memory, 0);
 
@@ -58,7 +58,7 @@ void EnigmaRHI::VulkanBuffer::Destroy(IDevice* device)
 void* EnigmaRHI::VulkanBuffer::Map(IDevice* device)
 {
     if (desc.access == EMemoryAccess::GPU_ONLY)
-        LOG_FATAL(LogCategory::Vulkan, "Cannot map a GPU_ONLY buffer !");
+        LOG_FATAL(ELogCategory::VULKAN, "Cannot map a GPU_ONLY buffer !");
 
     if (!mapped)
         vkMapMemory(device->API_Vulkan().GetHandle(), memory, 0, VK_WHOLE_SIZE, 0, &mapped);
@@ -77,7 +77,7 @@ void EnigmaRHI::VulkanBuffer::Unmap(IDevice* device)
 void EnigmaRHI::VulkanBuffer::Write(IDevice* device, const void* data, size_t size, size_t offset)
 {
     if (offset + size > desc.size)
-        LOG_FATAL(LogCategory::Vulkan, "Buffer write out of range !");
+        LOG_FATAL(ELogCategory::VULKAN, "Buffer write out of range !");
 
     std::memcpy(static_cast<char*>(Map(device)) + offset, data, size);
     Unmap(device);

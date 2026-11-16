@@ -1,22 +1,23 @@
 #include "VulkanImageTypes.h"
-#include "VulkanImageTypes.h"
 #include "RHILog.h"
 
 VkFormat EnigmaRHI::Utilities::ToVulkanFormat(EImageFormat format)
 {
+    using E = EImageFormat;
+
     switch (format)
     {
-        using E = EImageFormat;
-
     case E::UNDEFINED:return VK_FORMAT_UNDEFINED;
         //UNORM
     case E::R8_UNORM:               return VK_FORMAT_R8_UNORM;
     case E::RG8_UNORM:              return VK_FORMAT_R8G8_UNORM;
     case E::RGB8_UNORM:             return VK_FORMAT_R8G8B8_UNORM;
     case E::RGBA8_UNORM:            return VK_FORMAT_R8G8B8A8_UNORM;
+    case E::BGRA8_UNORM:            return VK_FORMAT_B8G8R8A8_UNORM;
         //sRGB
     case E::R8_SRGB:                return VK_FORMAT_R8_SRGB;
     case E::RGBA8_SRGB:             return VK_FORMAT_R8G8B8A8_SRGB;
+    case E::BGRA8_SRGB:             return VK_FORMAT_B8G8R8A8_SRGB;
         //FLOAT16
     case E::R16_SFLOAT:             return VK_FORMAT_R16_SFLOAT;
     case E::RG16_SFLOAT:            return VK_FORMAT_R16G16_SFLOAT;
@@ -32,13 +33,17 @@ VkFormat EnigmaRHI::Utilities::ToVulkanFormat(EImageFormat format)
     case E::RG8_UINT:               return VK_FORMAT_R8G8_UINT;
     case E::RGB8_UINT:              return VK_FORMAT_R8G8B8_UINT;
     case E::RGBA8_UINT:             return VK_FORMAT_R8G8B8A8_UINT;
+    case E::BGRA8_UINT:             return VK_FORMAT_B8G8R8A8_UINT;
         //Depth
+    case E::D16_UNORM:              return VK_FORMAT_D16_UNORM;
+    case E::D16_UNORM_S8_UINT:      return VK_FORMAT_D16_UNORM_S8_UINT;
     case E::D24_UNORM_S8_UINT:      return VK_FORMAT_D24_UNORM_S8_UINT;
     case E::D32_SFLOAT:             return VK_FORMAT_D32_SFLOAT;
     case E::D32_SFLOAT_S8_UINT:     return VK_FORMAT_D32_SFLOAT_S8_UINT;
-    default:                        LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan format !");
     }
 
+    LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan format !");
+    return VK_FORMAT_UNDEFINED;
 }
 
 VkImageType EnigmaRHI::Utilities::ToVulkanImageType(EImageType type)
@@ -48,16 +53,18 @@ VkImageType EnigmaRHI::Utilities::ToVulkanImageType(EImageType type)
         case EImageType::TYPE_1D:       return VK_IMAGE_TYPE_1D;
         case EImageType::TYPE_2D:       return VK_IMAGE_TYPE_2D;
         case EImageType::TYPE_3D:       return VK_IMAGE_TYPE_3D;
-        default:                        LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan image type !");
     }
+
+    LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan image type !");
+    return VK_IMAGE_TYPE_2D;
 }
 
 VkImageViewType EnigmaRHI::Utilities::ToVulkanImageViewType(EImageViewType viewType)
 {
+    using E = EImageViewType;
+
     switch (viewType)
     {
-        using E = EImageViewType;
-
     case E::VIEW_1D:                return VK_IMAGE_VIEW_TYPE_1D;
     case E::VIEW_2D:                return VK_IMAGE_VIEW_TYPE_2D;
     case E::VIEW_3D:                return VK_IMAGE_VIEW_TYPE_3D;
@@ -65,8 +72,10 @@ VkImageViewType EnigmaRHI::Utilities::ToVulkanImageViewType(EImageViewType viewT
     case E::VIEW_2D_ARRAY:          return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     case E::VIEW_CUBE:              return VK_IMAGE_VIEW_TYPE_CUBE;
     case E::VIEW_CUBE_ARRAY:        return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
-    default:                        LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan image view type !");
     }
+
+    LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan image view type !");
+    return VK_IMAGE_VIEW_TYPE_2D;
 }
 
 VkFilter EnigmaRHI::Utilities::ToVulkanFilter(EFilter mode)
@@ -81,17 +90,19 @@ VkSamplerMipmapMode EnigmaRHI::Utilities::ToVulkanMipmapMode(EMipmapMode mode)
 
 VkSamplerAddressMode EnigmaRHI::Utilities::ToVulkanWrapMode(EWrappingMode mode)
 {
+    using E = EWrappingMode;
+
     switch (mode)
     {
-        using E = EWrappingMode;
-
     case E::REPEAT:                     return VK_SAMPLER_ADDRESS_MODE_REPEAT;
     case E::CLAMP_TO_EDGE:              return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     case E::CLAMP_TO_BORDER:            return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     case E::MIRRORED_REPEAT:            return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
     case E::MIRROR_CLAMP_TO_EDGE:       return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
-    default:                            LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan border color !");
     }
+
+    LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan wrap mode !");
+    return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 }
 
 VkImageUsageFlags EnigmaRHI::Utilities::ToVulkanImageUsage(EImageUsage imageUsage)
@@ -112,67 +123,73 @@ VkImageUsageFlags EnigmaRHI::Utilities::ToVulkanImageUsage(EImageUsage imageUsag
 
 VkBorderColor EnigmaRHI::Utilities::ToVulkanBorderColor(EBorderColor borderColor)
 {
+    using E = EBorderColor;
+
     switch (borderColor)
     {
-        using E = EBorderColor;
-
     case E::OPAQUE_INT_BLACK:            return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     case E::OPAQUE_FLOAT_BLACK:          return VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
     case E::OPAQUE_INT_WHITE:            return VK_BORDER_COLOR_INT_OPAQUE_WHITE;
     case E::OPAQUE_FLOAT_WHITE:          return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
     case E::TRANSPARENT_INT_BLACK:       return VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
     case E::TRANSPARENT_FLOAT_BLACK:     return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
-    default:                             LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan border color !");
     }
+
+    LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan border color !");
+    return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 }
 
 EnigmaRHI::EImageFormat EnigmaRHI::Utilities::FormatFromVulkan(VkFormat format)
 {
+    using E = EImageFormat;
+
     switch (format)
     {
-    case VK_FORMAT_UNDEFINED:               return EImageFormat::UNDEFINED;
-    case VK_FORMAT_R8_UNORM:                return EImageFormat::R8_UNORM;
-    case VK_FORMAT_R8G8_UNORM:              return EImageFormat::RG8_UNORM;
-    case VK_FORMAT_R8G8B8_UNORM:            return EImageFormat::RGB8_UNORM;
-    case VK_FORMAT_R8G8B8A8_UNORM:          return EImageFormat::RGBA8_UNORM;
-
+    case VK_FORMAT_UNDEFINED:               return E::UNDEFINED;
+    case VK_FORMAT_R8_UNORM:                return E::R8_UNORM;
+    case VK_FORMAT_R8G8_UNORM:              return E::RG8_UNORM;
+    case VK_FORMAT_R8G8B8_UNORM:            return E::RGB8_UNORM;
+    case VK_FORMAT_R8G8B8A8_UNORM:          return E::RGBA8_UNORM;
+    case VK_FORMAT_B8G8R8A8_UNORM:          return E::BGRA8_UNORM;
         // sRGB
-    case VK_FORMAT_R8_SRGB:                 return EImageFormat::R8_SRGB;
-    case VK_FORMAT_R8G8B8A8_SRGB:           return EImageFormat::RGBA8_SRGB;
-
+    case VK_FORMAT_R8_SRGB:                 return E::R8_SRGB;
+    case VK_FORMAT_R8G8B8A8_SRGB:           return E::RGBA8_SRGB;
+    case VK_FORMAT_B8G8R8A8_SRGB:           return E::BGRA8_SRGB;
         // FLOAT16
-    case VK_FORMAT_R16_SFLOAT:              return EImageFormat::R16_SFLOAT;
-    case VK_FORMAT_R16G16_SFLOAT:           return EImageFormat::RG16_SFLOAT;
-    case VK_FORMAT_R16G16B16_SFLOAT:        return EImageFormat::RGB16_SFLOAT;
-    case VK_FORMAT_R16G16B16A16_SFLOAT:     return EImageFormat::RGBA16_SFLOAT;
-
+    case VK_FORMAT_R16_SFLOAT:              return E::R16_SFLOAT;
+    case VK_FORMAT_R16G16_SFLOAT:           return E::RG16_SFLOAT;
+    case VK_FORMAT_R16G16B16_SFLOAT:        return E::RGB16_SFLOAT;
+    case VK_FORMAT_R16G16B16A16_SFLOAT:     return E::RGBA16_SFLOAT;
         // FLOAT32
-    case VK_FORMAT_R32_SFLOAT:              return EImageFormat::R32_SFLOAT;
-    case VK_FORMAT_R32G32_SFLOAT:           return EImageFormat::RG32_SFLOAT;
-    case VK_FORMAT_R32G32B32_SFLOAT:        return EImageFormat::RGB32_SFLOAT;
-    case VK_FORMAT_R32G32B32A32_SFLOAT:     return EImageFormat::RGBA32_SFLOAT;
-
+    case VK_FORMAT_R32_SFLOAT:              return E::R32_SFLOAT;
+    case VK_FORMAT_R32G32_SFLOAT:           return E::RG32_SFLOAT;
+    case VK_FORMAT_R32G32B32_SFLOAT:        return E::RGB32_SFLOAT;
+    case VK_FORMAT_R32G32B32A32_SFLOAT:     return E::RGBA32_SFLOAT;
         // UINT
-    case VK_FORMAT_R8_UINT:                 return EImageFormat::R8_UINT;
-    case VK_FORMAT_R8G8_UINT:               return EImageFormat::RG8_UINT;
-    case VK_FORMAT_R8G8B8_UINT:             return EImageFormat::RGB8_UINT;
-    case VK_FORMAT_R8G8B8A8_UINT:           return EImageFormat::RGBA8_UINT;
-
+    case VK_FORMAT_R8_UINT:                 return E::R8_UINT;
+    case VK_FORMAT_R8G8_UINT:               return E::RG8_UINT;
+    case VK_FORMAT_R8G8B8_UINT:             return E::RGB8_UINT;
+    case VK_FORMAT_R8G8B8A8_UINT:           return E::RGBA8_UINT;
+    case VK_FORMAT_B8G8R8A8_UINT:           return E::BGRA8_UINT;
         // Depth
-    case VK_FORMAT_D24_UNORM_S8_UINT:       return EImageFormat::D24_UNORM_S8_UINT;
-    case VK_FORMAT_D32_SFLOAT:              return EImageFormat::D32_SFLOAT;
-    case VK_FORMAT_D32_SFLOAT_S8_UINT:      return EImageFormat::D32_SFLOAT_S8_UINT;
+    case VK_FORMAT_D16_UNORM:               return E::D16_UNORM;
+    case VK_FORMAT_D16_UNORM_S8_UINT:       return E::D16_UNORM_S8_UINT;
+    case VK_FORMAT_D24_UNORM_S8_UINT:       return E::D24_UNORM_S8_UINT;
+    case VK_FORMAT_D32_SFLOAT:              return E::D32_SFLOAT;
+    case VK_FORMAT_D32_SFLOAT_S8_UINT:      return E::D32_SFLOAT_S8_UINT;
 
-    default:                                LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan format input !");
     }
+
+    LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan format input !");
+    return EImageFormat::UNDEFINED;
 }
 
 uint32_t EnigmaRHI::Utilities::BytesPerPixel(EImageFormat format)
 {
+    using E = EImageFormat;
+
     switch (format)
     {
-        using E = EImageFormat;
-
     case E::R8_UNORM:
     case E::R8_SRGB:
     case E::R8_UINT:
@@ -191,6 +208,9 @@ uint32_t EnigmaRHI::Utilities::BytesPerPixel(EImageFormat format)
     case E::RGBA8_UNORM:
     case E::RGBA8_SRGB:
     case E::RGBA8_UINT:
+    case E::BGRA8_UNORM:
+    case E::BGRA8_SRGB:
+    case E::BGRA8_UINT:
     case E::RG16_SFLOAT:
     case E::R32_SFLOAT:
     case E::D32_SFLOAT:
@@ -218,7 +238,9 @@ uint32_t EnigmaRHI::Utilities::BytesPerPixel(EImageFormat format)
 
 bool EnigmaRHI::Utilities::HasStencilComponent(EImageFormat format)
 {
-    return format == EImageFormat::D24_UNORM_S8_UINT || format == EImageFormat::D32_SFLOAT_S8_UINT;
+    return format == EImageFormat::D16_UNORM_S8_UINT
+        || format == EImageFormat::D24_UNORM_S8_UINT 
+        || format == EImageFormat::D32_SFLOAT_S8_UINT;
 }
 
 bool EnigmaRHI::Utilities::HasDepthComponent(EImageFormat format)
@@ -234,8 +256,10 @@ VkAttachmentLoadOp EnigmaRHI::Utilities::ToVulkanLoadOp(ELoadOp loadOp)
     case ELoadOp::LOAD:         return VK_ATTACHMENT_LOAD_OP_LOAD;
     case ELoadOp::CLEAR:        return VK_ATTACHMENT_LOAD_OP_CLEAR;
     case ELoadOp::DONT_CARE:    return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    default:                    LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan load operation !");
     }
+
+    LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan load operation !");
+    return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 }
 
 VkAttachmentStoreOp EnigmaRHI::Utilities::ToVulkanStoreOp(EStoreOp storeOp)
@@ -245,9 +269,10 @@ VkAttachmentStoreOp EnigmaRHI::Utilities::ToVulkanStoreOp(EStoreOp storeOp)
 
 VkImageLayout EnigmaRHI::Utilities::ToVulkanImageLayout(EImageLayout imageLayout)
 {
+    using E = EImageLayout;
+
     switch (imageLayout)
     {
-        using E = EImageLayout;
     case E::UNDEFINED:                              return VK_IMAGE_LAYOUT_UNDEFINED;
     case E::GENERAL:                                return VK_IMAGE_LAYOUT_GENERAL;
     case E::COLOR_ATTACHMENT_OPTIMAL:               return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -258,40 +283,43 @@ VkImageLayout EnigmaRHI::Utilities::ToVulkanImageLayout(EImageLayout imageLayout
     case E::TRANSFER_DST_OPTIMAL:                   return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     case E::PRESENT_SRC:                            return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     case E::DEPTH_ATTACHMENT_OPTIMAL:               return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-    default:                                        LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan image layout !");
     }
+
+    LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan image layout !");
+    return VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
-VkAccessFlags EnigmaRHI::Utilities::ToVulkanAccessFlag(EAccessFlag accessFlag)
+VkAccessFlags2 EnigmaRHI::Utilities::ToVulkanAccessFlag(EAccessFlag accessFlag)
 {
-    VkAccessFlags result = 0;
+    VkAccessFlags2 result = VK_ACCESS_2_NONE;
 
-    if (HasFlag(accessFlag, EAccessFlag::NONE))                              result |= VK_ACCESS_NONE;
-    if (HasFlag(accessFlag, EAccessFlag::INDIRECT_COMMAND_READ))             result |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::INDEX_READ))                        result |= VK_ACCESS_INDEX_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::VERTEX_ATTRIBUTE_READ))             result |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::UNIFORM_READ))                      result |= VK_ACCESS_UNIFORM_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::INPUT_ATTACHMENT_READ))             result |= VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::SHADER_READ))                       result |= VK_ACCESS_SHADER_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::SHADER_WRITE))                      result |= VK_ACCESS_SHADER_WRITE_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::COLOR_ATTACHMENT_WRITE))            result |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::DEPTH_STENCIL_ATTACHMENT_READ))     result |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE))    result |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::TRANSFER_READ))                     result |= VK_ACCESS_TRANSFER_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::TRANSFER_WRITE))                    result |= VK_ACCESS_TRANSFER_WRITE_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::HOST_READ))                         result |= VK_ACCESS_HOST_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::HOST_WRITE))                        result |= VK_ACCESS_HOST_WRITE_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::MEMORY_READ))                       result |= VK_ACCESS_MEMORY_READ_BIT;
-    if (HasFlag(accessFlag, EAccessFlag::MEMORY_WRITE))                      result |= VK_ACCESS_MEMORY_WRITE_BIT;
+    using E = EAccessFlag;
+
+    if (HasFlag(accessFlag, E::INDIRECT_COMMAND_READ))            result |= VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT;
+    if (HasFlag(accessFlag, E::INDEX_READ))                       result |= VK_ACCESS_2_INDEX_READ_BIT;
+    if (HasFlag(accessFlag, E::VERTEX_ATTRIBUTE_READ))            result |= VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
+    if (HasFlag(accessFlag, E::UNIFORM_READ))                     result |= VK_ACCESS_2_UNIFORM_READ_BIT;
+    if (HasFlag(accessFlag, E::INPUT_ATTACHMENT_READ))            result |= VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT;
+    if (HasFlag(accessFlag, E::SHADER_READ))                      result |= VK_ACCESS_2_SHADER_READ_BIT;
+    if (HasFlag(accessFlag, E::SHADER_WRITE))                     result |= VK_ACCESS_2_SHADER_WRITE_BIT;
+    if (HasFlag(accessFlag, E::COLOR_ATTACHMENT_WRITE))           result |= VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+    if (HasFlag(accessFlag, E::DEPTH_STENCIL_ATTACHMENT_READ))    result |= VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+    if (HasFlag(accessFlag, E::DEPTH_STENCIL_ATTACHMENT_WRITE))   result |= VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    if (HasFlag(accessFlag, E::TRANSFER_READ))                    result |= VK_ACCESS_2_TRANSFER_READ_BIT;
+    if (HasFlag(accessFlag, E::TRANSFER_WRITE))                   result |= VK_ACCESS_2_TRANSFER_WRITE_BIT;
+    if (HasFlag(accessFlag, E::HOST_READ))                        result |= VK_ACCESS_2_HOST_READ_BIT;
+    if (HasFlag(accessFlag, E::HOST_WRITE))                       result |= VK_ACCESS_2_HOST_WRITE_BIT;
+    if (HasFlag(accessFlag, E::MEMORY_READ))                      result |= VK_ACCESS_2_MEMORY_READ_BIT;
+    if (HasFlag(accessFlag, E::MEMORY_WRITE))                     result |= VK_ACCESS_2_MEMORY_WRITE_BIT;
+    if (HasFlag(accessFlag, E::COLOR_ATTACHMENT_READ))            result |= VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT;
 
     return result;
 }
 
-VkPipelineStageFlagBits2 EnigmaRHI::Utilities::ToVulkanPipelineFlag(EPipelineStageFlag pipelineStateFlag)
+VkPipelineStageFlags2 EnigmaRHI::Utilities::ToVulkanPipelineFlag(EPipelineStageFlag pipelineStateFlag)
 {
-    VkPipelineStageFlagBits2 result = 0;
+    VkPipelineStageFlags2 result = VK_PIPELINE_STAGE_2_NONE;
 
-    if (HasFlag(pipelineStateFlag, EPipelineStageFlag::NONE))                               result |= VK_PIPELINE_STAGE_2_NONE;
     if (HasFlag(pipelineStateFlag, EPipelineStageFlag::TOP_OF_PIPE))                        result |= VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
     if (HasFlag(pipelineStateFlag, EPipelineStageFlag::VERTEX_SHADER))                      result |= VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT;
     if (HasFlag(pipelineStateFlag, EPipelineStageFlag::EARLY_FRAGMENT_TESTS))               result |= VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;

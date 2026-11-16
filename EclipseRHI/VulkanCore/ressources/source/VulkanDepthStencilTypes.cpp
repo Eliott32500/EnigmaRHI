@@ -3,10 +3,10 @@
 
 VkCompareOp EnigmaRHI::Utilities::ToVulkanCompareOp(ECompareOp compareOp)
 {
+	using E = ECompareOp;
+
 	switch (compareOp)
 	{
-		using E = ECompareOp;
-
 	case E::NEVER:					return VK_COMPARE_OP_NEVER;
 	case E::LESS:					return VK_COMPARE_OP_LESS;
 	case E::EQUAL:					return VK_COMPARE_OP_EQUAL;
@@ -15,8 +15,10 @@ VkCompareOp EnigmaRHI::Utilities::ToVulkanCompareOp(ECompareOp compareOp)
 	case E::NOT_EQUAL:				return VK_COMPARE_OP_NOT_EQUAL;
 	case E::GREATER_OR_EQUAL:		return VK_COMPARE_OP_GREATER_OR_EQUAL;
 	case E::ALWAYS:					return VK_COMPARE_OP_ALWAYS;
-	default:						LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan compare operation !");
 	};
+
+	LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan compare operation !");
+	return VK_COMPARE_OP_ALWAYS;
 }
 
 VkStencilFaceFlagBits EnigmaRHI::Utilities::ToVulkanStencilFace(EStencilFace face)
@@ -27,14 +29,17 @@ VkStencilFaceFlagBits EnigmaRHI::Utilities::ToVulkanStencilFace(EStencilFace fac
 	case EStencilFace::BACK:				return VK_STENCIL_FACE_BACK_BIT;
 	case EStencilFace::FRONT_AND_BACK:		return VK_STENCIL_FACE_FRONT_AND_BACK;
 	}
+
+	LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan stencil face !");
+	return VK_STENCIL_FACE_FRONT_AND_BACK;
 }
 
 VkStencilOp EnigmaRHI::Utilities::ToVulkanStencilOp(EStencilOp stencilOp)
 {
+	using E = EStencilOp;
+
 	switch (stencilOp)
 	{
-		using E = EStencilOp;
-
 	case E::KEEP:					return VK_STENCIL_OP_KEEP;
 	case E::ZERO:					return VK_STENCIL_OP_ZERO;
 	case E::REPLACE:				return VK_STENCIL_OP_REPLACE;
@@ -43,6 +48,8 @@ VkStencilOp EnigmaRHI::Utilities::ToVulkanStencilOp(EStencilOp stencilOp)
 	case E::INVERT:					return VK_STENCIL_OP_INVERT;
 	case E::INCREMENT_AND_WRAP:		return VK_STENCIL_OP_INCREMENT_AND_WRAP;
 	case E::DECREMENT_AND_WRAP:		return VK_STENCIL_OP_DECREMENT_AND_WRAP;
-	default:						LOG_ERROR(LogCategory::Vulkan, "Unsupported vulkan stencil operation !");
 	}
+
+	LOG_ERROR(ELogCategory::VULKAN, "Unsupported vulkan stencil operation !");
+	return VK_STENCIL_OP_KEEP;
 }

@@ -16,7 +16,7 @@ VkCullModeFlags EnigmaRHI::Utilities::ToVulkanCullMode(ECullMode mode)
 		case E::FRONT:				return VK_CULL_MODE_FRONT_BIT;
 		case E::BACK:				return VK_CULL_MODE_BACK_BIT;
 		case E::FRONT_AND_BACK:     return VK_CULL_MODE_FRONT_AND_BACK;
-		default:					LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan cull mode !");
+		default:					LOG_FATAL(ELogCategory::VULKAN, "Unsupported vulkan cull mode !");
 	}
 }
 
@@ -29,7 +29,7 @@ VkPolygonMode EnigmaRHI::Utilities::ToVulkanPolygonMode(EPolygonMode mode)
 		case E::FILL:		return VK_POLYGON_MODE_FILL;
 		case E::LINE:		return VK_POLYGON_MODE_LINE;
 		case E::POINT:		return VK_POLYGON_MODE_POINT;
-		default:			LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan polygon mode !");
+		default:			LOG_FATAL(ELogCategory::VULKAN, "Unsupported vulkan polygon mode !");
 	}
 }
 
@@ -44,7 +44,7 @@ VkPrimitiveTopology EnigmaRHI::Utilities::ToVulkanTopology(ETopologyMode mode)
 		case E::LINE_STRIP:			return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
 		case E::TRIANGLE_LIST:		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		case E::TRIANGLE_STRIP:		return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-		default:					LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan topology !");
+		default:					LOG_FATAL(ELogCategory::VULKAN, "Unsupported vulkan topology !");
 	}
 }
 
@@ -63,7 +63,7 @@ VkBlendFactor EnigmaRHI::Utilities::ToVulkanBlendFactor(EBlendFactor factor)
 		case E::ONE:					return VK_BLEND_FACTOR_ONE;
 		case E::SRC_ALPHA:				return VK_BLEND_FACTOR_SRC_ALPHA;
 		case E::ONE_MINUS_SRC_ALPHA:	return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		default:						LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan blend factor !");
+		default:						LOG_FATAL(ELogCategory::VULKAN, "Unsupported vulkan blend factor !");
 	}
 }
 
@@ -78,7 +78,7 @@ VkBlendOp EnigmaRHI::Utilities::ToVulkanBlendOp(EBlendOp operation)
 		case E::REVERSE_SUBTRACT:		return VK_BLEND_OP_REVERSE_SUBTRACT;
 		case E::MIN:					return VK_BLEND_OP_MIN;
 		case E::MAX:					return VK_BLEND_OP_MAX;
-		default:						LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan blend operation !");
+		default:						LOG_FATAL(ELogCategory::VULKAN, "Unsupported vulkan blend operation !");
 	}
 }
 
@@ -108,7 +108,7 @@ VkDynamicState EnigmaRHI::Utilities::ToVulkanDynamicState(EDynamicState dynamicS
 		case E::STENCIL_OP:						return VK_DYNAMIC_STATE_STENCIL_OP;
 		case E::RASTERIZER_DISCARD_ENABLE:		return VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE;
 		case E::DEPTH_BIAS_ENABLE:				return VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE;
-		default:								LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan dynamic state !");
+		default:								LOG_FATAL(ELogCategory::VULKAN, "Unsupported vulkan dynamic state !");
 	}
 }
 
@@ -120,7 +120,7 @@ VkVertexInputRate EnigmaRHI::Utilities::ToVulkanVertexInputRate(EVertexInputRate
 
 		case E::VERTEX:			return VK_VERTEX_INPUT_RATE_VERTEX;
 		case E::INSTANCE:		return VK_VERTEX_INPUT_RATE_INSTANCE;
-		default:				LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan vertex input rate !");
+		default:				LOG_FATAL(ELogCategory::VULKAN, "Unsupported vulkan vertex input rate !");
 	}
 }
 
@@ -151,7 +151,7 @@ VkFormat EnigmaRHI::Utilities::ToVulkanVertexFormat(EVertexFormat format)
 		case E::UBYTE4:						return VK_FORMAT_R8G8B8A8_UINT;
 		// Normalized Unsigned Byte
 		case E::UBYTE4_NORM:				return VK_FORMAT_R8G8B8A8_UNORM;
-		default:							LOG_FATAL(LogCategory::Vulkan, "Unsupported vulkan vertex format !");
+		default:							LOG_FATAL(ELogCategory::VULKAN, "Unsupported vulkan vertex format !");
 	}
 }
 
@@ -260,9 +260,9 @@ VkPipelineDepthStencilStateCreateInfo EnigmaRHI::Utilities::ToVulkanDepthStencil
 		.depthCompareOp = Utilities::ToVulkanCompareOp(depthStencilState.depthCompareOp),
 		.depthBoundsTestEnable = depthStencilState.depthBoundsTestEnable,
 		.stencilTestEnable = depthStencilState.stencilTestEnable,
-		.front = {}, // Optional
-		.back = {}, // Optional
-		.minDepthBounds = 0.0f, // Optional
-		.maxDepthBounds = 1.0f, // Optional
+		.front = {.compareOp = VK_COMPARE_OP_ALWAYS},
+		.back = {.compareOp = VK_COMPARE_OP_ALWAYS},
+		.minDepthBounds = 0.0f,
+		.maxDepthBounds = 1.0f,
 	};
 }

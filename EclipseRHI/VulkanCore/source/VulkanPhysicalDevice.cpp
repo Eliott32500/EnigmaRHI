@@ -15,7 +15,7 @@ namespace EnigmaRHI
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance->GetHandle(), &deviceCount, nullptr);
         if (deviceCount == 0)
-            LOG_FATAL(LogCategory::Vulkan, "Failed to find GPUs with Vulkan support !");
+            LOG_FATAL(ELogCategory::VULKAN, "Failed to find GPUs with Vulkan support !");
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance->GetHandle(), &deviceCount, devices.data());
@@ -25,12 +25,12 @@ namespace EnigmaRHI
             candidates.emplace(RateDeviceSuitability(device, surface->GetHandle()), device);
 
         if (candidates.rbegin()->first <= 0)
-            LOG_FATAL(LogCategory::Vulkan, "Failed to find a suitable GPU !");
+            LOG_FATAL(ELogCategory::VULKAN, "Failed to find a suitable GPU !");
 
         handle = candidates.rbegin()->second;
 
         vkGetPhysicalDeviceProperties(handle, &properties);
-        LOG_INFO(LogCategory::RHI, "Selected GPU : " + std::string(properties.deviceName));
+        LOG_INFO(ELogCategory::RHI, "Selected GPU : " + std::string(properties.deviceName));
 
         vkGetPhysicalDeviceMemoryProperties(handle, &memoryProperties);
         queueFamilies = FindQueueFamilies(handle, surface->GetHandle());
@@ -102,7 +102,7 @@ namespace EnigmaRHI
             {
                 if (needed && !supported)
                 {
-                    LOG_WARNING(LogCategory::Vulkan, std::string("Missing required feature: ") + name);
+                    LOG_WARNING(ELogCategory::VULKAN, std::string("Missing required feature: ") + name);
                     return false;
                 }
                 return true;
@@ -165,7 +165,7 @@ namespace EnigmaRHI
                 (memoryProperties.memoryTypes[i].propertyFlags & props) == props)
                 return i;
         }
-        LOG_FATAL(LogCategory::Vulkan, "Failed to find suitable memory type!");
+        LOG_FATAL(ELogCategory::VULKAN, "Failed to find suitable memory type!");
         return 0;
     }
 
@@ -190,7 +190,7 @@ namespace EnigmaRHI
             if ((supported & features) == features)
                 return format;
         }
-        LOG_FATAL(LogCategory::Vulkan, "Failed to find supported format!");
+        LOG_FATAL(ELogCategory::VULKAN, "Failed to find supported format!");
         return candidates.front();
     }
 
