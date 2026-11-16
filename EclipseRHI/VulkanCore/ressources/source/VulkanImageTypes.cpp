@@ -71,7 +71,7 @@ VkImageViewType EnigmaRHI::Utilities::ToVulkanImageViewType(EImageViewType viewT
 
 VkFilter EnigmaRHI::Utilities::ToVulkanFilter(EFilter mode)
 {
-    return mode == EFilter::NEAREST ? VK_FILTER_NEAREST : VK_FILTER_NEAREST;
+    return mode == EFilter::NEAREST ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
 }
 
 VkSamplerMipmapMode EnigmaRHI::Utilities::ToVulkanMipmapMode(EMipmapMode mode)
