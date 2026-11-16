@@ -285,7 +285,7 @@ void Application::DrawFrame()
 	EnigmaRHI::RenderingAttachment depthAttachment
 	{
 		.image = depthImage,
-		.imageLayout = EnigmaRHI::EImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+		.imageLayout = EnigmaRHI::EImageLayout::DEPTH_ATTACHMENT_OPTIMAL,
 		.loadOp = EnigmaRHI::ELoadOp::CLEAR,
 		.storeOp = EnigmaRHI::EStoreOp::DONT_CARE,
 		.clearDepth = 1.0f,
@@ -302,7 +302,7 @@ void Application::DrawFrame()
 		{}, EnigmaRHI::EAccessFlag::COLOR_ATTACHMENT_WRITE, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT);
 
 	cmd->TransitionImageLayout(depthImage,
-		EnigmaRHI::EImageLayout::UNDEFINED, EnigmaRHI::EImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+		EnigmaRHI::EImageLayout::UNDEFINED, EnigmaRHI::EImageLayout::DEPTH_ATTACHMENT_OPTIMAL,
 		EnigmaRHI::EAccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE,
 		EnigmaRHI::EAccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE,
 		EnigmaRHI::EPipelineStageFlag::EARLY_FRAGMENT_TESTS | EnigmaRHI::EPipelineStageFlag::LATE_FRAGMENT_TESTS,
