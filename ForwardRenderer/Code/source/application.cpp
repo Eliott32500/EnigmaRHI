@@ -244,9 +244,11 @@ void Application::DrawFrame()
 		return;
 	}
 
+	EnigmaRHI::Extent2D extent = swapChain->GetSwapChainExtent();
+
 	frameFences[frame]->Reset(device);
 
-	cam->UpdateCameraDataBuffer(device, frame, swapChain->GetSwapChainExtent(), mainWindow);
+	cam->UpdateCameraDataBuffer(device, frame, extent, mainWindow);
 	
 	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -262,8 +264,8 @@ void Application::DrawFrame()
 	{
 		.x = 0.0f,
 		.y = 0.0f,
-		.width = (float)swapChain->GetSwapChainExtent().width,
-		.height = (float)swapChain->GetSwapChainExtent().height,
+		.width = (float)extent.width,
+		.height = (float)extent.height,
 		.minDepth = 0.0f,
 		.maxDepth = 1.0f,
 	};
@@ -271,7 +273,7 @@ void Application::DrawFrame()
 	EnigmaRHI::Rect2D scissor
 	{
 		.offset = { 0, 0 },
-		.extent = swapChain->GetSwapChainExtent(),
+		.extent = extent,
 	};
 
 	EnigmaRHI::RenderingAttachment attachement
@@ -291,7 +293,7 @@ void Application::DrawFrame()
 	
 	EnigmaRHI::RenderingInfo info
 	{
-		.renderArea = {.offset = {0, 0}, .extent = swapChain->GetSwapChainExtent()},
+		.renderArea = {.offset = {0, 0}, .extent = extent},
 		.colorAttachments = {attachement},
 		.depthAttachment = &depthAttachment,
 	};

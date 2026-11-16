@@ -402,6 +402,7 @@ VkImageLayout EnigmaRHI::Utilities::ToVulkanImageLayout(EImageLayout imageLayout
         return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     default:
         return VK_IMAGE_LAYOUT_UNDEFINED;;
+    case E::DEPTH_ATTACHMENT_OPTIMAL:               return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
     }
 }
 

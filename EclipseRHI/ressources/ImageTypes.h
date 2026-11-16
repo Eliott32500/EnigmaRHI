@@ -120,6 +120,7 @@ namespace EnigmaRHI
         TRANSFER_SRC_OPTIMAL,
         TRANSFER_DST_OPTIMAL,
         PRESENT_SRC,
+        DEPTH_ATTACHMENT_OPTIMAL,
     };
 
     enum class ELoadOp
