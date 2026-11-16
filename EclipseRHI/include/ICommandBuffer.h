@@ -39,9 +39,7 @@ namespace EnigmaRHI
         virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1) = 0;
         virtual void Draw(uint32_t vertexCount, uint32_t instanceCount) = 0;
 
-        virtual void TransitionImageLayout(IImage* image, EImageLayout oldLayout, EImageLayout newLayout,
-            EAccessFlag srcMask, EAccessFlag destMask, EPipelineStageFlag srcStageFlag,
-            EPipelineStageFlag dstStageMask) = 0;
+        virtual void TransitionImage(IImage* image, EImageLayout newLayout) = 0;
 
         virtual void SetViewport(const Viewport& viewport) = 0;
         virtual void SetScissor(const Rect2D& scissor) = 0;

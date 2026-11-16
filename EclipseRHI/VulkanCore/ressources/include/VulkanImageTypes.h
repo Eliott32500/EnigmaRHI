@@ -5,6 +5,12 @@
 
 namespace EnigmaRHI::Utilities
 {
+	struct LayoutSync
+	{
+		VkPipelineStageFlags2 stage;
+		VkAccessFlags2 access;
+	};
+
 	VkFormat ToVulkanFormat(EImageFormat format);
 	VkImageType ToVulkanImageType(EImageType type);
 	VkImageViewType ToVulkanImageViewType(EImageViewType viewType);
@@ -27,4 +33,6 @@ namespace EnigmaRHI::Utilities
 
 	VkAccessFlags ToVulkanAccessFlag(EAccessFlag accessFlag);
 	VkPipelineStageFlagBits2 ToVulkanPipelineFlag(EPipelineStageFlag pipelineStateFlag);
+
+	LayoutSync GetLayoutSync(VkImageLayout layout, bool asSource);
 }

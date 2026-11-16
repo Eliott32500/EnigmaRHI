@@ -28,9 +28,7 @@ namespace EnigmaRHI
         void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1) override;
         void Draw(uint32_t vertexCount, uint32_t instanceCount) override;
 
-        void TransitionImageLayout(IImage* image, EImageLayout oldLayout, EImageLayout newLayout,
-            EAccessFlag srcAccessMask, EAccessFlag destAccessMask, EPipelineStageFlag srcStageMask,
-            EPipelineStageFlag dstStageMask) override;
+        void TransitionImage(IImage* image, EImageLayout newLayout) override;
 
         void SetViewport(const Viewport& viewport) override;
         void SetScissor(const Rect2D& scissor) override;

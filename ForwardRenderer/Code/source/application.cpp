@@ -298,15 +298,8 @@ void Application::DrawFrame()
 		.depthAttachment = &depthAttachment,
 	};
 
-	cmd->TransitionImageLayout(swapChain->GetCurrentImage(), EnigmaRHI::EImageLayout::UNDEFINED, EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-		{}, EnigmaRHI::EAccessFlag::COLOR_ATTACHMENT_WRITE, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT);
-
-	cmd->TransitionImageLayout(depthImage,
-		EnigmaRHI::EImageLayout::UNDEFINED, EnigmaRHI::EImageLayout::DEPTH_ATTACHMENT_OPTIMAL,
-		EnigmaRHI::EAccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE,
-		EnigmaRHI::EAccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE,
-		EnigmaRHI::EPipelineStageFlag::EARLY_FRAGMENT_TESTS | EnigmaRHI::EPipelineStageFlag::LATE_FRAGMENT_TESTS,
-		EnigmaRHI::EPipelineStageFlag::EARLY_FRAGMENT_TESTS | EnigmaRHI::EPipelineStageFlag::LATE_FRAGMENT_TESTS);
+	cmd->TransitionImage(swapChain->GetCurrentImage(), EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL);
+	cmd->TransitionImage(depthImage, EnigmaRHI::EImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
 	cmd->BeginRendering(info);
 	cmd->BindPipeline(pipeline);
@@ -318,8 +311,7 @@ void Application::DrawFrame()
 
 	cmd->EndRendering();
 
-	cmd->TransitionImageLayout(swapChain->GetCurrentImage(), EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL, EnigmaRHI::EImageLayout::PRESENT_SRC,
-		EnigmaRHI::EAccessFlag::COLOR_ATTACHMENT_WRITE, {}, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT, EnigmaRHI::EPipelineStageFlag::BOTTOM_OF_PIPE);
+	cmd->TransitionImage(swapChain->GetCurrentImage(), EnigmaRHI::EImageLayout::PRESENT_SRC);
 	
 	cmd->End();
 

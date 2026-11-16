@@ -62,6 +62,8 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 
+	imageLayout = imageInfo.initialLayout;
+
 	VulkanDevice& myDevice = device->API_Vulkan();
 	VkDevice vulkanDevice = myDevice.GetHandle();
 
@@ -119,9 +121,9 @@ void EnigmaRHI::VulkanImage::UploadData(IDevice* device, VulkanCommandPool* comm
 	stagingBuffer.Create(device, stagingDesc);
 	stagingBuffer.Write(device, data, imageSize);
 
-	TransitionLayout(&dev, commandPool, desc.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	TransitionLayout(&dev, commandPool, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	CopyFromBuffer(&dev, commandPool, stagingBuffer.GetHandle(), desc.extent);
-	TransitionLayout(&dev, commandPool, desc.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	TransitionLayout(&dev, commandPool, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	stagingBuffer.Destroy(&dev);
 }
@@ -241,80 +243,41 @@ void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, ImageSampler im
 }
 
 
-void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, EImageFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+void EnigmaRHI::VulkanImage::RecordTransition(VkCommandBuffer cmd, VkImageLayout newLayout)
 {
-	VkCommandBuffer commandBuffer = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetHandle());
+	const Utilities::LayoutSync src = Utilities::GetLayoutSync(imageLayout, true);
+	const Utilities::LayoutSync dst = Utilities::GetLayoutSync(newLayout, false);
 
-	VkImageMemoryBarrier imageMemoryBarrier
+	VkImageMemoryBarrier2 barrier
 	{
-		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		.srcAccessMask = 0, // TODO
-		.dstAccessMask = 0, // TODO
-		.oldLayout = oldLayout,
+		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+		.srcStageMask = src.stage,
+		.srcAccessMask = src.access,
+		.dstStageMask = dst.stage,
+		.dstAccessMask = dst.access,
+		.oldLayout = imageLayout,
 		.newLayout = newLayout,
 		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.image = image,
+		.subresourceRange = { aspectMask, 0, 1, 0, 1 },
 	};
 
-	imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-	imageMemoryBarrier.subresourceRange.levelCount = 1;
-	imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-	imageMemoryBarrier.subresourceRange.layerCount = 1;
+	VkDependencyInfo dependency{
+		.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+		.imageMemoryBarrierCount = 1,
+		.pImageMemoryBarriers = &barrier,
+	};
+	vkCmdPipelineBarrier2(cmd, &dependency);
 
-	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-	{
-		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	imageLayout = newLayout;
+}
 
-		if (Utilities::HasStencilComponent(format))
-			imageMemoryBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-	}
-	else
-	{
-		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	}
-
-	VkPipelineStageFlags sourceStage;
-	VkPipelineStageFlags destinationStage;
-
-	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-		imageMemoryBarrier.srcAccessMask = 0;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-		imageMemoryBarrier.srcAccessMask = 0;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	}
-	else {
-		throw std::invalid_argument("unsupported layout transition!");
-	}
-
-
-	vkCmdPipelineBarrier
-	(
-		commandBuffer,
-		sourceStage, destinationStage,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &imageMemoryBarrier
-	);
-
-	commandPool->EndSingleTimeCommands(device, commandBuffer);
+void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, VkImageLayout newLayout)
+{
+	VkCommandBuffer cmd = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetHandle());
+	RecordTransition(cmd, newLayout);
+	commandPool->EndSingleTimeCommands(device, cmd);
 }
 
 void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* commandPool, VkBuffer buffer, Extent3D extent)

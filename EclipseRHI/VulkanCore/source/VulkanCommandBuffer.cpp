@@ -176,38 +176,9 @@ void EnigmaRHI::VulkanCommandBuffer::Draw(uint32_t vertexCount, uint32_t instanc
     vkCmdDraw(commandBuffer, vertexCount, instanceCount, 0, 0);
 }
 
-void EnigmaRHI::VulkanCommandBuffer::TransitionImageLayout(IImage* image, EImageLayout oldLayout, EImageLayout newLayout,
-    EAccessFlag srcAccessMask, EAccessFlag destAccessMask, EPipelineStageFlag srcStageMask,
-    EPipelineStageFlag dstStageMask)
+void EnigmaRHI::VulkanCommandBuffer::TransitionImage(IImage* image, EImageLayout newLayout)
 {
-    VkImageMemoryBarrier2 barrier
-    {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-        .srcStageMask = Utilities::ToVulkanPipelineFlag(srcStageMask),
-        .srcAccessMask = Utilities::ToVulkanAccessFlag(srcAccessMask),
-        .dstStageMask = Utilities::ToVulkanPipelineFlag(dstStageMask),
-        .dstAccessMask = Utilities::ToVulkanAccessFlag(destAccessMask),
-        .oldLayout = Utilities::ToVulkanImageLayout(oldLayout),
-        .newLayout = Utilities::ToVulkanImageLayout(newLayout),
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = image->API_Vulkan().GetImage(),
-        .subresourceRange = {
-               .aspectMask = image->API_Vulkan().GetAspectMask(),
-               .baseMipLevel = 0,
-               .levelCount = 1,
-               .baseArrayLayer = 0,
-               .layerCount = 1} 
-    };
-
-    VkDependencyInfo dependencyInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-        .imageMemoryBarrierCount = 1,
-        .pImageMemoryBarriers = &barrier
-    };
-
-    vkCmdPipelineBarrier2(commandBuffer, &dependencyInfo);
+    image->API_Vulkan().RecordTransition(commandBuffer, Utilities::ToVulkanImageLayout(newLayout));
 }
 
 void EnigmaRHI::VulkanCommandBuffer::SetViewport(const Viewport& viewport)

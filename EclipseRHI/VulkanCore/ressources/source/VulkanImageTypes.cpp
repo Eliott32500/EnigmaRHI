@@ -1,4 +1,5 @@
 #include "VulkanImageTypes.h"
+#include "VulkanImageTypes.h"
 #include "RHILog.h"
 
 VkFormat EnigmaRHI::Utilities::ToVulkanFormat(EImageFormat format)
@@ -303,4 +304,20 @@ VkPipelineStageFlagBits2 EnigmaRHI::Utilities::ToVulkanPipelineFlag(EPipelineSta
     if (HasFlag(pipelineStateFlag, EPipelineStageFlag::ALL_COMMANDS))                       result |= VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
 
     return result;
+}
+
+EnigmaRHI::Utilities::LayoutSync EnigmaRHI::Utilities::GetLayoutSync(VkImageLayout layout, bool asSource)
+{
+    switch (layout)
+    {
+    case VK_IMAGE_LAYOUT_UNDEFINED:                             return { VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_NONE };
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:                       return asSource ? LayoutSync{ VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_NONE } : LayoutSync{ VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE };
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:                  return { VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT };
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:                  return { VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_READ_BIT };
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:              return { VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT };
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:              return { VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT };
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:      return { VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT, 
+                                                                            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT };
+    default:                                                    return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,  VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT };
+    }
 }
