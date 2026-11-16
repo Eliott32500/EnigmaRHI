@@ -25,28 +25,30 @@ public:
 
 private:
 
-	EnigmaRHI::IRenderInterface* rhi;
+	EnigmaRHI::IRenderInterface* rhi = nullptr;
 
-	EnigmaRHI::IInstance* instance;
-	EnigmaRHI::IDevice* device;
-	EnigmaRHI::ISwapChain* swapChain;
-	EnigmaRHI::ICommandPool* commandPool;
-	EnigmaRHI::IBindingLayout* bindingLayout;
-	EnigmaRHI::IImage* roomTexture;
-	EnigmaRHI::IDescriptor* descriptor;
-	EnigmaRHI::IPipeline* pipeline;
-	EnigmaRHI::ISurface* surface;
-	EnigmaRHI::ISync* syncronizer;
-	EnigmaRHI::IShaderModule* vertShader;
-	EnigmaRHI::IShaderModule* fragShader;
+	EnigmaRHI::IInstance* instance = nullptr;
+	EnigmaRHI::IDevice* device = nullptr;
+	EnigmaRHI::ISwapChain* swapChain = nullptr;
+	EnigmaRHI::ICommandPool* commandPool = nullptr;
+	EnigmaRHI::IBindingLayout* bindingLayout = nullptr;
+	EnigmaRHI::IImage* roomTexture = nullptr;
+	EnigmaRHI::IDescriptor* descriptor = nullptr;
+	EnigmaRHI::IPipeline* pipeline = nullptr;
+	EnigmaRHI::ISurface* surface = nullptr;
+	EnigmaRHI::ISync* syncronizer = nullptr;
+	EnigmaRHI::IShaderModule* vertShader = nullptr;
+	EnigmaRHI::IShaderModule* fragShader = nullptr;
 
-	Camera* cam;
-	Model* model;
+	EnigmaRHI::IImage* depthImage = nullptr;
+
+	Camera* cam = nullptr;
+	Model* model = nullptr;
 
 	void InitAPI();
 	void MainLoop();
 	void CleanUp();
-
+	void CreateDepthImage();
 
 	GLFWwindow* mainWindow = nullptr;
 

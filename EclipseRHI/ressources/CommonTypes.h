@@ -84,6 +84,8 @@ namespace EnigmaRHI
         EStoreOp storeOp = EStoreOp::STORE;
 
         Color clearColor{};
+        float clearDepth = 1.0f;
+        uint32_t clearStencil = 0;
     };
 
     struct RenderingInfo

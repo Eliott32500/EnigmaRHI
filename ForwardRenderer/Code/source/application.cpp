@@ -130,10 +130,9 @@ void Application::InitAPI()
 		.usage = EnigmaRHI::EImageUsage::SAMPLED | EnigmaRHI::EImageUsage::TRANSFER_DST,
 		.sampler = sampler,
 		.extent = {tex.width, tex.height, 1},
-		.data = tex.pixels,
 	};
 
-	roomTexture = device->CreateImageTexture(commandPool, imageDesc);
+	roomTexture = device->CreateImageWithData(commandPool, imageDesc, tex.pixels);
 
 	model = new Model();
 	model->LoadModel(MODEL_PATH);
@@ -157,6 +156,27 @@ void Application::InitAPI()
 	{
 		frameFences[i] = device->CreateFence(true);
 	}
+
+	CreateDepthImage();
+}
+
+void Application::CreateDepthImage()
+{
+	if (depthImage)
+	{
+		device->DeleteImage(depthImage);
+		depthImage = nullptr;
+	}
+
+	EnigmaRHI::ImageDesc depthDesc
+	{
+		.type = EnigmaRHI::EImageType::TYPE_2D,
+		.viewType = EnigmaRHI::EImageViewType::VIEW_2D,
+		.format = device->FindDepthFormat(),
+		.usage = EnigmaRHI::EImageUsage::DEPTH_STENCIL_ATTACHMENT,
+		.extent = swapChain->GetSwapChainExtent(),
+	};
+	depthImage = device->CreateImage(depthDesc);
 }
 
 void Application::MainLoop()
@@ -172,19 +192,22 @@ void Application::MainLoop()
 
 void Application::CleanUp()
 {
-	swapChain->Destroy(device);
-	pipeline->Destroy(device);
-	roomTexture->Destroy(device);
+	for (auto* fence : frameFences)
+		device->DeleteFence(fence);
 
-	for (auto* s : frameSets) device->DeleteBindingSet(s);
-		device->DeleteBindingLayout(bindingLayout);
+	for (auto* s : frameSets)
+	{
+		device->DeleteBindingSet(s);
+	}
+	device->DeleteBindingLayout(bindingLayout);
+
+	device->DeleteImage(depthImage);
+	device->DeleteImage(roomTexture);
 
 	model->Destroy(device);
 	cam->Destroy(device);
-	for (int i = 0; i < frameFences.size(); i++)
-	{
-		frameFences[i]->Destroy(device);
-	}
+	pipeline->Destroy(device);
+	swapChain->Destroy(device);
 	commandPool->Destroy(device);
 	fragShader->Destroy(device);
 	vertShader->Destroy(device);
@@ -196,7 +219,6 @@ void Application::CleanUp()
 	rhi->DeleteShaderModule(fragShader);
 	rhi->DeleteShaderModule(vertShader);
 	rhi->DeletePipeline(pipeline);
-	device->DeleteImage(roomTexture);
 	delete model;
 	delete cam;
 	rhi->DeleteCommandPool(commandPool);
@@ -257,15 +279,32 @@ void Application::DrawFrame()
 		.image = swapChain->GetCurrentImage(),
 		.clearColor = {0, 0, 0, 0},
 	};
+
+	EnigmaRHI::RenderingAttachment depthAttachment
+	{
+		.image = depthImage,
+		.imageLayout = EnigmaRHI::EImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+		.loadOp = EnigmaRHI::ELoadOp::CLEAR,
+		.storeOp = EnigmaRHI::EStoreOp::DONT_CARE,
+		.clearDepth = 1.0f,
+	};
 	
 	EnigmaRHI::RenderingInfo info
 	{
 		.renderArea = {.offset = {0, 0}, .extent = swapChain->GetSwapChainExtent()},
 		.colorAttachments = {attachement},
+		.depthAttachment = &depthAttachment,
 	};
 
 	cmd->TransitionImageLayout(swapChain->GetCurrentImage(), EnigmaRHI::EImageLayout::UNDEFINED, EnigmaRHI::EImageLayout::COLOR_ATTACHMENT_OPTIMAL,
 		{}, EnigmaRHI::EAccessFlag::COLOR_ATTACHMENT_WRITE, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT, EnigmaRHI::EPipelineStageFlag::COLOR_ATTACHMENT_OUTPUT);
+
+	cmd->TransitionImageLayout(depthImage,
+		EnigmaRHI::EImageLayout::UNDEFINED, EnigmaRHI::EImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+		EnigmaRHI::EAccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE,
+		EnigmaRHI::EAccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE,
+		EnigmaRHI::EPipelineStageFlag::EARLY_FRAGMENT_TESTS | EnigmaRHI::EPipelineStageFlag::LATE_FRAGMENT_TESTS,
+		EnigmaRHI::EPipelineStageFlag::EARLY_FRAGMENT_TESTS | EnigmaRHI::EPipelineStageFlag::LATE_FRAGMENT_TESTS);
 
 	cmd->BeginRendering(info);
 	cmd->BindPipeline(pipeline);
@@ -303,4 +342,5 @@ void Application::ResizeSwapChain()
         return;
 
 	swapChain->Resize(device, surface, EnigmaRHI::Extent2D{ (uint32_t)w, (uint32_t)h });
+	CreateDepthImage();
 }

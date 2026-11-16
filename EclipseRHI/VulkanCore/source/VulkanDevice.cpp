@@ -128,17 +128,21 @@ namespace EnigmaRHI
         delete buffer;
     }
 
-    IImage* VulkanDevice::CreateImage(ImageDesc imageDesc)
+    IImage* VulkanDevice::CreateImage(ImageDesc& imageDesc)
     {
         IImage* image = new VulkanImage();
         image->Create(this, imageDesc);
         return image;
     }
 
-    IImage* VulkanDevice::CreateImageTexture(ICommandPool* commandPool, ImageDesc imageDesc)
+    IImage* VulkanDevice::CreateImageWithData(ICommandPool* commandPool, const ImageDesc& desc, const void* data)
     {
-        IImage* image = new VulkanImage();
-        image->CreateTextureImage(this, commandPool, imageDesc);
+        ImageDesc d = desc;
+        d.usage |= EImageUsage::SAMPLED | EImageUsage::TRANSFER_DST;
+
+        VulkanImage* image = new VulkanImage();
+        image->Create(this, d);
+        image->UploadData(this, &commandPool->API_Vulkan(), d, data);
         return image;
     }
 

@@ -10,7 +10,7 @@ namespace EnigmaRHI
     public:
 
         void Create(IDevice* device, ImageDesc& imageDesc) override;
-        void CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc& imageDesc) override;
+        void UploadData(IDevice* device, VulkanCommandPool* commandPool, const ImageDesc& desc, const void* data) override;
         void CreateFromExisting(VulkanDevice* device, VkImage existingImage, VkFormat format, VkImageAspectFlags aspectFlags);
         void CreateView(VulkanDevice* device, VkFormat format, VkImageAspectFlags aspect);
 
@@ -19,6 +19,7 @@ namespace EnigmaRHI
         VkDeviceMemory GetMemory() const { return memory; }
         VkSampler GetSampler() const { return sampler; }
         VkImageLayout GetImageLayout() const { return imageLayout; }
+        VkImageAspectFlags GetAspectMask() const { return aspectMask; }
 
         void Destroy(IDevice* device) override;
 
@@ -30,6 +31,7 @@ namespace EnigmaRHI
         VkImageView view = VK_NULL_HANDLE;
         VkSampler sampler = VK_NULL_HANDLE;
         VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         bool ownsImage = false;
 
         void CreateView(VulkanDevice* device, const ImageDesc& imageDesc, VkImageAspectFlags aspect);

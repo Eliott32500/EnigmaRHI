@@ -46,10 +46,10 @@ void EnigmaRHI::VulkanCommandBuffer::Reset()
 		LOG_FATAL(LogCategory::Vulkan, "Failed to reset command buffer!");
 }
 
-void EnigmaRHI::VulkanCommandBuffer::BeginRendering(
-    const RenderingInfo& renderingInfo)
+void EnigmaRHI::VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
 {
     std::vector<VkRenderingAttachmentInfo> colorAttachments;
+    VkRenderingAttachmentInfo depthAttachment{};
 
     for (const auto& attachment : renderingInfo.colorAttachments)
     {
@@ -78,6 +78,22 @@ void EnigmaRHI::VulkanCommandBuffer::BeginRendering(
         colorAttachments.push_back(colorAttachment);
     }
 
+    if (renderingInfo.depthAttachment)
+    {
+        const RenderingAttachment& d = *renderingInfo.depthAttachment;
+
+        depthAttachment = 
+        {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .imageView = d.image->API_Vulkan().GetImageView(),
+            .imageLayout = Utilities::ToVulkanImageLayout(d.imageLayout),
+            .resolveMode = VK_RESOLVE_MODE_NONE,
+            .loadOp = Utilities::ToVulkanLoadOp(d.loadOp),
+            .storeOp = Utilities::ToVulkanStoreOp(d.storeOp),
+            .clearValue = {.depthStencil = { d.clearDepth, d.clearStencil } },
+        };
+    }
+
     VkRenderingInfo info
     {
         .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
@@ -100,7 +116,7 @@ void EnigmaRHI::VulkanCommandBuffer::BeginRendering(
             colorAttachments.size()
         ),
         .pColorAttachments = colorAttachments.data(),
-        .pDepthAttachment = nullptr,
+        .pDepthAttachment = renderingInfo.depthAttachment ? &depthAttachment : nullptr,
         .pStencilAttachment = nullptr
     };
 
@@ -177,7 +193,7 @@ void EnigmaRHI::VulkanCommandBuffer::TransitionImageLayout(IImage* image, EImage
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = image->API_Vulkan().GetImage(),
         .subresourceRange = {
-               .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+               .aspectMask = image->API_Vulkan().GetAspectMask(),
                .baseMipLevel = 0,
                .levelCount = 1,
                .baseArrayLayer = 0,

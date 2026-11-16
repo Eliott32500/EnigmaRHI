@@ -21,8 +21,8 @@ namespace EnigmaRHI
         IBuffer* CreateBuffer(const BufferDesc& desc) override;
         IBuffer* CreateBufferWithData(ICommandPool* commandPool, const BufferDesc& desc, const void* data);
         void DeleteBuffer(IBuffer* buffer) override;
-        IImage* CreateImage(ImageDesc imageDesc) override;
-        IImage* CreateImageTexture(ICommandPool* commandPool, ImageDesc imageDesc) override;
+        IImage* CreateImage(ImageDesc& desc) override;
+        IImage* CreateImageWithData(ICommandPool* commandPool, const ImageDesc& desc, const void* data) override;
         void DeleteImage(IImage* image) override;
         IFence* CreateFence(bool signaled = false) override;
         void DeleteFence(IFence* fence) override;

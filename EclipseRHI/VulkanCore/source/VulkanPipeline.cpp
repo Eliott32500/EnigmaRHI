@@ -99,13 +99,15 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil = Utilities::ToVulkanDepthStencilPipelineState(gp.depthStencilState);
 
-	VkFormat renderingFormat = Utilities::ToVulkanFormat(swapChain->GetSwapChainImageFormat());
+	VkFormat colorFormat = Utilities::ToVulkanFormat(swapChain->GetSwapChainImageFormat());
+	VkFormat depthFormat = Utilities::ToVulkanFormat(device->FindDepthFormat());
 
 	VkPipelineRenderingCreateInfoKHR renderingPipelineInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
 		.colorAttachmentCount = 1,
-		.pColorAttachmentFormats = &renderingFormat,
+		.pColorAttachmentFormats = &colorFormat,
+		.depthAttachmentFormat = depthFormat,
 	};
 
 	VkGraphicsPipelineCreateInfo graphicsPipelineInfo

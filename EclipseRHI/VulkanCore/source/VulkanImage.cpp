@@ -62,7 +62,7 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 
-	const VulkanDevice& myDevice = device->API_Vulkan();
+	VulkanDevice& myDevice = device->API_Vulkan();
 	VkDevice vulkanDevice = myDevice.GetHandle();
 
 	if (vkCreateImage(vulkanDevice, &imageInfo, nullptr, &image) != VK_SUCCESS)
@@ -71,6 +71,17 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 	AllocateImageMemory(myDevice, image);
 
 	ownsImage = true;
+
+	if (isDepth)
+	{
+		aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (Utilities::HasStencilComponent(imageDesc.format))
+			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+	}
+	CreateView(&myDevice, imageDesc, aspectMask);
+
+	if (imageInfo.usage & VK_IMAGE_USAGE_SAMPLED_BIT)
+		CreateSampler(&myDevice, imageDesc.sampler);
 }
 
 
@@ -92,24 +103,10 @@ void EnigmaRHI::VulkanImage::AllocateImageMemory(const VulkanDevice& device, con
 	vkBindImageMemory(device.GetHandle(), image, memory, 0);
 }
 
-void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc& imageDesc)
+void EnigmaRHI::VulkanImage::UploadData(IDevice* device, VulkanCommandPool* commandPool, const ImageDesc& desc, const void* data)
 {
-	if (!imageDesc.data)
-	{
-		LOG_ERROR(LogCategory::Vulkan, "Try to create a textureimage without data inside !");
-
-		VulkanDevice& dev = device->API_Vulkan();
-		Create(device, imageDesc);
-		CreateView(&dev, imageDesc, VK_IMAGE_ASPECT_COLOR_BIT);
-		CreateSampler(&dev, imageDesc.sampler);
-
-		ownsImage = true;
-
-		return;
-	}
-
 	VulkanDevice& dev = device->API_Vulkan();
-	VkDeviceSize imageSize = static_cast<VkDeviceSize>(imageDesc.extent.width) * imageDesc.extent.height * Utilities::BytesPerPixel(imageDesc.format);
+	VkDeviceSize imageSize = static_cast<VkDeviceSize>(desc.extent.width) * desc.extent.height * Utilities::BytesPerPixel(desc.format);
 
 	BufferDesc stagingDesc
 	{
@@ -120,21 +117,13 @@ void EnigmaRHI::VulkanImage::CreateTextureImage(IDevice* device, ICommandPool* c
 
 	VulkanBuffer stagingBuffer;
 	stagingBuffer.Create(device, stagingDesc);
-	stagingBuffer.Write(device, imageDesc.data, imageSize);
+	stagingBuffer.Write(device, data, imageSize);
 
-	imageDesc.usage |= EImageUsage::SAMPLED | EImageUsage::TRANSFER_DST;
-	Create(device, imageDesc);
-
-	TransitionLayout(&dev, &commandPool->API_Vulkan(), imageDesc.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	CopyFromBuffer(&dev, &commandPool->API_Vulkan(), stagingBuffer.GetHandle(), imageDesc.extent);
-	TransitionLayout(&dev, &commandPool->API_Vulkan(), imageDesc.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	TransitionLayout(&dev, commandPool, desc.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	CopyFromBuffer(&dev, commandPool, stagingBuffer.GetHandle(), desc.extent);
+	TransitionLayout(&dev, commandPool, desc.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	stagingBuffer.Destroy(&dev);
-
-	CreateView(&dev, imageDesc, VK_IMAGE_ASPECT_COLOR_BIT);
-	CreateSampler(&dev, imageDesc.sampler);
-
-	ownsImage = true;
 }
 
 void EnigmaRHI::VulkanImage::CreateFromExisting(VulkanDevice* device, VkImage existingImage, VkFormat format, VkImageAspectFlags aspectFlags)
@@ -151,6 +140,12 @@ void EnigmaRHI::VulkanImage::CreateFromExisting(VulkanDevice* device, VkImage ex
 
 void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, VkImageAspectFlags aspect)
 {
+	if (view != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView(device->GetHandle(), view, nullptr);
+		view = VK_NULL_HANDLE;
+	}
+
 	VkImageViewCreateInfo viewInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -171,6 +166,12 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, V
 
 void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, const ImageDesc& imageDesc, VkImageAspectFlags aspect)
 {
+	if (view != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView(device->GetHandle(), view, nullptr);
+		view = VK_NULL_HANDLE;
+	}
+
 	VkImageViewCreateInfo viewInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -191,6 +192,12 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, const ImageDesc& i
 
 void EnigmaRHI::VulkanImage::CreateSampler(VulkanDevice* device, ImageSampler imageSampler)
 {
+	if (sampler != VK_NULL_HANDLE)
+	{
+		vkDestroySampler(device->GetHandle(), sampler, nullptr);
+		sampler = VK_NULL_HANDLE;
+	}
+
 	const float deviceMax = device->GetCapabilities().limits.maxSamplerAnisotropy;
 	const float requested = imageSampler.maxAnisotropy;
 

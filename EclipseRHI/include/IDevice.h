@@ -26,8 +26,8 @@ namespace EnigmaRHI
 		virtual IBuffer* CreateBuffer(const BufferDesc& desc) = 0;
 		virtual IBuffer* CreateBufferWithData(ICommandPool* commandPool, const BufferDesc& desc, const void* data) = 0;
 		virtual void DeleteBuffer(IBuffer* buffer) = 0;
-		virtual IImage* CreateImage(ImageDesc imageDesc) = 0;
-		virtual IImage* CreateImageTexture(ICommandPool* commandPool, ImageDesc imageDesc) = 0;
+		virtual IImage* CreateImage(ImageDesc& desc) = 0;
+		virtual IImage* CreateImageWithData(ICommandPool* commandPool, const ImageDesc& desc, const void* data) = 0;
 		virtual void DeleteImage(IImage* image) = 0;
 		virtual IFence* CreateFence(bool signaled = false) = 0;
 		virtual void DeleteFence(IFence* fence) = 0;

@@ -23,7 +23,6 @@ namespace EnigmaRHI
 		uint32_t mipLevels = 1;
 		uint32_t arrayLayers = 1;
 		uint32_t sampleCount = 1;
-		const void* data = nullptr;
 	};
 
 	class IImage
@@ -33,7 +32,8 @@ namespace EnigmaRHI
 		virtual ~IImage() = default;
 
 		virtual void Create(IDevice* device, ImageDesc& imageDesc) = 0;
-		virtual void CreateTextureImage(IDevice* device, ICommandPool* commandPool, ImageDesc& imageDesc) = 0;
+		virtual void UploadData(IDevice* device, VulkanCommandPool* commandPool, const ImageDesc& desc, const void* data) = 0;
+
 		virtual void Destroy(IDevice* device) = 0;
 
 		virtual VulkanImage& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanImage"); }
