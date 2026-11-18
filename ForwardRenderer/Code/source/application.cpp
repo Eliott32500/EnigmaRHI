@@ -127,9 +127,10 @@ void Application::InitAPI()
 		.type = EnigmaRHI::EImageType::TYPE_2D,
 		.viewType = EnigmaRHI::EImageViewType::VIEW_2D,
 		.format = tex.format,
-		.usage = EnigmaRHI::EImageUsage::SAMPLED | EnigmaRHI::EImageUsage::TRANSFER_DST,
+		.usage = EnigmaRHI::EImageUsage::SAMPLED | EnigmaRHI::EImageUsage::TRANSFER_DST | EnigmaRHI::EImageUsage::TRANSFER_SRC,
 		.sampler = sampler,
 		.extent = {tex.width, tex.height, 1},
+		.mipLevels = tex.mipLevels,
 	};
 
 	roomTexture = device->CreateImageWithData(commandPool, imageDesc, tex.pixels);
@@ -175,6 +176,7 @@ void Application::CreateDepthImage()
 		.format = device->FindDepthFormat(),
 		.usage = EnigmaRHI::EImageUsage::DEPTH_STENCIL_ATTACHMENT,
 		.extent = swapChain->GetSwapChainExtent(),
+		.mipLevels = 1,
 	};
 	depthImage = device->CreateImage(depthDesc);
 }

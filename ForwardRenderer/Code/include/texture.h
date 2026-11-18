@@ -47,6 +47,7 @@ public:
     uint32_t     height = 0;
     uint32_t     sourceChannels = 0;
     EnigmaRHI::EImageFormat format = EnigmaRHI::EImageFormat::UNDEFINED;
+    uint32_t     mipLevels = 1;
 };
 
 TextureData LoadTexture(const std::string& path, const TextureLoadOptions& options = {});

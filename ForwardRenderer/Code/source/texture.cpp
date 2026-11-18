@@ -63,6 +63,7 @@ TextureData LoadTexture(const std::string& path, const TextureLoadOptions& optio
     result.width = static_cast<uint32_t>(w);
     result.height = static_cast<uint32_t>(h);
     result.sourceChannels = static_cast<uint32_t>(channels);
+    result.mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(w, h)))) + 1;
 
     LOG_INFOF(ELogCategory::VULKAN, "Texture loaded: '{}' ({}x{}, {} ch source, {})",
         path, w, h, channels, isHDR ? "HDR" : "LDR");

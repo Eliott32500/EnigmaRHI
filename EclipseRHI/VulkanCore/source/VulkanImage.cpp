@@ -4,6 +4,7 @@
 #include "VulkanDepthStencilTypes.h"
 #include <assert.h>
 #include <algorithm>
+#include <array>
 
 void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 {
@@ -63,6 +64,7 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 	};
 
 	imageLayout = imageInfo.initialLayout;
+	mipLevels = imageInfo.mipLevels;
 
 	VulkanDevice& myDevice = device->API_Vulkan();
 	VkDevice vulkanDevice = myDevice.GetHandle();
@@ -123,7 +125,11 @@ void EnigmaRHI::VulkanImage::UploadData(IDevice* device, VulkanCommandPool* comm
 
 	TransitionLayout(&dev, commandPool, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	CopyFromBuffer(&dev, commandPool, stagingBuffer.GetHandle(), desc.extent);
-	TransitionLayout(&dev, commandPool, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	if (desc.mipLevels > 1)
+		GenerateMipmaps(&dev, commandPool, desc);
+	else
+		TransitionLayout(&dev, commandPool, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	stagingBuffer.Destroy(&dev);
 }
@@ -158,7 +164,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, V
 
 	viewInfo.subresourceRange.aspectMask = aspect;
 	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.levelCount = mipLevels;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = 1;
 
@@ -184,7 +190,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, const ImageDesc& i
 
 	viewInfo.subresourceRange.aspectMask = aspect;
 	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.levelCount = imageDesc.mipLevels;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = imageDesc.arrayLayers;
 
@@ -260,7 +266,7 @@ void EnigmaRHI::VulkanImage::RecordTransition(VkCommandBuffer cmd, VkImageLayout
 		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.image = image,
-		.subresourceRange = { aspectMask, 0, 1, 0, 1 },
+		.subresourceRange = { aspectMask, 0, mipLevels, 0, 1 },
 	};
 
 	VkDependencyInfo dependency{
@@ -303,6 +309,136 @@ void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandP
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
 	commandPool->EndSingleTimeCommands(device, commandBuffer);
+}
+
+void EnigmaRHI::VulkanImage::GenerateMipmaps(VulkanDevice* device, VulkanCommandPool* commandPool, const ImageDesc& desc)
+{
+	VkFormatProperties formatProperties;
+	vkGetPhysicalDeviceFormatProperties(device->GetPhysicalDevice().Handle(), Utilities::ToVulkanFormat(desc.format), &formatProperties);
+	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+		throw std::runtime_error("texture image format does not support linear blitting!");
+	}
+
+	VkCommandBuffer cmd = commandPool->BeginSingleTimeCommands(
+		device,
+		commandPool->GetCommandBuffer(0)->API_Vulkan().GetHandle()
+	);
+
+	int32_t mipWidth = desc.extent.width;
+	int32_t mipHeight = desc.extent.height;
+
+	VkImageMemoryBarrier2 barrier
+	{
+		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+		.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+		.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
+		.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+		.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT,
+		.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.image = image,
+		.subresourceRange =
+		{
+			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			.baseMipLevel = 0,
+			.levelCount = 1,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		}
+	};
+
+	for (uint32_t i = 1; i < mipLevels; i++)
+	{
+		barrier.subresourceRange.baseMipLevel = i - 1;
+
+		VkDependencyInfo info
+		{
+			.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+			.imageMemoryBarrierCount = 1,
+			.pImageMemoryBarriers = &barrier
+		};
+
+		vkCmdPipelineBarrier2(cmd, &info);
+
+		VkImageBlit blit
+		{
+			.srcSubresource =
+			{
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.mipLevel = i - 1,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			},
+			.dstSubresource =
+			{
+				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+				.mipLevel = i,
+				.baseArrayLayer = 0,
+				.layerCount = 1
+			}
+		};
+
+		blit.srcOffsets[0] = { 0, 0, 0 };
+		blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+
+		const int32_t nextWidth = (std::max)(1, mipWidth / 2);
+		const int32_t nextHeight = (std::max)(1, mipHeight / 2);
+
+		blit.dstOffsets[0] = { 0, 0, 0 };
+		blit.dstOffsets[1] = { nextWidth, nextHeight, 1 };
+
+		vkCmdBlitImage(
+			cmd,
+			image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1, &blit,
+			VK_FILTER_LINEAR
+		);
+
+		barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+		barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+		barrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+		barrier.dstAccessMask = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		info.pImageMemoryBarriers = &barrier;
+
+		vkCmdPipelineBarrier2(cmd, &info);
+
+		barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+		barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+		barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+		barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+
+		mipWidth = nextWidth;
+		mipHeight = nextHeight;
+	}
+
+	barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+	barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+	barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+	barrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+	barrier.dstAccessMask = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkDependencyInfo dependency
+	{
+		.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+		.imageMemoryBarrierCount = 1,
+		.pImageMemoryBarriers = &barrier
+	};
+
+	vkCmdPipelineBarrier2(cmd, &dependency);
+
+	commandPool->EndSingleTimeCommands(device, cmd);
+
+	imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 }
 
 void EnigmaRHI::VulkanImage::Destroy(IDevice* device)

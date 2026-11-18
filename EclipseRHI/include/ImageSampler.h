@@ -17,7 +17,7 @@ namespace EnigmaRHI
 
 		float mipLodBias = 0.0f;
 		float minLod = 0.0f;
-		float maxLod = 0.0f;
+		float maxLod = 1000.0F;
 
 		// 0 disable / 1 maxAnisotropy available / 2, 4, 8 ... override value ( clamp to max available )
 		float maxAnisotropy = 1.0f;

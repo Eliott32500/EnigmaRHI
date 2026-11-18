@@ -33,6 +33,7 @@ namespace EnigmaRHI
         VkSampler sampler = VK_NULL_HANDLE;
         VkImageLayout imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        uint32_t mipLevels = 1;
         bool ownsImage = false;
 
         void CreateView(VulkanDevice* device, const ImageDesc& imageDesc, VkImageAspectFlags aspect);
@@ -40,5 +41,6 @@ namespace EnigmaRHI
         void AllocateImageMemory(const VulkanDevice& device, const VkImage& image);
         void TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, VkImageLayout newLayout);
         void CopyFromBuffer(VulkanDevice* device, VulkanCommandPool* cmdPool, VkBuffer buffer, Extent3D extent);
+        void GenerateMipmaps(VulkanDevice* device, VulkanCommandPool* commandPool, const ImageDesc& desc);
     };
 }
