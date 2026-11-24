@@ -1,3 +1,4 @@
+#include <cstring>
 #include "VulkanBuffer.h"
 #include "RHILog.h"
 #include "VulkanBufferTypes.h"
@@ -22,12 +23,13 @@ void EnigmaRHI::VulkanBuffer::Create(IDevice* device, const BufferDesc& d)
     VkMemoryRequirements req;
     vkGetBufferMemoryRequirements(vk, buffer, &req);
 
-    VkMemoryAllocateInfo alloc{
+    VkMemoryAllocateInfo alloc
+    {
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
         .allocationSize = req.size,
-        // adapte au nom réel de ta fonction de recherche de memory type
         .memoryTypeIndex = dev.GetPhysicalDevice().FindMemoryType(req.memoryTypeBits, Utilities::ToVkMemory(d.access)),
     };
+
     if (vkAllocateMemory(vk, &alloc, nullptr, &memory) != VK_SUCCESS)
         LOG_FATAL(ELogCategory::VULKAN, "Failed to allocate buffer memory !");
 
@@ -40,7 +42,7 @@ void EnigmaRHI::VulkanBuffer::Create(IDevice* device, const BufferDesc& d)
 void EnigmaRHI::VulkanBuffer::Destroy(IDevice* device)
 {
     if (buffer == VK_NULL_HANDLE)
-        return;                                   // idempotent : sûr si appelé deux fois
+        return;
 
     VkDevice vk = device->API_Vulkan().GetHandle();
 
@@ -67,7 +69,7 @@ void* EnigmaRHI::VulkanBuffer::Map(IDevice* device)
 
 void EnigmaRHI::VulkanBuffer::Unmap(IDevice* device)
 {
-    if (!mapped || desc.persistentMap)            // un buffer persistent reste mappé
+    if (!mapped || desc.persistentMap)
         return;
 
     vkUnmapMemory(device->API_Vulkan().GetHandle(), memory);
@@ -87,7 +89,12 @@ void EnigmaRHI::VulkanBuffer::CopyTo(VulkanDevice* device, VulkanCommandPool* co
 {
     VkCommandBuffer cmd = commandPool->BeginSingleTimeCommands(device, commandPool->GetCommandBuffer(0)->API_Vulkan().GetHandle());
 
-    VkBufferCopy region{ .srcOffset = srcOffset, .dstOffset = dstOffset, .size = size };
+    VkBufferCopy region
+    { 
+        .srcOffset = srcOffset, 
+        .dstOffset = dstOffset, 
+        .size = size 
+    };
     vkCmdCopyBuffer(cmd, buffer, dst.buffer, 1, &region);
 
     commandPool->EndSingleTimeCommands(device, cmd);
