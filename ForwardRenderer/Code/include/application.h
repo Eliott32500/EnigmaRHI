@@ -44,7 +44,7 @@ private:
 	EnigmaRHI::ICommandPool* commandPool = nullptr;
 	EnigmaRHI::IBindingLayout* bindingLayout = nullptr;
 	EnigmaRHI::IDescriptor* descriptor = nullptr;
-	EnigmaRHI::IPipeline* pipeline = nullptr;
+	EnigmaRHI::IGraphicsPipeline* pipeline = nullptr;
 	EnigmaRHI::ISurface* surface = nullptr;
 	EnigmaRHI::ISync* syncronizer = nullptr;
 	EnigmaRHI::IShaderModule* vertShader = nullptr;

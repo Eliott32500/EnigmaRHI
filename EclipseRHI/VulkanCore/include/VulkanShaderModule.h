@@ -11,7 +11,7 @@ namespace EnigmaRHI
 
 		VulkanShaderModule() = default;
 
-		void Create(IDevice* device, const std::string& filename) override;
+		void Create(IDevice* device, const std::string& filename, const char* entryName = "") override;
 		void Destroy(IDevice* device) override;
 
 		VkShaderModule GetHandle() const { return module; }

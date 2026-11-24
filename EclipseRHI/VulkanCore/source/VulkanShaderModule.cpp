@@ -1,9 +1,10 @@
 #include "VulkanShaderModule.h"
 
-void EnigmaRHI::VulkanShaderModule::Create(IDevice* device, const std::string& filename)
+void EnigmaRHI::VulkanShaderModule::Create(IDevice* device, const std::string& filename, const char* entryName)
 {
 	code = ReadShader(filename);
 	module = CreateShaderModule(device->API_Vulkan().GetHandle());
+	this->entryName = entryName;
 }
 
 void EnigmaRHI::VulkanShaderModule::Destroy(IDevice* device)

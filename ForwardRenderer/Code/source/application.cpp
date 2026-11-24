@@ -1,7 +1,7 @@
 #include "../include/application.h"
 #include <thread>
 #include "VulkanImageTypes.h"
-#include "IPipeline.h"
+#include "IGraphicsPipeline.h"
 #include "RHILog.h"
 
 void Application::Run()
@@ -33,7 +33,7 @@ void Application::InitAPI()
 	device = rhi->InstantiateDevice();
 	commandPool = rhi->InstantiateCommandPool();
 	swapChain = rhi->InstantiateSwapChain();
-	pipeline = rhi->InstantiatePipeline();
+	pipeline = rhi->InstantiateGraphicsPipeline();
 	vertShader = rhi->InstantiateShaderModule();
 	fragShader = rhi->InstantiateShaderModule();
 

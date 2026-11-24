@@ -10,6 +10,5 @@ namespace EnigmaRHI
 		IShaderModule* fragShader = nullptr;
 		IShaderModule* geomShader = nullptr;
 		IShaderModule* computeShader = nullptr;
-		const char* entryMethod = "main";
 	};
 }

@@ -5,7 +5,7 @@
 #include "IDevice.h"
 #include "IImage.h"
 #include "IInstance.h"
-#include "IPipeline.h"
+#include "IGraphicsPipeline.h"
 #include "IShaderModule.h"
 #include "ISurface.h"
 #include "ISwapChain.h"
@@ -42,8 +42,8 @@ namespace EnigmaRHI
 		virtual IInstance* InstantiateInstance() = 0;
 		virtual void DeleteInstance(IInstance* instance) { delete instance; }
 
-		virtual IPipeline* InstantiatePipeline() = 0;
-		virtual void DeletePipeline(IPipeline* pipeline) { delete pipeline; }
+		virtual IGraphicsPipeline* InstantiateGraphicsPipeline() = 0;
+		virtual void DeletePipeline(IGraphicsPipeline* pipeline) { delete pipeline; }
 
 		virtual IShaderModule* InstantiateShaderModule() = 0;
 		virtual void DeleteShaderModule(IShaderModule* shaderModule) { delete shaderModule; }

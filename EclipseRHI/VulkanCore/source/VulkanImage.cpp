@@ -506,4 +506,3 @@ void EnigmaRHI::VulkanImage::Destroy(IDevice* device)
 
 	ownsImage = false;
 }
-

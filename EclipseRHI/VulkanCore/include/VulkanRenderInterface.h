@@ -2,7 +2,7 @@
 
 #include "IRenderInterface.h"
 #include "VulkanCommandPool.h"
-#include "VulkanPipeline.h"
+#include "VulkanGraphicsPipeline.h"
 #include "VulkanSurface.h"
 
 namespace EnigmaRHI
@@ -18,7 +18,7 @@ namespace EnigmaRHI
 		ICommandPool* InstantiateCommandPool() override { return new VulkanCommandPool(); }
 		IDevice* InstantiateDevice() override { return new VulkanDevice(); }
 		IInstance* InstantiateInstance() override { return new VulkanInstance(); }
-		IPipeline* InstantiatePipeline() override { return new VulkanPipeline(); }
+		IGraphicsPipeline* InstantiateGraphicsPipeline() override { return new VulkanGraphicsPipeline(); }
 		IShaderModule* InstantiateShaderModule() override { return new VulkanShaderModule(); }
 		ISurface* InstantiateSurface() override { return new VulkanSurface(); }
 		ISwapChain* InstantiateSwapChain() override { return new VulkanSwapChain(); }

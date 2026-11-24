@@ -1,6 +1,6 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanCommandPool.h"
-#include "VulkanPipeline.h"
+#include "VulkanGraphicsPipeline.h"
 #include "VulkanBindingSet.h"
 #include "RHILog.h"
 #include "CommonTypes.h"
@@ -150,13 +150,17 @@ void EnigmaRHI::VulkanCommandBuffer::EndRendering()
 
 void EnigmaRHI::VulkanCommandBuffer::BindPipeline(IPipeline* pipeline)
 {
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetHandle());
+    auto& vkPipeline = pipeline->API_Vulkan();
+
+    vkCmdBindPipeline(commandBuffer, vkPipeline.bindPoint, vkPipeline.handle);
 }
 
 void EnigmaRHI::VulkanCommandBuffer::BindBindingSet(IPipeline* pipeline, IBindingSet* set, uint32_t setIndex)
 {
+    auto& vkPipeline = pipeline->API_Vulkan();
     VkDescriptorSet vkSet = set->API_Vulkan().GetHandle();
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->API_Vulkan().GetPipelineLayout(), setIndex, 1, &vkSet, 0, nullptr);
+
+    vkCmdBindDescriptorSets(commandBuffer, vkPipeline.bindPoint, vkPipeline.layout, setIndex, 1, &vkSet, 0, nullptr);
 }
 
 void EnigmaRHI::VulkanCommandBuffer::BindVertexBuffer(IBuffer* buffer, size_t offset, uint32_t binding)
