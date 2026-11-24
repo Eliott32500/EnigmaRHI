@@ -20,14 +20,14 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 
 	if (imageDesc.extent.width > maxDim || imageDesc.extent.height > maxDim)
 	{
-		LOG_ERROR(ELogCategory::VULKAN, "Image extent exceeds device limit (" + std::to_string(maxDim) + ")");
-		return;
+		LOG_WARNING(ELogCategory::VULKAN, "Image extent exceeds device limit (" + std::to_string(maxDim) + ")");
+		imageDesc.extent.width > imageDesc.extent.height ? imageDesc.extent.width = maxDim : imageDesc.extent.height = maxDim;
 	}
 
 	if (imageDesc.arrayLayers > limits.maxImageArrayLayers)
 	{
-		LOG_ERROR(ELogCategory::VULKAN, "arrayLayers exceeds device limit");
-		return;
+		LOG_WARNING(ELogCategory::VULKAN, "arrayLayers exceeds device limit");
+		imageDesc.arrayLayers = limits.maxImageArrayLayers;
 	}
 
 	const bool isDepth = Utilities::HasDepthComponent(imageDesc.format);
@@ -39,13 +39,12 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 		imageDesc.sampleCount = maxSamples;
 	}
 
+	desc = imageDesc;
+
 	VkImageCreateFlags flags = 0;
 
-	if (imageDesc.viewType == EImageViewType::VIEW_CUBE ||
-		imageDesc.viewType == EImageViewType::VIEW_CUBE_ARRAY)
-	{
+	if (imageDesc.viewType == EImageViewType::VIEW_CUBE || imageDesc.viewType == EImageViewType::VIEW_CUBE_ARRAY)
 		flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-	}
 
 	VkImageCreateInfo imageInfo
 	{
@@ -64,7 +63,6 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 	};
 
 	imageLayout = imageInfo.initialLayout;
-	mipLevels = imageInfo.mipLevels;
 
 	VulkanDevice& myDevice = device->API_Vulkan();
 	VkDevice vulkanDevice = myDevice.GetHandle();
@@ -82,7 +80,8 @@ void EnigmaRHI::VulkanImage::Create(IDevice* device, ImageDesc& imageDesc)
 		if (Utilities::HasStencilComponent(imageDesc.format))
 			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	}
-	CreateView(&myDevice, imageDesc, aspectMask);
+
+	CreateView(&myDevice, aspectMask);
 
 	if (imageInfo.usage & VK_IMAGE_USAGE_SAMPLED_BIT)
 		CreateSampler(&myDevice, imageDesc.sampler);
@@ -110,7 +109,9 @@ void EnigmaRHI::VulkanImage::AllocateImageMemory(const VulkanDevice& device, con
 void EnigmaRHI::VulkanImage::UploadData(IDevice* device, VulkanCommandPool* commandPool, const ImageDesc& desc, const void* data)
 {
 	VulkanDevice& dev = device->API_Vulkan();
-	VkDeviceSize imageSize = static_cast<VkDeviceSize>(desc.extent.width) * desc.extent.height * Utilities::BytesPerPixel(desc.format);
+
+	const VkDeviceSize imageSize = static_cast<VkDeviceSize>(desc.extent.width) * desc.extent.height
+		* (std::max)(1u, desc.extent.depth) * (std::max)(1u, desc.arrayLayers) * Utilities::BytesPerPixel(desc.format);
 
 	BufferDesc stagingDesc
 	{
@@ -127,7 +128,17 @@ void EnigmaRHI::VulkanImage::UploadData(IDevice* device, VulkanCommandPool* comm
 	CopyFromBuffer(&dev, commandPool, stagingBuffer.GetHandle(), desc.extent);
 
 	if (desc.mipLevels > 1)
-		GenerateMipmaps(&dev, commandPool, desc);
+	{
+		try
+		{
+			GenerateMipmaps(&dev, commandPool, desc);
+		}
+		catch (...)
+		{
+			stagingBuffer.Destroy(&dev);
+			throw;
+		}
+	}
 	else
 		TransitionLayout(&dev, commandPool, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -164,7 +175,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, V
 
 	viewInfo.subresourceRange.aspectMask = aspect;
 	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = mipLevels;
+	viewInfo.subresourceRange.levelCount = desc.mipLevels;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = 1;
 
@@ -172,7 +183,7 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkFormat format, V
 		LOG_ERROR(ELogCategory::VULKAN, "Failed to create image view!");
 }
 
-void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, const ImageDesc& imageDesc, VkImageAspectFlags aspect)
+void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, VkImageAspectFlags aspect)
 {
 	if (view != VK_NULL_HANDLE)
 	{
@@ -184,15 +195,15 @@ void EnigmaRHI::VulkanImage::CreateView(VulkanDevice* device, const ImageDesc& i
 	{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.image = image,
-		.viewType = Utilities::ToVulkanImageViewType(imageDesc.viewType),
-		.format = Utilities::ToVulkanFormat(imageDesc.format),
+		.viewType = Utilities::ToVulkanImageViewType(desc.viewType),
+		.format = Utilities::ToVulkanFormat(desc.format),
 	};
 
 	viewInfo.subresourceRange.aspectMask = aspect;
 	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = imageDesc.mipLevels;
+	viewInfo.subresourceRange.levelCount = desc.mipLevels;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount = imageDesc.arrayLayers;
+	viewInfo.subresourceRange.layerCount = desc.arrayLayers;
 
 	if (vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &view) != VK_SUCCESS)
 		LOG_ERROR(ELogCategory::VULKAN, "Failed to create image view!");
@@ -266,17 +277,32 @@ void EnigmaRHI::VulkanImage::RecordTransition(VkCommandBuffer cmd, VkImageLayout
 		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.image = image,
-		.subresourceRange = { aspectMask, 0, mipLevels, 0, 1 },
+		.subresourceRange = { aspectMask, 0, desc.mipLevels, 0, desc.arrayLayers },
 	};
 
-	VkDependencyInfo dependency{
+	VkDependencyInfo dependency
+	{
 		.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
 		.imageMemoryBarrierCount = 1,
 		.pImageMemoryBarriers = &barrier,
 	};
+
 	vkCmdPipelineBarrier2(cmd, &dependency);
 
 	imageLayout = newLayout;
+}
+
+VkImageLayout EnigmaRHI::VulkanImage::ResolveDepthAttachmentLayout(EnigmaRHI::EImageLayout requested) const
+{
+	const VkImageLayout wanted = EnigmaRHI::Utilities::ToVulkanImageLayout(requested);
+	const VkImageLayout tracked = imageLayout;
+
+	auto isDepthAttachmentLayout = [](VkImageLayout l)
+		{
+			return l == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL || l == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		};
+
+	return (isDepthAttachmentLayout(wanted) && isDepthAttachmentLayout(tracked)) ? tracked : wanted;
 }
 
 void EnigmaRHI::VulkanImage::TransitionLayout(VulkanDevice* device, VulkanCommandPool* commandPool, VkImageLayout newLayout)
@@ -303,7 +329,7 @@ void EnigmaRHI::VulkanImage::CopyFromBuffer(VulkanDevice* device, VulkanCommandP
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	region.imageSubresource.mipLevel = 0;
 	region.imageSubresource.baseArrayLayer = 0;
-	region.imageSubresource.layerCount = 1;
+	region.imageSubresource.layerCount = desc.arrayLayers;
 
 	vkCmdCopyBufferToImage(commandBuffer, buffer, image,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
@@ -315,9 +341,11 @@ void EnigmaRHI::VulkanImage::GenerateMipmaps(VulkanDevice* device, VulkanCommand
 {
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(device->GetPhysicalDevice().Handle(), Utilities::ToVulkanFormat(desc.format), &formatProperties);
-	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+	constexpr VkFormatFeatureFlags requiredFeatures = VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT
+		| VK_FORMAT_FEATURE_BLIT_SRC_BIT | VK_FORMAT_FEATURE_BLIT_DST_BIT;
+
+	if ((formatProperties.optimalTilingFeatures & requiredFeatures) != requiredFeatures)
 		throw std::runtime_error("texture image format does not support linear blitting!");
-	}
 
 	VkCommandBuffer cmd = commandPool->BeginSingleTimeCommands(
 		device,
@@ -345,11 +373,11 @@ void EnigmaRHI::VulkanImage::GenerateMipmaps(VulkanDevice* device, VulkanCommand
 			.baseMipLevel = 0,
 			.levelCount = 1,
 			.baseArrayLayer = 0,
-			.layerCount = 1
+			.layerCount = desc.arrayLayers
 		}
 	};
 
-	for (uint32_t i = 1; i < mipLevels; i++)
+	for (uint32_t i = 1; i < desc.mipLevels; i++)
 	{
 		barrier.subresourceRange.baseMipLevel = i - 1;
 
@@ -369,14 +397,14 @@ void EnigmaRHI::VulkanImage::GenerateMipmaps(VulkanDevice* device, VulkanCommand
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 				.mipLevel = i - 1,
 				.baseArrayLayer = 0,
-				.layerCount = 1
+				.layerCount = desc.arrayLayers
 			},
 			.dstSubresource =
 			{
 				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 				.mipLevel = i,
 				.baseArrayLayer = 0,
-				.layerCount = 1
+				.layerCount = desc.arrayLayers
 			}
 		};
 
@@ -419,7 +447,7 @@ void EnigmaRHI::VulkanImage::GenerateMipmaps(VulkanDevice* device, VulkanCommand
 		mipHeight = nextHeight;
 	}
 
-	barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+	barrier.subresourceRange.baseMipLevel = desc.mipLevels - 1;
 	barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 	barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
 	barrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;

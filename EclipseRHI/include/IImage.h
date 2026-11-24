@@ -34,8 +34,14 @@ namespace EnigmaRHI
 		virtual void Create(IDevice* device, ImageDesc& imageDesc) = 0;
 		virtual void UploadData(IDevice* device, VulkanCommandPool* commandPool, const ImageDesc& desc, const void* data) = 0;
 
+		const ImageDesc& GetDesc() const { return desc; }
+
 		virtual void Destroy(IDevice* device) = 0;
 
 		virtual VulkanImage& API_Vulkan() { throw std::runtime_error("Bad API Call: object is not a VulkanImage"); }
+
+	protected:
+
+		ImageDesc desc{};
 	};
 }

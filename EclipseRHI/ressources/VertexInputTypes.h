@@ -6,8 +6,8 @@ namespace EnigmaRHI
 {
     enum class EVertexInputRate
     {
-        VERTEX,
-        INSTANCE
+        PER_VERTEX,
+        PER_INSTANCE
     };
 
     enum class EVertexFormat
@@ -44,7 +44,7 @@ namespace EnigmaRHI
     {
         uint32_t binding = 0;
         uint32_t stride = 0;
-        EVertexInputRate inputRate = EVertexInputRate::VERTEX;
+        EVertexInputRate inputRate = EVertexInputRate::PER_VERTEX;
     };
 
     struct VertexAttributeDesc

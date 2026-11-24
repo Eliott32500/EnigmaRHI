@@ -118,8 +118,8 @@ VkVertexInputRate EnigmaRHI::Utilities::ToVulkanVertexInputRate(EVertexInputRate
 	{
 		using E = EVertexInputRate;
 
-		case E::VERTEX:			return VK_VERTEX_INPUT_RATE_VERTEX;
-		case E::INSTANCE:		return VK_VERTEX_INPUT_RATE_INSTANCE;
+		case E::PER_VERTEX:			return VK_VERTEX_INPUT_RATE_VERTEX;
+		case E::PER_INSTANCE:		return VK_VERTEX_INPUT_RATE_INSTANCE;
 		default:				LOG_FATAL(ELogCategory::VULKAN, "Unsupported vulkan vertex input rate !");
 	}
 }
