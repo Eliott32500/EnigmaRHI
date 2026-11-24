@@ -58,8 +58,17 @@ constexpr E operator^=(E& lhs, E rhs)
     return lhs;
 }
 
+//true if all flag are present
 template<BitMaskEnum E>
 constexpr bool HasFlag(E value, E flag)
+{
+    using U = std::underlying_type_t<E>;
+    return (static_cast<U>(value) & static_cast<U>(flag)) == static_cast<U>(flag);
+}
+
+//true if one the flag is present
+template<BitMaskEnum E>
+constexpr bool HasAnyFlag(E value, E flag)
 {
     return (value & flag) != E{};
 }
