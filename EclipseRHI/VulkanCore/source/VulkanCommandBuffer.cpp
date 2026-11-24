@@ -9,47 +9,49 @@
 
 void EnigmaRHI::VulkanCommandBuffer::Create(IDevice* device, ICommandPool* commandPool)
 {
-	VkCommandBufferAllocateInfo allocInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = commandPool->API_Vulkan().GetHandle(),
-		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-		.commandBufferCount = 1,
-	};
+    VkCommandBufferAllocateInfo allocInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = commandPool->API_Vulkan().GetHandle(),
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1,
+    };
 
-	if (vkAllocateCommandBuffers(device->API_Vulkan().GetHandle(), &allocInfo, &commandBuffer) != VK_SUCCESS)
-		LOG_FATAL(ELogCategory::VULKAN, "Failed to allocate command buffers !");
+    if (vkAllocateCommandBuffers(device->API_Vulkan().GetHandle(), &allocInfo, &commandBuffer) != VK_SUCCESS)
+        LOG_FATAL(ELogCategory::VULKAN, "Failed to allocate command buffers !");
 }
 
 void EnigmaRHI::VulkanCommandBuffer::Begin()
 {
-	VkCommandBufferBeginInfo beginInfo
-	{
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		.flags = 0,
-		.pInheritanceInfo = nullptr,
-	};
+    VkCommandBufferBeginInfo beginInfo
+    {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = 0,
+        .pInheritanceInfo = nullptr,
+    };
 
-	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-		LOG_FATAL(ELogCategory::VULKAN, "Failed to begin command buffer!");
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+        LOG_FATAL(ELogCategory::VULKAN, "Failed to begin command buffer!");
 }
 
 void EnigmaRHI::VulkanCommandBuffer::End()
 {
-	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-		LOG_FATAL(ELogCategory::VULKAN, "Failed to end command buffer!");
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+        LOG_FATAL(ELogCategory::VULKAN, "Failed to end command buffer!");
 }
 
 void EnigmaRHI::VulkanCommandBuffer::Reset()
 {
-	if (vkResetCommandBuffer(commandBuffer, 0) != VK_SUCCESS)
-		LOG_FATAL(ELogCategory::VULKAN, "Failed to reset command buffer!");
+    if (vkResetCommandBuffer(commandBuffer, 0) != VK_SUCCESS)
+        LOG_FATAL(ELogCategory::VULKAN, "Failed to reset command buffer!");
 }
 
 void EnigmaRHI::VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
 {
     std::vector<VkRenderingAttachmentInfo> colorAttachments;
     VkRenderingAttachmentInfo depthAttachment{};
+    VkRenderingAttachmentInfo stencilAttachment{};
+    bool hasStencilAttachment = false;
 
     for (const auto& attachment : renderingInfo.colorAttachments)
     {
@@ -81,17 +83,37 @@ void EnigmaRHI::VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderi
     if (renderingInfo.depthAttachment)
     {
         const RenderingAttachment& d = *renderingInfo.depthAttachment;
+        VulkanImage& depthImage = d.image->API_Vulkan();
 
-        depthAttachment = 
+        depthAttachment =
         {
             .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-            .imageView = d.image->API_Vulkan().GetImageView(),
-            .imageLayout = Utilities::ToVulkanImageLayout(d.imageLayout),
+            .imageView = depthImage.GetImageView(),
+            .imageLayout = depthImage.ResolveDepthAttachmentLayout(d.imageLayout),
             .resolveMode = VK_RESOLVE_MODE_NONE,
             .loadOp = Utilities::ToVulkanLoadOp(d.loadOp),
             .storeOp = Utilities::ToVulkanStoreOp(d.storeOp),
             .clearValue = {.depthStencil = { d.clearDepth, d.clearStencil } },
         };
+
+        if (depthImage.GetAspectMask() & VK_IMAGE_ASPECT_STENCIL_BIT)
+        {
+            stencilAttachment = depthAttachment;
+
+            if (renderingInfo.stencilAttachment)
+            {
+                const RenderingAttachment& s = *renderingInfo.stencilAttachment;
+                VulkanImage& stencilImage = s.image->API_Vulkan();
+
+                stencilAttachment.imageView = stencilImage.GetImageView();
+                stencilAttachment.imageLayout = stencilImage.ResolveDepthAttachmentLayout(s.imageLayout);
+                stencilAttachment.loadOp = Utilities::ToVulkanLoadOp(s.loadOp);
+                stencilAttachment.storeOp = Utilities::ToVulkanStoreOp(s.storeOp);
+                stencilAttachment.clearValue.depthStencil = { s.clearDepth, s.clearStencil };
+            }
+
+            hasStencilAttachment = true;
+        }
     }
 
     VkRenderingInfo info
@@ -112,12 +134,10 @@ void EnigmaRHI::VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderi
         },
         .layerCount = 1,
         .viewMask = 0,
-        .colorAttachmentCount = static_cast<uint32_t>(
-            colorAttachments.size()
-        ),
+        .colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size()),
         .pColorAttachments = colorAttachments.data(),
         .pDepthAttachment = renderingInfo.depthAttachment ? &depthAttachment : nullptr,
-        .pStencilAttachment = nullptr
+        .pStencilAttachment = hasStencilAttachment ? &stencilAttachment : nullptr
     };
 
     vkCmdBeginRendering(commandBuffer, &info);
@@ -293,7 +313,7 @@ void EnigmaRHI::VulkanCommandBuffer::SetStencilTestEnable(bool enable)
 void EnigmaRHI::VulkanCommandBuffer::SetStencilOp(EStencilFace face, EStencilOp fail, EStencilOp pass, EStencilOp depthFail, ECompareOp compare)
 {
     vkCmdSetStencilOp(commandBuffer, Utilities::ToVulkanStencilFace(face),
-        Utilities::ToVulkanStencilOp(fail), Utilities::ToVulkanStencilOp(pass), 
+        Utilities::ToVulkanStencilOp(fail), Utilities::ToVulkanStencilOp(pass),
         Utilities::ToVulkanStencilOp(depthFail), Utilities::ToVulkanCompareOp(compare));
 }
 
