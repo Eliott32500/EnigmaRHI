@@ -164,6 +164,8 @@ void EnigmaRHI::VulkanGraphicsPipeline::Create(const GraphicsPipelineDesc& gp, c
 		.basePipelineIndex = -1, // Optional
 	};
 
+	pipeline.bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
 	if (vkCreateGraphicsPipelines(device->API_Vulkan().GetHandle(), VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &pipeline.handle) != VK_SUCCESS)
 		LOG_FATAL(ELogCategory::VULKAN, "Failed to create vulkan pipeline !");
 }

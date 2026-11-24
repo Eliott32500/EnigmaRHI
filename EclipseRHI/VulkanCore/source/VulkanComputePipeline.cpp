@@ -35,6 +35,8 @@ void EnigmaRHI::VulkanComputePipeline::Create(IShaderModule& shader, IDevice* de
 		.layout = nullptr,
 	};
 
+	pipeline.bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
+
 	if (vkCreateComputePipelines(device->API_Vulkan().GetHandle(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.handle))
 		LOG_ERROR(ELogCategory::VULKAN, "Failed to create compute pipeline !");
 }
