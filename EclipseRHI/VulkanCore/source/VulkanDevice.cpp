@@ -46,13 +46,26 @@ namespace EnigmaRHI
             queueInfos.push_back(info);
         }
 
-        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT DynamicStateFeatures{
-            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
-            .pNext = nullptr,
-            .extendedDynamicState = VK_TRUE,
-        };
+        // Required features requises checked in VulkanPhysicalDevice::Pick + optional supported features
+        VkPhysicalDeviceFeatures supported{};
+        vkGetPhysicalDeviceFeatures(physicalVulkanDevice.Handle(), &supported);
 
-        const DeviceFeatures required = GetRequiredFeatures();
+        DeviceFeatures required = GetRequiredFeatures();
+        required.fillModeNonSolid = supported.fillModeNonSolid == VK_TRUE;
+        required.wideLines = supported.wideLines == VK_TRUE;
+        required.depthBounds = supported.depthBounds == VK_TRUE;
+        required.sampleRateShading = supported.sampleRateShading == VK_TRUE;
+        required.geometryShader = supported.geometryShader == VK_TRUE;
+        required.tessellationShader = supported.tessellationShader == VK_TRUE;
+
+        VkPhysicalDeviceFeatures enabledFeatures{};
+        enabledFeatures.samplerAnisotropy = required.samplerAnisotropy ? VK_TRUE : VK_FALSE;
+        enabledFeatures.fillModeNonSolid = required.fillModeNonSolid ? VK_TRUE : VK_FALSE;
+        enabledFeatures.wideLines = required.wideLines ? VK_TRUE : VK_FALSE;
+        enabledFeatures.depthBounds = required.depthBounds ? VK_TRUE : VK_FALSE;
+        enabledFeatures.sampleRateShading = required.sampleRateShading ? VK_TRUE : VK_FALSE;
+        enabledFeatures.geometryShader = required.geometryShader ? VK_TRUE : VK_FALSE;
+        enabledFeatures.tessellationShader = required.tessellationShader ? VK_TRUE : VK_FALSE;
 
         VkPhysicalDeviceVulkan13Features f13
         {
@@ -72,12 +85,12 @@ namespace EnigmaRHI
         {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
             .pNext = &f12,
-            .features = {.samplerAnisotropy = required.samplerAnisotropy ? VK_TRUE : VK_FALSE },
+            .features = enabledFeatures,
         };
 
         VkDeviceCreateInfo createInfo{
             .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-		    .pNext = &features2,
+            .pNext = &features2,
             .queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size()),
             .pQueueCreateInfos = queueInfos.data(),
             .enabledExtensionCount = static_cast<uint32_t>(physicalVulkanDevice.requiredDeviceExtensions.size()),
@@ -88,7 +101,7 @@ namespace EnigmaRHI
         if (vkCreateDevice(physicalVulkanDevice.Handle(), &createInfo, nullptr, &logicalDevice) != VK_SUCCESS)
             LOG_FATAL(ELogCategory::VULKAN, "Failed to create logical device !");
 
-        capabilities.features = required;
+        capabilities.features = required;   // = ce qui est reellement active sur le device
 
         volkLoadDevice(logicalDevice);
 
@@ -140,16 +153,19 @@ namespace EnigmaRHI
         ImageDesc d = desc;
         d.usage |= EImageUsage::SAMPLED | EImageUsage::TRANSFER_DST;
 
+        if (d.mipLevels > 1)
+            d.usage |= EImageUsage::TRANSFER_SRC;
+
         VulkanImage* image = new VulkanImage();
         image->Create(this, d);
         image->UploadData(this, &commandPool->API_Vulkan(), d, data);
         return image;
     }
 
-    void VulkanDevice::DeleteImage(IImage* image) 
+    void VulkanDevice::DeleteImage(IImage* image)
     {
         image->Destroy(this);
-        delete image; 
+        delete image;
     }
 
     IFence* VulkanDevice::CreateFence(bool signaled)
@@ -159,10 +175,10 @@ namespace EnigmaRHI
         return fence;
     }
 
-    void VulkanDevice::DeleteFence(IFence* fence) 
+    void VulkanDevice::DeleteFence(IFence* fence)
     {
         fence->Destroy(this);
-        delete fence; 
+        delete fence;
     }
 
     void VulkanDevice::CreateDescriptorPool()
@@ -201,10 +217,10 @@ namespace EnigmaRHI
         return s;
     }
 
-    void VulkanDevice::DeleteBindingSet(IBindingSet* s) 
-    { 
+    void VulkanDevice::DeleteBindingSet(IBindingSet* s)
+    {
         s->Destroy(this);
-        delete s; 
+        delete s;
     }
 
     IQueue& VulkanDevice::GetQueue(ECommandQueueType type)
@@ -217,8 +233,8 @@ namespace EnigmaRHI
         }
     }
 
-    void VulkanDevice::WaitIdle() 
-    { 
-        vkDeviceWaitIdle(logicalDevice); 
+    void VulkanDevice::WaitIdle()
+    {
+        vkDeviceWaitIdle(logicalDevice);
     }
 }

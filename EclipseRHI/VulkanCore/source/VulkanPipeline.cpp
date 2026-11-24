@@ -3,15 +3,16 @@
 #include "RHILog.h"
 #include "VulkanDeviceCapabilities.h"
 #include "VulkanBindingLayout.h"
+#include "VulkanImageTypes.h"
 
 void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IBindingLayout* layout, ISwapChain* swapChain)
 {
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages = CreateShaderInfo(shader);
 
 	//NEW VERSION IMPLEMENTED
-	
+
 	std::vector<VkVertexInputBindingDescription> bindings;
-	
+
 	for (const auto& binding : gp.vertexBindings)
 	{
 		bindings.push_back({
@@ -20,9 +21,9 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 			.inputRate = Utilities::ToVulkanVertexInputRate(binding.inputRate)
 			});
 	}
-	
+
 	std::vector<VkVertexInputAttributeDescription> attributes;
-	
+
 	for (const auto& attribute : gp.vertexAttributes)
 	{
 		attributes.push_back({
@@ -32,7 +33,7 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 			.offset = attribute.offset
 			});
 	}
-	
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo
 	{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -99,8 +100,37 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil = Utilities::ToVulkanDepthStencilPipelineState(gp.depthStencilState);
 
+	const DeviceFeatures features = IDevice::GetCapabilities().features;
+
+	if (rasterizer.polygonMode != VK_POLYGON_MODE_FILL && !features.fillModeNonSolid)
+	{
+		LOG_WARNING(ELogCategory::VULKAN, "fillModeNonSolid is not supported : polygon mode forced to FILL");
+		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+	}
+
+	if (rasterizer.lineWidth != 1.0f && !features.wideLines)
+	{
+		LOG_WARNING(ELogCategory::VULKAN, "wideLines is not supported : line width forced to 1.0");
+		rasterizer.lineWidth = 1.0f;
+	}
+
+	if (multisampling.sampleShadingEnable && !features.sampleRateShading)
+	{
+		LOG_WARNING(ELogCategory::VULKAN, "sampleRateShading is not supported : sample shading disabled");
+		multisampling.sampleShadingEnable = VK_FALSE;
+	}
+
+	if (depthStencil.depthBoundsTestEnable && !features.depthBounds)
+	{
+		LOG_WARNING(ELogCategory::VULKAN, "depthBounds is not supported : depth bounds test disabled");
+		depthStencil.depthBoundsTestEnable = VK_FALSE;
+	}
+
 	VkFormat colorFormat = Utilities::ToVulkanFormat(swapChain->GetSwapChainImageFormat());
-	VkFormat depthFormat = Utilities::ToVulkanFormat(device->FindDepthFormat());
+
+	const EImageFormat depthImageFormat = device->FindDepthFormat();
+	VkFormat depthFormat = Utilities::ToVulkanFormat(depthImageFormat);
+	VkFormat stencilFormat = Utilities::HasStencilComponent(depthImageFormat) ? depthFormat : VK_FORMAT_UNDEFINED;
 
 	VkPipelineRenderingCreateInfoKHR renderingPipelineInfo
 	{
@@ -108,6 +138,7 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 		.colorAttachmentCount = 1,
 		.pColorAttachmentFormats = &colorFormat,
 		.depthAttachmentFormat = depthFormat,
+		.stencilAttachmentFormat = stencilFormat,
 	};
 
 	VkGraphicsPipelineCreateInfo graphicsPipelineInfo
@@ -174,19 +205,13 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 	}
 
 	if (shader.computeShader)
+		LOG_ERROR(ELogCategory::VULKAN, "Shader::computeShader ignored : a graphics pipeline cannot contain a compute stage");
+
+	if (shader.geomShader && !IDevice::GetCapabilities().features.geometryShader)
 	{
-		VkPipelineShaderStageCreateInfo compShaderStageInfo
-		{
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.stage = VK_SHADER_STAGE_COMPUTE_BIT,
-			.module = shader.computeShader->API_Vulkan().GetHandle(),
-			.pName = shader.entryMethod,
-		};
-
-		shaderStages.push_back(compShaderStageInfo);
+		LOG_ERROR(ELogCategory::VULKAN, "Shader::geomShader ignored : geometryShader is not supported by this device");
 	}
-
-	if (shader.geomShader)
+	else if (shader.geomShader)
 	{
 		VkPipelineShaderStageCreateInfo geomShaderStageInfo
 		{

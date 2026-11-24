@@ -46,6 +46,14 @@ namespace EnigmaRHI
         bool dynamicRendering = true;
         bool synchronization2 = true;
         bool timelineSemaphore = true;
+
+        // Enable only if the device supports these features
+        bool fillModeNonSolid = false;   // EPolygonMode::LINE / POINT
+        bool wideLines = false;          // lineWidth != 1
+        bool depthBounds = false;        // depthBoundsTestEnable / SetDepthBounds
+        bool sampleRateShading = false;  // sampleShadingEnable
+        bool geometryShader = false;     // Shader::geomShader
+        bool tessellationShader = false;
     };
 
     inline DeviceFeatures GetRequiredFeatures()
