@@ -57,25 +57,4 @@ namespace EnigmaRHI
 		bool alphaToOneEnable = false;
 	};
 
-	struct GraphicsPipelineDesc
-	{
-		std::vector<EDynamicState> dynamicStates = { EDynamicState::VIEWPORT, EDynamicState::SCISSOR };
-
-		std::vector<VertexBindingDesc> vertexBindings;
-		std::vector<VertexAttributeDesc> vertexAttributes;
-
-		ETopologyMode topologyMode = ETopologyMode::TRIANGLE_LIST;
-
-		RasterizerPipelineState rasterizerState;
-
-		MultisamplePipelineState multisampleState;
-
-		//One for each color attachment used
-		std::vector<ColorBlendAttachmentState> blendStates;
-
-		DepthStencilPipelineState depthStencilState;
-
-		uint32_t viewportCount = 1;
-		uint32_t scissorCount = 1;
-	};
 }

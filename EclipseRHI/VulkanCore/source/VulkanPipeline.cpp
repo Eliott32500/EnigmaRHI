@@ -5,9 +5,9 @@
 #include "VulkanBindingLayout.h"
 #include "VulkanImageTypes.h"
 
-void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IBindingLayout* layout, ISwapChain* swapChain)
+void EnigmaRHI::VulkanPipeline::CreateGraphicsPipeline(const GraphicsPipelineDesc& gp, const Shader& shader, IDevice* device, IBindingLayout* layout, EImageFormat colorFormat)
 {
-	std::vector<VkPipelineShaderStageCreateInfo> shaderStages = CreateShaderInfo(shader);
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages = CreateShaderInfo(shader, EPipelineType::GRAPHICS);
 
 	//NEW VERSION IMPLEMENTED
 
@@ -126,7 +126,7 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 	}
 
-	VkFormat colorFormat = Utilities::ToVulkanFormat(swapChain->GetSwapChainImageFormat());
+	VkFormat vkColorFormat = Utilities::ToVulkanFormat(colorFormat);
 
 	const EImageFormat depthImageFormat = device->FindDepthFormat();
 	VkFormat depthFormat = Utilities::ToVulkanFormat(depthImageFormat);
@@ -136,7 +136,7 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 	{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
 		.colorAttachmentCount = 1,
-		.pColorAttachmentFormats = &colorFormat,
+		.pColorAttachmentFormats = &vkColorFormat,
 		.depthAttachmentFormat = depthFormat,
 		.stencilAttachmentFormat = stencilFormat,
 	};
@@ -164,48 +164,101 @@ void EnigmaRHI::VulkanPipeline::Create(const GraphicsPipelineDesc& gp, const Sha
 		.basePipelineIndex = -1, // Optional
 	};
 
-	if (vkCreateGraphicsPipelines(device->API_Vulkan().GetHandle(), VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
-		throw std::runtime_error("failed to create graphics pipeline!");
+	if (vkCreateGraphicsPipelines(device->API_Vulkan().GetHandle(), VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
+		LOG_FATAL(ELogCategory::VULKAN, "Failed to create vulkan pipeline !");
+}
+
+void EnigmaRHI::VulkanPipeline::CreateComputePipeline(const ComputePipelineDesc& gp, const Shader& shader, IDevice* device, IBindingLayout* layout)
+{
+	VkPipelineShaderStageCreateInfo shaderStage = CreateShaderInfo(shader, EPipelineType::COMPUTE)[0];
+
+	VkDescriptorSetLayout setLayout = layout->API_Vulkan().GetHandle();
+
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+		.setLayoutCount = 1,
+		.pSetLayouts = &setLayout,
+	};
+
+	if (vkCreatePipelineLayout(device->API_Vulkan().GetHandle(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to create compute pipeline layout!");
+	}
+
+	VkComputePipelineCreateInfo pipelineInfo
+	{
+		.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
+		.stage = shaderStage,
+		.layout = nullptr,
+	};
+
+	if (vkCreateComputePipelines(device->API_Vulkan().GetHandle(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline))
+		LOG_ERROR(ELogCategory::VULKAN, "Failed to create compute pipeline !");
 }
 
 void EnigmaRHI::VulkanPipeline::Destroy(IDevice* device)
 {
-	vkDestroyPipeline(device->API_Vulkan().GetHandle(), graphicsPipeline, nullptr);
+	vkDestroyPipeline(device->API_Vulkan().GetHandle(), pipeline, nullptr);
 	vkDestroyPipelineLayout(device->API_Vulkan().GetHandle(), pipelineLayout, nullptr);
 }
 
-std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateShaderInfo(const Shader& shader)
+std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateShaderInfo(const Shader& shader, EPipelineType type)
 {
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
 	if (shader.vertShader)
 	{
-		VkPipelineShaderStageCreateInfo vertShaderStageInfo
+		if (type == EPipelineType::GRAPHICS)
 		{
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.stage = VK_SHADER_STAGE_VERTEX_BIT,
-			.module = shader.vertShader->API_Vulkan().GetHandle(),
-			.pName = shader.entryMethod,
-		};
+			VkPipelineShaderStageCreateInfo vertShaderStageInfo
+			{
+				.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+				.stage = VK_SHADER_STAGE_VERTEX_BIT,
+				.module = shader.vertShader->API_Vulkan().GetHandle(),
+				.pName = shader.entryMethod,
+			};
 
-		shaderStages.push_back(vertShaderStageInfo);
+			shaderStages.push_back(vertShaderStageInfo);
+		}
+		else
+			LOG_ERROR(ELogCategory::VULKAN, "Shader::vertShader ignored : a compute pipeline cannot contain a graphics stage");
 	}
 
 	if (shader.fragShader)
 	{
-		VkPipelineShaderStageCreateInfo fragShaderStageInfo
+		if (type == EPipelineType::GRAPHICS)
 		{
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-			.module = shader.fragShader->API_Vulkan().GetHandle(),
-			.pName = shader.entryMethod,
-		};
+			VkPipelineShaderStageCreateInfo fragShaderStageInfo
+			{
+				.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+				.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+				.module = shader.fragShader->API_Vulkan().GetHandle(),
+				.pName = shader.entryMethod,
+			};
 
-		shaderStages.push_back(fragShaderStageInfo);
+			shaderStages.push_back(fragShaderStageInfo);
+		}
+		else
+			LOG_ERROR(ELogCategory::VULKAN, "Shader::fragShader ignored : a compute pipeline cannot contain a graphics stage");
 	}
 
 	if (shader.computeShader)
-		LOG_ERROR(ELogCategory::VULKAN, "Shader::computeShader ignored : a graphics pipeline cannot contain a compute stage");
+	{
+		if (type == EPipelineType::COMPUTE)
+		{
+			VkPipelineShaderStageCreateInfo compShaderStageInfo
+			{
+				.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+				.stage = VK_SHADER_STAGE_COMPUTE_BIT,
+				.module = shader.computeShader->API_Vulkan().GetHandle(),
+				.pName = shader.entryMethod,
+			};
+
+			shaderStages.push_back(compShaderStageInfo);
+		}
+		else
+			LOG_ERROR(ELogCategory::VULKAN, "Shader::computeShader ignored : a graphics pipeline cannot contain a compute stage");
+	}
 
 	if (shader.geomShader && !IDevice::GetCapabilities().features.geometryShader)
 	{
@@ -213,15 +266,20 @@ std::vector<VkPipelineShaderStageCreateInfo> EnigmaRHI::VulkanPipeline::CreateSh
 	}
 	else if (shader.geomShader)
 	{
-		VkPipelineShaderStageCreateInfo geomShaderStageInfo
+		if (type == EPipelineType::GRAPHICS)
 		{
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.stage = VK_SHADER_STAGE_GEOMETRY_BIT,
-			.module = shader.geomShader->API_Vulkan().GetHandle(),
-			.pName = shader.entryMethod,
-		};
+			VkPipelineShaderStageCreateInfo geomShaderStageInfo
+			{
+				.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+				.stage = VK_SHADER_STAGE_GEOMETRY_BIT,
+				.module = shader.geomShader->API_Vulkan().GetHandle(),
+				.pName = shader.entryMethod,
+			};
 
-		shaderStages.push_back(geomShaderStageInfo);
+			shaderStages.push_back(geomShaderStageInfo);
+		}
+		else
+			LOG_ERROR(ELogCategory::VULKAN, "Shader::geomShader ignored : a compute pipeline cannot contain a graphics stage");
 	}
 
 	return shaderStages;

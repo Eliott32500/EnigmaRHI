@@ -23,9 +23,9 @@ struct RenderObject
 	Model* model = nullptr;
 	EnigmaRHI::IImage* texture = nullptr;
 
-	glm::mat4 T;
-	glm::mat4 R;
-	glm::mat4 S;
+	glm::mat4 T = glm::mat4(1.f);
+	glm::mat4 R = glm::mat4(1.f);
+	glm::mat4 S = glm::mat4(1.f);
 };
 
 class Application

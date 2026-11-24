@@ -5,7 +5,7 @@
 #include "BlendTypes.h"
 #include "DepthStencilTypes.h"
 #include "PipelineDynamicState.h"
-#include "IGraphicsPipeline.h"
+#include "IPipeline.h"
 #include "RenderTypes.h"
 #include "VertexInputTypes.h"
 #include <vector>

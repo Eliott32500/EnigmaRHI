@@ -1,7 +1,7 @@
 #include "../include/application.h"
 #include <thread>
 #include "VulkanImageTypes.h"
-#include "IGraphicsPipeline.h"
+#include "IPipeline.h"
 #include "RHILog.h"
 
 void Application::Run()
@@ -99,7 +99,7 @@ void Application::InitAPI()
 		.fragShader = fragShader,
 	};
 
-	pipeline->Create(gp, shader, device, bindingLayout, swapChain);
+	pipeline->Create(gp, shader, device, bindingLayout, swapChain->GetSwapChainImageFormat());
 
 	cam = new Camera(swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height);
 	cam->CreateCameraDataBuffer(device);
