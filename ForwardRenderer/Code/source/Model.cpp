@@ -78,6 +78,7 @@ void Model::CreateIndexBuffer(EnigmaRHI::IDevice* device, EnigmaRHI::ICommandPoo
 	indexBuffer = device->CreateBufferWithData(commandPool, desc, indices.data());
 }
 
+
 void Model::LoadModel(const char* filePath)
 {
 	tinyobj::attrib_t attrib;
@@ -89,6 +90,9 @@ void Model::LoadModel(const char* filePath)
 		throw std::runtime_error(err);
 
 	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+	vertices.clear();
+	indices.clear();
 
 	for (const auto& shape : shapes)
 	{
@@ -102,18 +106,22 @@ void Model::LoadModel(const char* filePath)
 				attrib.vertices[3 * index.vertex_index + 2]
 			};
 
-			vertex.texCoord = {
-				attrib.texcoords[2 * index.texcoord_index + 0],
-				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-			};
+			if (index.texcoord_index >= 0)
+			{
+				vertex.texCoord = {
+					attrib.texcoords[2 * index.texcoord_index + 0],
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+				};
+			}
 
 			vertex.color = { 1.0f, 1.0f, 1.0f };
 
-			vertices.push_back(vertex);
-
 			if (uniqueVertices.count(vertex) == 0)
 			{
-				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+				uint32_t newIndex =
+					static_cast<uint32_t>(vertices.size());
+
+				uniqueVertices[vertex] = newIndex;
 				vertices.push_back(vertex);
 			}
 
@@ -121,3 +129,4 @@ void Model::LoadModel(const char* filePath)
 		}
 	}
 }
+
