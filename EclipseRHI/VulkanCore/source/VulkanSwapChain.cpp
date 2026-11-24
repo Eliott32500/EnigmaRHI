@@ -45,10 +45,19 @@ void EnigmaRHI::VulkanSwapChain::DestroyResources(IDevice* device)
 
 VkSurfaceFormatKHR EnigmaRHI::VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
-	const auto formatIt = std::ranges::find_if(
-		availableFormats,
-		[](const auto& format) { return format.format == VK_FORMAT_R8G8B8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; });
-	return formatIt != availableFormats.end() ? *formatIt : availableFormats[0];
+	constexpr VkFormat preferredFormats[] = { VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_R8G8B8A8_SRGB };
+
+	for (VkFormat wanted : preferredFormats)
+	{
+		for (const auto& format : availableFormats)
+		{
+			if (format.format == wanted && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+				return format;
+		}
+	}
+
+	LOG_WARNING(ELogCategory::VULKAN, "No sRGB swap chain format available, falling back to the first supported format (output will not be gamma corrected)");
+	return availableFormats[0];
 }
 
 VkPresentModeKHR EnigmaRHI::VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
@@ -56,8 +65,8 @@ VkPresentModeKHR EnigmaRHI::VulkanSwapChain::ChooseSwapPresentMode(const std::ve
 	assert(std::ranges::any_of(availablePresentModes, [](auto presentMode) { return presentMode == VK_PRESENT_MODE_FIFO_KHR; }));
 	return std::ranges::any_of(availablePresentModes,
 		[](const VkPresentModeKHR value) { return VkPresentModeKHR::VK_PRESENT_MODE_MAILBOX_KHR == value; }) ?
-		 VkPresentModeKHR::VK_PRESENT_MODE_MAILBOX_KHR :
-		 VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
+		VkPresentModeKHR::VK_PRESENT_MODE_MAILBOX_KHR :
+		VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
 }
 
 EnigmaRHI::Extent2D EnigmaRHI::VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, Extent2D windowExtent)
@@ -69,7 +78,7 @@ EnigmaRHI::Extent2D EnigmaRHI::VulkanSwapChain::ChooseSwapExtent(const VkSurface
 
 	windowExtent.width = std::clamp(windowExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
 	windowExtent.height = std::clamp(windowExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-	
+
 	return windowExtent;
 }
 

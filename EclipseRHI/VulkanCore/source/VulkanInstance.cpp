@@ -1,4 +1,5 @@
 #include "VulkanInstance.h"
+#include <cstring>
 #include <string>
 #include "RHILog.h"
 
@@ -151,17 +152,17 @@ VKAPI_ATTR VkBool32 VKAPI_CALL EnigmaRHI::VulkanInstance::DebugCallback(
 {
 	switch (messageSeverity)
 	{
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-			LOG_INFO(ELogCategory::VULKAN, "Validation layer: " + std::string(pCallbackData->pMessage));
-			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-			LOG_WARNING(ELogCategory::VULKAN, "Validation layer: " + std::string(pCallbackData->pMessage));
-			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-			LOG_ERROR(ELogCategory::VULKAN, "Validation layer: " + std::string(pCallbackData->pMessage));
-			break;
-		default:
-			break;
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+		LOG_INFO(ELogCategory::VULKAN, "Validation layer: " + std::string(pCallbackData->pMessage));
+		break;
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+		LOG_WARNING(ELogCategory::VULKAN, "Validation layer: " + std::string(pCallbackData->pMessage));
+		break;
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+		LOG_ERROR(ELogCategory::VULKAN, "Validation layer: " + std::string(pCallbackData->pMessage));
+		break;
+	default:
+		break;
 	}
 
 	return VK_FALSE;
