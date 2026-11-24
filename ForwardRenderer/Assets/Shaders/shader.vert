@@ -3,6 +3,8 @@
 layout(binding = 0) uniform CameraData 
 {
     mat4 vp;
+    mat4 projection;
+    mat4 view;
 } cam;
 
 layout(binding = 1) uniform UniformBufferObject 
@@ -19,7 +21,12 @@ layout (location = 1) out vec2 fragTexCoord;
 
 void main() 
 {
-    gl_Position = cam.vp * ubo.model * vec4(inPosition, 1.0);
-    fragColor = inColor;
-    fragTexCoord = inTexCoord;
+   gl_Position = cam.vp * ubo.model * vec4(inPosition, 1.0);
+   fragColor = inColor;
+   fragTexCoord = inTexCoord;
+
+   //vec4 pos = cam.projection * cam.view * vec4(inPosition, 1.0);
+   //gl_Position = pos.xyww;
+   //fragColor = inColor;
+   //fragTexCoord = inTexCoord;
 }

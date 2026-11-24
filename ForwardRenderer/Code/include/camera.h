@@ -8,6 +8,8 @@
 struct CameraData
 {
 	glm::mat4 vp;
+	glm::mat4 projection;
+	glm::mat4 view;
 };
 
 class Camera

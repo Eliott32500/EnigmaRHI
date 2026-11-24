@@ -31,7 +31,7 @@ void Camera::UpdateCameraDataBuffer(EnigmaRHI::IDevice* device, uint32_t current
 
 	proj[1][1] *= -1;
 
-	CameraData ubo{ proj * view };
+	CameraData ubo{ proj * view, proj, glm::mat4(glm::mat3(view))};
 
 	cameraDataBuffers[currentImage]->Write(device, &ubo, sizeof(ubo));
 }
