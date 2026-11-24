@@ -41,11 +41,18 @@ FetchContent_Declare(
     GIT_TAG v1.0.6
 )
 
+FetchContent_Declare(
+    vma
+    GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+    GIT_TAG v3.5.0
+)
+
 FetchContent_MakeAvailable(
     glfw
     volk
     stb_image
     tinyobjloader
+    vma
 )
 
 target_compile_definitions(volk PUBLIC VK_USE_PLATFORM_WIN32_KHR)
