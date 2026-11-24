@@ -64,9 +64,9 @@ void Application::InitAPI()
 	EnigmaRHI::BindingLayoutDesc layoutDesc;
 	layoutDesc.items = 
 	{
-		{ 0, EnigmaRHI::EBindingType::UNIFORM_BUFFER,         EnigmaRHI::EShaderType::VERTEX },
-		{ 1, EnigmaRHI::EBindingType::UNIFORM_BUFFER,         EnigmaRHI::EShaderType::VERTEX },
-		{ 2, EnigmaRHI::EBindingType::COMBINED_IMAGE_SAMPLER, EnigmaRHI::EShaderType::FRAGMENT },
+		{ 0,  EnigmaRHI::EBindingType::UNIFORM_BUFFER,           EnigmaRHI::EShaderType::VERTEX },
+		{ 1,  EnigmaRHI::EBindingType::UNIFORM_BUFFER,           EnigmaRHI::EShaderType::VERTEX },
+		{ 2,  EnigmaRHI::EBindingType::COMBINED_IMAGE_SAMPLER,   EnigmaRHI::EShaderType::FRAGMENT },
 	};
 	bindingLayout = device->CreateBindingLayout(layoutDesc);
 
@@ -77,7 +77,7 @@ void Application::InitAPI()
 	{
 		.binding = 0,
 		.stride = sizeof(Vertex),
-		.inputRate = EnigmaRHI::EVertexInputRate::VERTEX
+		.inputRate = EnigmaRHI::EVertexInputRate::PER_VERTEX
 	};
 
 	std::vector<EnigmaRHI::VertexAttributeDesc> vAttributes;
@@ -101,57 +101,11 @@ void Application::InitAPI()
 
 	pipeline->Create(gp, shader, device, bindingLayout, swapChain);
 
-	TextureLoadOptions opts;
-	opts.colorSpace = ETextureColorSpace::SRGB;   // Linear pour normal/roughness/metallic...
-
-	TextureData tex = LoadTexture(TEXTURE_PATH, opts);
-	if (!tex.IsValid())
-		return;
-
-	EnigmaRHI::ImageSampler sampler
-	{
-		.minFilter = EnigmaRHI::EFilter::LINEAR,
-		.magFilter = EnigmaRHI::EFilter::LINEAR,
-		.mipMapMode = EnigmaRHI::EMipmapMode::LINEAR,
-		.wrapU = EnigmaRHI::EWrappingMode::REPEAT,
-		.wrapV = EnigmaRHI::EWrappingMode::REPEAT,
-		.wrapW = EnigmaRHI::EWrappingMode::REPEAT,
-		.borderColor = EnigmaRHI::EBorderColor::OPAQUE_INT_BLACK,
-		.maxAnisotropy = 1.0f,
-		.compareEnable = false,
-		.compareOp = EnigmaRHI::ECompareOp::ALWAYS,
-	};
-
-	EnigmaRHI::ImageDesc imageDesc
-	{
-		.type = EnigmaRHI::EImageType::TYPE_2D,
-		.viewType = EnigmaRHI::EImageViewType::VIEW_2D,
-		.format = tex.format,
-		.usage = EnigmaRHI::EImageUsage::SAMPLED | EnigmaRHI::EImageUsage::TRANSFER_DST | EnigmaRHI::EImageUsage::TRANSFER_SRC,
-		.sampler = sampler,
-		.extent = {tex.width, tex.height, 1},
-		.mipLevels = tex.mipLevels,
-	};
-
-	roomTexture = device->CreateImageWithData(commandPool, imageDesc, tex.pixels);
-
-	model = new Model();
-	model->LoadModel(MODEL_PATH);
-	model->Create(device, commandPool);
-
 	cam = new Camera(swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height);
 	cam->CreateCameraDataBuffer(device);
 
-	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		EnigmaRHI::BindingSetDesc setDesc;
-		setDesc.items = {
-			EnigmaRHI::BindingSetItem::UniformBuffer(0, cam->GetCameraDataBuffers()[i]),
-			EnigmaRHI::BindingSetItem::UniformBuffer(1, model->GetModelBuffers()[i]),
-			EnigmaRHI::BindingSetItem::Texture(2, roomTexture),
-		};
-		frameSets[i] = device->CreateBindingSet(bindingLayout, setDesc);
-	}
+	renderObjets.push_back(CreateObject(MODEL_PATH, TEXTURE_PATH, glm::vec3(0.f, 0.f, 0.f), 90.f, glm::vec3(1.f, 1.f, 1.f)));
+	renderObjets.push_back(CreateObject(MODEL_PATH2, TEXTURE_PATH2, glm::vec3(5.f, 0.f, 1.f), 0.f, glm::vec3(0.5f, 0.5f, 0.5f)));
 
 	for (int i = 0; i < frameFences.size(); i++)
 	{
@@ -197,16 +151,22 @@ void Application::CleanUp()
 	for (auto* fence : frameFences)
 		device->DeleteFence(fence);
 
-	for (auto* s : frameSets)
+	for (RenderObject* o : renderObjets)
 	{
-		device->DeleteBindingSet(s);
+		for (auto b : o->frameSets)
+		{
+			device->DeleteBindingSet(b);
+		}
+
+		device->DeleteImage(o->texture);
+		o->model->Destroy(device);
+		delete o->model;
 	}
+
 	device->DeleteBindingLayout(bindingLayout);
 
 	device->DeleteImage(depthImage);
-	device->DeleteImage(roomTexture);
 
-	model->Destroy(device);
 	cam->Destroy(device);
 	pipeline->Destroy(device);
 	swapChain->Destroy(device);
@@ -221,7 +181,7 @@ void Application::CleanUp()
 	rhi->DeleteShaderModule(fragShader);
 	rhi->DeleteShaderModule(vertShader);
 	rhi->DeletePipeline(pipeline);
-	delete model;
+	//delete model;
 	delete cam;
 	rhi->DeleteCommandPool(commandPool);
 	rhi->DeleteDevice(device);
@@ -252,11 +212,10 @@ void Application::DrawFrame()
 
 	cam->UpdateCameraDataBuffer(device, frame, extent, mainWindow);
 	
-	glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.f, 1.f, 1.f));
-	
-	model->UpdateDataBuffer(device, frame, translate, rotate, scale);
+	for (int i = 0; i < renderObjets.size(); i++)
+	{
+		renderObjets[i]->model->UpdateDataBuffer(device, frame, renderObjets[i]->T, renderObjets[i]->R, renderObjets[i]->S);
+	}
 	
 	EnigmaRHI::ICommandBuffer* cmd = commandPool->GetCommandBuffer(frame);
 
@@ -305,11 +264,14 @@ void Application::DrawFrame()
 
 	cmd->BeginRendering(info);
 	cmd->BindPipeline(pipeline);
-	cmd->BindBindingSet(pipeline, frameSets[frame]);
 	cmd->SetViewport(viewport);
 	cmd->SetScissor(scissor);
 
-		model->Render(cmd);
+	for (int i = 0; i < renderObjets.size(); i++)
+	{
+		cmd->BindBindingSet(pipeline, renderObjets[i]->frameSets[frame]);
+		renderObjets[i]->model->Render(cmd);
+	}
 
 	cmd->EndRendering();
 
@@ -339,4 +301,68 @@ void Application::ResizeSwapChain()
 
 	swapChain->Resize(device, surface, EnigmaRHI::Extent2D{ (uint32_t)w, (uint32_t)h });
 	CreateDepthImage();
+}
+
+RenderObject* Application::CreateObject(const char* modelPath, const char* texturePath, glm::vec3 translate, float rotate, glm::vec3 scale)
+{
+	RenderObject* obj = new RenderObject();
+
+	TextureLoadOptions opts;
+	opts.colorSpace = ETextureColorSpace::SRGB;   // Linear pour normal/roughness/metallic...
+
+	TextureData tex = LoadTexture(texturePath, opts);
+
+	if (!tex.IsValid())
+		return obj;
+
+	EnigmaRHI::ImageSampler sampler
+	{
+		.minFilter = EnigmaRHI::EFilter::LINEAR,
+		.magFilter = EnigmaRHI::EFilter::LINEAR,
+		.mipMapMode = EnigmaRHI::EMipmapMode::LINEAR,
+		.wrapU = EnigmaRHI::EWrappingMode::CLAMP_TO_BORDER,
+		.wrapV = EnigmaRHI::EWrappingMode::CLAMP_TO_BORDER,
+		.wrapW = EnigmaRHI::EWrappingMode::CLAMP_TO_BORDER,
+		.borderColor = EnigmaRHI::EBorderColor::OPAQUE_INT_BLACK,
+		.maxAnisotropy = 1.0f,
+		.compareEnable = false,
+		.compareOp = EnigmaRHI::ECompareOp::ALWAYS,
+	};
+
+	EnigmaRHI::ImageDesc imageDesc
+	{
+		.type = EnigmaRHI::EImageType::TYPE_2D,
+		.viewType = EnigmaRHI::EImageViewType::VIEW_2D,
+		.format = tex.format,
+		.usage = EnigmaRHI::EImageUsage::SAMPLED | EnigmaRHI::EImageUsage::TRANSFER_DST | EnigmaRHI::EImageUsage::TRANSFER_SRC,
+		.sampler = sampler,
+		.extent = {tex.width, tex.height, 1},
+		.mipLevels = tex.mipLevels,
+	};
+
+	obj->texture = device->CreateImageWithData(commandPool, imageDesc, tex.pixels);
+
+	obj->model = new Model();
+	obj->model->LoadModel(modelPath);
+	obj->model->Create(device, commandPool);
+
+	for (size_t i = 0; i < EnigmaRHI::MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		EnigmaRHI::BindingSetDesc setDesc;
+
+		setDesc.items =
+		{
+			EnigmaRHI::BindingSetItem::UniformBuffer(0, cam->GetCameraDataBuffers()[i]),
+			EnigmaRHI::BindingSetItem::UniformBuffer(1, obj->model->GetModelBuffers()[i]),
+			EnigmaRHI::BindingSetItem::Texture(2, obj->texture),
+		};
+
+		obj->frameSets[i] = device->CreateBindingSet(bindingLayout, setDesc);
+	}
+
+	obj->T = glm::translate(glm::mat4(1.0f), translate);
+	obj->R = glm::rotate(glm::mat4(1.0f), glm::radians(rotate), glm::vec3(0.0f, 0.0f, 1.0f));
+	obj->S = glm::scale(glm::mat4(1.0f), scale);
+
+	return obj;
 }

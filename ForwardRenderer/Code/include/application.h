@@ -17,6 +17,17 @@
 #include <unordered_map>
 #include <vector>
 
+struct RenderObject
+{
+	std::array<EnigmaRHI::IBindingSet*, EnigmaRHI::MAX_FRAMES_IN_FLIGHT> frameSets = {};
+	Model* model = nullptr;
+	EnigmaRHI::IImage* texture = nullptr;
+
+	glm::mat4 T;
+	glm::mat4 R;
+	glm::mat4 S;
+};
+
 class Application
 {
 public:
@@ -32,7 +43,6 @@ private:
 	EnigmaRHI::ISwapChain* swapChain = nullptr;
 	EnigmaRHI::ICommandPool* commandPool = nullptr;
 	EnigmaRHI::IBindingLayout* bindingLayout = nullptr;
-	EnigmaRHI::IImage* roomTexture = nullptr;
 	EnigmaRHI::IDescriptor* descriptor = nullptr;
 	EnigmaRHI::IPipeline* pipeline = nullptr;
 	EnigmaRHI::ISurface* surface = nullptr;
@@ -43,7 +53,6 @@ private:
 	EnigmaRHI::IImage* depthImage = nullptr;
 
 	Camera* cam = nullptr;
-	Model* model = nullptr;
 
 	void InitAPI();
 	void MainLoop();
@@ -61,10 +70,14 @@ private:
 
 	const char* TEXTURE_PATH = "Assets/Textures/viking_room.png";
 	const char* MODEL_PATH = "Assets/Meshes/viking_room.obj";
+	const char* TEXTURE_PATH2 = "Assets/Textures/container.png";
+	const char* MODEL_PATH2 = "Assets/Meshes/cube.obj";
 
 	void DrawFrame();
 	void ResizeSwapChain();
 
 	std::array<EnigmaRHI::IFence*, EnigmaRHI::MAX_FRAMES_IN_FLIGHT> frameFences;
-	std::array<EnigmaRHI::IBindingSet*, EnigmaRHI::MAX_FRAMES_IN_FLIGHT> frameSets;
+
+	std::vector<RenderObject*> renderObjets;
+	RenderObject* CreateObject(const char* modelPath, const char* texturePath, glm::vec3 translate, float rotate, glm::vec3 scale);
 };
